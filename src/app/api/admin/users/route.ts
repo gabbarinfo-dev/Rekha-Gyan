@@ -2,24 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import os from "os";
+import {
+  fetchUsersRegistryFromWordPress,
+  saveUsersRegistryToWordPress,
+  logSeekerPostToWordPress,
+  WordPressStoredUser,
+} from "@/lib/wordpress";
 
-export interface StoredUser {
-  phone: string;
-  name: string;
-  dob?: string;
-  tob?: string;
-  pob?: string;
-  gender?: string;
-  issue?: string;
-  lifeFocus?: string;
-  createdAt: string;
-  isSubscribed: boolean;
-  subscriptionPlan?: "trial_99" | "duo_599" | "unlimited_1009" | null;
-  subscriptionDurationDays?: number;
-  subscriptionStartDate?: string;
-  subscriptionExpiryDate?: string;
-  isAdmin?: boolean;
-}
+export interface StoredUser extends WordPressStoredUser {}
 
 // Default initial admin and seed data
 const DEFAULT_USERS: StoredUser[] = [
@@ -95,13 +85,35 @@ function writeUsersToDisk(users: StoredUser[]) {
 }
 
 /**
+ * Helper to fetch latest users from WordPress cloud DB with fallback to disk
+ */
+async function getLatestUsers(): Promise<StoredUser[]> {
+  const diskUsers = readUsersFromDisk();
+  try {
+    const wpUsers = await fetchUsersRegistryFromWordPress();
+    if (wpUsers && Array.isArray(wpUsers) && wpUsers.length > 0) {
+      const mergedMap = new Map<string, StoredUser>();
+      DEFAULT_USERS.forEach((u) => mergedMap.set(u.phone, u));
+      diskUsers.forEach((u) => mergedMap.set(u.phone, u));
+      wpUsers.forEach((u) => mergedMap.set(u.phone, u as StoredUser));
+      const combined = Array.from(mergedMap.values());
+      writeUsersToDisk(combined);
+      return combined;
+    }
+  } catch (err) {
+    console.warn("WordPress users sync notice:", err);
+  }
+  return diskUsers;
+}
+
+/**
  * GET /api/admin/users
  * Returns either all users or checks status for a specific phone:
  * GET /api/admin/users?phone=8511739865
  */
 export async function GET(req: NextRequest) {
   const phone = req.nextUrl.searchParams.get("phone");
-  const users = readUsersFromDisk();
+  const users = await getLatestUsers();
 
   if (phone) {
     const cleanPhone = phone.replace(/\D/g, "");
@@ -146,7 +158,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const users = readUsersFromDisk();
+    const users = await getLatestUsers();
     const existingIndex = users.findIndex((u) => u.phone === cleanPhone);
 
     const isAdmin = cleanPhone === "8511739865" || (name && name.toLowerCase().includes("nishant dantare"));
@@ -156,6 +168,8 @@ export async function POST(req: NextRequest) {
     if (isSubscribed && subscriptionDurationDays) {
       expiryDate = new Date(now.getTime() + subscriptionDurationDays * 24 * 60 * 60 * 1000).toISOString();
     }
+
+    let savedUser: StoredUser;
 
     if (existingIndex >= 0) {
       // Update existing record
@@ -178,9 +192,10 @@ export async function POST(req: NextRequest) {
         users[existingIndex].isSubscribed = true;
         users[existingIndex].subscriptionPlan = "unlimited_1009";
       }
+      savedUser = users[existingIndex];
     } else {
       // Add new record
-      users.push({
+      savedUser = {
         phone: cleanPhone,
         name: name || "Seeker",
         dob: dob || "",
@@ -196,14 +211,22 @@ export async function POST(req: NextRequest) {
         subscriptionStartDate: isSubscribed ? now.toISOString() : undefined,
         subscriptionExpiryDate: expiryDate,
         isAdmin,
-      });
+      };
+      users.push(savedUser);
     }
 
     writeUsersToDisk(users);
+
+    // Cloud persistence: save to WordPress registry and create/update seeker post
+    Promise.allSettled([
+      saveUsersRegistryToWordPress(users),
+      logSeekerPostToWordPress(savedUser),
+    ]).catch((err) => console.warn("Background WP sync notice:", err));
+
     return NextResponse.json({
       success: true,
       message: "User registry synchronized successfully.",
-      user: users.find((u) => u.phone === cleanPhone),
+      user: savedUser,
     });
   } catch (e: any) {
     return NextResponse.json({ success: false, error: e.message }, { status: 500 });
@@ -224,7 +247,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Phone number required." }, { status: 400 });
     }
 
-    const users = readUsersFromDisk();
+    const users = await getLatestUsers();
     const userIndex = users.findIndex((u) => u.phone === cleanPhone);
 
     if (userIndex < 0) {
@@ -251,6 +274,12 @@ export async function PUT(req: NextRequest) {
     };
 
     writeUsersToDisk(users);
+
+    // Cloud persistence: save to WordPress registry and update seeker post
+    Promise.allSettled([
+      saveUsersRegistryToWordPress(users),
+      logSeekerPostToWordPress(users[userIndex]),
+    ]).catch((err) => console.warn("Background WP update notice:", err));
 
     const planLabel = {
       trial_99: "₹99 Starter Pack",
@@ -286,7 +315,7 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Cannot delete Super Admin account." }, { status: 403 });
     }
 
-    let users = readUsersFromDisk();
+    let users = await getLatestUsers();
     const beforeCount = users.length;
     users = users.filter((u) => u.phone !== cleanPhone);
 
@@ -295,6 +324,8 @@ export async function DELETE(req: NextRequest) {
     }
 
     writeUsersToDisk(users);
+    saveUsersRegistryToWordPress(users).catch((err) => console.warn("Background WP sync notice:", err));
+
     return NextResponse.json({ success: true, message: "User deleted from registry." });
   } catch (e: any) {
     return NextResponse.json({ success: false, error: e.message }, { status: 500 });

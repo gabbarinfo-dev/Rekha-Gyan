@@ -24,7 +24,7 @@ export interface ReadingLogPayload {
 
 const WP_URL = process.env.WORDPRESS_URL || "https://rekhagyan.online";
 const WP_USER = process.env.WORDPRESS_USER || "ndantare";
-const WP_PASS = process.env.WORDPRESS_APP_PASSWORD || "NishantD1234";
+const WP_PASS = process.env.WORDPRESS_APP_PASSWORD || "O0r6 YYxP SmSw efHB QFMs KKDY";
 
 function getBasicAuthHeader(): string {
   const credentials = `${WP_USER}:${WP_PASS}`;
@@ -321,4 +321,189 @@ function getCuratedFallbackPosts(): WordPressPost[] {
       },
     },
   ];
+}
+
+export interface WordPressStoredUser {
+  phone: string;
+  name: string;
+  dob?: string;
+  tob?: string;
+  pob?: string;
+  gender?: string;
+  issue?: string;
+  lifeFocus?: string;
+  createdAt: string;
+  isSubscribed: boolean;
+  subscriptionPlan?: "trial_99" | "duo_599" | "unlimited_1009" | null;
+  subscriptionDurationDays?: number;
+  subscriptionStartDate?: string;
+  subscriptionExpiryDate?: string;
+  isAdmin?: boolean;
+}
+
+/**
+ * Fetch the master user registry JSON stored in a private WordPress post
+ */
+export async function fetchUsersRegistryFromWordPress(): Promise<WordPressStoredUser[] | null> {
+  try {
+    const endpoint = `${WP_URL.replace(/\/+$/, "")}/wp-json/wp/v2/posts?slug=rekha-user-registry&status=private&context=edit`;
+    const res = await fetch(endpoint, {
+      headers: {
+        Authorization: getBasicAuthHeader(),
+        Accept: "application/json",
+      },
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      console.warn("Failed to fetch user registry from WordPress:", res.status);
+      return null;
+    }
+
+    const posts = await res.json();
+    if (Array.isArray(posts) && posts.length > 0) {
+      const raw = posts[0].content?.raw || posts[0].content?.rendered || "";
+      const cleaned = raw.replace(/<[^>]*>?/gm, "").trim();
+      const users = JSON.parse(cleaned);
+      if (Array.isArray(users)) {
+        return users;
+      }
+    }
+    return null;
+  } catch (err) {
+    console.error("Error fetching users from WordPress:", err);
+    return null;
+  }
+}
+
+/**
+ * Save the entire user registry back to the private WordPress post
+ */
+export async function saveUsersRegistryToWordPress(users: WordPressStoredUser[]): Promise<boolean> {
+  try {
+    const searchEndpoint = `${WP_URL.replace(/\/+$/, "")}/wp-json/wp/v2/posts?slug=rekha-user-registry&status=private&context=edit`;
+    const checkRes = await fetch(searchEndpoint, {
+      headers: {
+        Authorization: getBasicAuthHeader(),
+      },
+      cache: "no-store",
+    });
+
+    let existingId: number | null = null;
+    if (checkRes.ok) {
+      const existing = await checkRes.json();
+      if (Array.isArray(existing) && existing.length > 0) {
+        existingId = existing[0].id;
+      }
+    }
+
+    const payload = {
+      title: "Rekha Seeker Registry (Master DB)",
+      slug: "rekha-user-registry",
+      status: "private",
+      content: JSON.stringify(users, null, 2),
+    };
+
+    const targetEndpoint = existingId
+      ? `${WP_URL.replace(/\/+$/, "")}/wp-json/wp/v2/posts/${existingId}`
+      : `${WP_URL.replace(/\/+$/, "")}/wp-json/wp/v2/posts`;
+
+    const saveRes = await fetch(targetEndpoint, {
+      method: "POST",
+      headers: {
+        Authorization: getBasicAuthHeader(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    return saveRes.ok;
+  } catch (err) {
+    console.error("Error saving users to WordPress:", err);
+    return false;
+  }
+}
+
+/**
+ * Create or update an individual human-readable private post for each seeker
+ * so that Admin can view every user directly inside WordPress Dashboard -> Posts!
+ */
+export async function logSeekerPostToWordPress(user: WordPressStoredUser): Promise<number | null> {
+  try {
+    const cleanPhone = (user.phone || "").replace(/\D/g, "");
+    if (!cleanPhone) return null;
+
+    const slug = `rekha-seeker-${cleanPhone}`;
+    const searchEndpoint = `${WP_URL.replace(/\/+$/, "")}/wp-json/wp/v2/posts?slug=${encodeURIComponent(slug)}&status=private&context=edit`;
+    const checkRes = await fetch(searchEndpoint, {
+      headers: {
+        Authorization: getBasicAuthHeader(),
+      },
+      cache: "no-store",
+    });
+
+    let existingId: number | null = null;
+    if (checkRes.ok) {
+      const existing = await checkRes.json();
+      if (Array.isArray(existing) && existing.length > 0) {
+        existingId = existing[0].id;
+      }
+    }
+
+    const planLabel = user.subscriptionPlan
+      ? user.subscriptionPlan.toUpperCase().replace("_", " ")
+      : "FREE";
+
+    const contentHtml = `
+<div style="font-family: sans-serif; line-height: 1.6;">
+  <h2 style="color: #4338ca;">Rekha Seeker Profile: ${user.name}</h2>
+  <table style="border-collapse: collapse; width: 100%; max-width: 600px; margin-bottom: 20px;">
+    <tr style="border-bottom: 1px solid #e5e7eb;"><td style="padding: 8px; font-weight: bold; width: 35%;">Mobile:</td><td style="padding: 8px;"><strong>${user.phone}</strong></td></tr>
+    <tr style="border-bottom: 1px solid #e5e7eb;"><td style="padding: 8px; font-weight: bold;">Current Plan:</td><td style="padding: 8px; color: #15803d; font-weight: bold;">${planLabel}</td></tr>
+    <tr style="border-bottom: 1px solid #e5e7eb;"><td style="padding: 8px; font-weight: bold;">Subscription Active:</td><td style="padding: 8px;">${user.isSubscribed ? '✅ Active' : '❌ Inactive'}</td></tr>
+    <tr style="border-bottom: 1px solid #e5e7eb;"><td style="padding: 8px; font-weight: bold;">Valid Until:</td><td style="padding: 8px;">${user.subscriptionExpiryDate ? new Date(user.subscriptionExpiryDate).toLocaleString() : 'N/A'}</td></tr>
+    <tr style="border-bottom: 1px solid #e5e7eb;"><td style="padding: 8px; font-weight: bold;">Date of Birth:</td><td style="padding: 8px;">${user.dob || 'Not provided'}</td></tr>
+    <tr style="border-bottom: 1px solid #e5e7eb;"><td style="padding: 8px; font-weight: bold;">Time of Birth:</td><td style="padding: 8px;">${user.tob || 'Not provided'}</td></tr>
+    <tr style="border-bottom: 1px solid #e5e7eb;"><td style="padding: 8px; font-weight: bold;">Place of Birth:</td><td style="padding: 8px;">${user.pob || 'Not provided'}</td></tr>
+    <tr style="border-bottom: 1px solid #e5e7eb;"><td style="padding: 8px; font-weight: bold;">Gender:</td><td style="padding: 8px;">${user.gender || 'Not specified'}</td></tr>
+    <tr style="border-bottom: 1px solid #e5e7eb;"><td style="padding: 8px; font-weight: bold;">Life Focus Area:</td><td style="padding: 8px;">${user.lifeFocus || 'General Destiny'}</td></tr>
+    <tr style="border-bottom: 1px solid #e5e7eb;"><td style="padding: 8px; font-weight: bold;">Consultation Query:</td><td style="padding: 8px; font-style: italic;">"${user.issue || 'None submitted'}"</td></tr>
+    <tr style="border-bottom: 1px solid #e5e7eb;"><td style="padding: 8px; font-weight: bold;">Account Created:</td><td style="padding: 8px;">${new Date(user.createdAt).toLocaleString()}</td></tr>
+  </table>
+  <div style="background-color: #f3f4f6; padding: 12px; border-radius: 8px; font-size: 12px; color: #6b7280;">
+    <strong>Sync Status:</strong> Connected to Next.js Super Admin Engine. Any plan toggled in /admin reflects here instantly.
+  </div>
+</div>
+`.trim();
+
+    const payload = {
+      title: `[Seeker] ${user.name} - ${user.phone} (${planLabel})`,
+      slug,
+      status: "private",
+      excerpt: `Seeker: ${user.name} | Phone: ${user.phone} | Plan: ${planLabel} | Active: ${user.isSubscribed ? 'Yes' : 'No'} | DOB: ${user.dob || 'N/A'}`,
+      content: contentHtml,
+    };
+
+    const targetEndpoint = existingId
+      ? `${WP_URL.replace(/\/+$/, "")}/wp-json/wp/v2/posts/${existingId}`
+      : `${WP_URL.replace(/\/+$/, "")}/wp-json/wp/v2/posts`;
+
+    const res = await fetch(targetEndpoint, {
+      method: "POST",
+      headers: {
+        Authorization: getBasicAuthHeader(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return data.id || null;
+    }
+    return null;
+  } catch (err) {
+    console.error("Error logging seeker post to WordPress:", err);
+    return null;
+  }
 }
