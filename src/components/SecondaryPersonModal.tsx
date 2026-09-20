@@ -143,8 +143,8 @@ export default function SecondaryPersonModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn overflow-y-auto">
-      <div className="relative w-full max-w-xl my-8 p-6 sm:p-7 rounded-3xl bg-cosmic-900 border border-gold-500/40 shadow-2xl shadow-purple-950/80 overflow-hidden text-slate-100">
+    <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 pt-20 sm:pt-16 pb-16 bg-black/85 backdrop-blur-md animate-fadeIn overflow-y-auto">
+      <div className="relative w-full max-w-xl my-auto p-6 sm:p-7 rounded-3xl bg-cosmic-900 border border-gold-500/40 shadow-2xl shadow-purple-950/80 overflow-hidden text-slate-100">
         {/* Glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-36 bg-gradient-to-b from-rose-500/15 via-gold-500/10 to-transparent rounded-full blur-3xl pointer-events-none"></div>
 

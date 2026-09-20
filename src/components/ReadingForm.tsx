@@ -199,6 +199,24 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
         savedLeftPalm: leftPalmBase64,
         savedRightPalm: rightPalmBase64,
       });
+
+      // Synchronize full consultation coordinates to Super Admin registry
+      fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: user?.phone,
+          name,
+          gender,
+          dob,
+          tob,
+          pob,
+          issue: question,
+          lifeFocus,
+          isSubscribed: Boolean(user?.isSubscribed),
+          subscriptionPlan: user?.subscriptionPlan || null,
+        }),
+      }).catch((err) => console.warn("Admin consultation sync non-blocking warning:", err));
     }
 
     const timer1 = setTimeout(() => setLoadingStage(2), 2200);

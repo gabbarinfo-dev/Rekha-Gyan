@@ -58,7 +58,7 @@ export default function AuthModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
       <div className="relative w-full max-w-md p-6 sm:p-8 rounded-3xl bg-cosmic-900 border border-gold-500/30 shadow-2xl shadow-purple-950/60 overflow-hidden">
         {/* Glow effect */}
         <div className="absolute -top-20 -right-20 w-48 h-48 bg-gold-500/10 rounded-full blur-3xl pointer-events-none"></div>

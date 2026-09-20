@@ -58,6 +58,38 @@ export interface RekhaReadingOutput {
   synastry?: SynastryResult;
 }
 
+function isModelRefusal(text: string | null | undefined): boolean {
+  if (!text) return true;
+  const trimmed = text.trim();
+  if (trimmed.length < 150) {
+    const lower = trimmed.toLowerCase();
+    if (
+      lower.includes("i'm sorry") ||
+      lower.includes("i am sorry") ||
+      lower.includes("can't assist") ||
+      lower.includes("cannot assist") ||
+      lower.includes("unable to assist") ||
+      lower.includes("cannot fulfill") ||
+      lower.includes("as an ai") ||
+      lower.includes("policy") ||
+      lower.includes("guidelines")
+    ) {
+      return true;
+    }
+  }
+  const lower = trimmed.toLowerCase();
+  if (
+    lower.startsWith("i'm sorry, but i can't assist with that") ||
+    lower.startsWith("i'm sorry, but i cannot assist with that") ||
+    lower.startsWith("i cannot assist with that") ||
+    lower.startsWith("i am unable to assist") ||
+    lower.startsWith("i'm unable to assist")
+  ) {
+    return true;
+  }
+  return false;
+}
+
 export async function generateRekhaReading(
   input: PalmAnalysisRequest
 ): Promise<RekhaReadingOutput> {
@@ -70,8 +102,10 @@ export async function generateRekhaReading(
   if (geminiApiKey) {
     try {
       const response = await callGeminiVision(geminiApiKey, prompt, input);
-      if (response) {
+      if (response && !isModelRefusal(response)) {
         return parseReadingResponse(response, input);
+      } else if (response) {
+        console.warn("Gemini returned safety refusal or truncated response, attempting OpenAI fallback.");
       }
     } catch (err) {
       console.error("Gemini Vision API error, attempting fallback:", err);
@@ -82,8 +116,10 @@ export async function generateRekhaReading(
   if (openaiApiKey) {
     try {
       const response = await callOpenAiVision(openaiApiKey, prompt, input);
-      if (response) {
+      if (response && !isModelRefusal(response)) {
         return parseReadingResponse(response, input);
+      } else if (response) {
+        console.warn("OpenAI returned safety refusal, falling back to comprehensive Vedic synthesis engine.");
       }
     } catch (err) {
       console.error("OpenAI fallback error:", err);
@@ -165,6 +201,12 @@ Every single insight you produce MUST be derived strictly from:
 1. The unique contours of the user's uploaded palms (or their exact Lagna/Nakshatra traits).
 2. The specific Dasha timeline and planet house coordinates.
 3. The exact question asked by the user.
+
+RELATIONSHIP, FIDELITY & SENSITIVE INQUIRIES ETHICAL GUIDANCE:
+If the user asks questions concerning relationship loyalty, cheating, suspicion, or breakup (e.g., "will my gf cheat me", "is my partner loyal", "will we separate"):
+- Never issue a generic AI policy refusal.
+- Interpret this query responsibly as an authentic Vedic Astrological & Palmistry consultation: examine the 7th house (Kalatra Bhava), Venus (Shukra - karaka of love), Rahu (which creates illusions, paranoia, and miscommunication), and the Heart Line curvature.
+- Offer compassionate, spiritually mature counsel explaining whether current celestial transits cause emotional turbulence, mistrust, or miscommunication, and provide constructive guidance on emotional honesty, boundaries, and Vedic remedies (Pooja/Mantra) to harmonize the relationship.
 
 CRITICAL REQUIREMENT — FREE PSYCHIC & ASTRO-PALMISTRY TEASER (Bespoke Psychological Mirror):
 Before writing the full reading, output a JSON block delimited by \`\`\`json-teaser and \`\`\` containing deeply accurate observations about the user's personality and past events:
@@ -484,6 +526,25 @@ function generateDeterministicRekhaReading(input: PalmAnalysisRequest): RekhaRea
 `;
   }
 
+  const isFidelityQuery = /\b(cheat|cheating|affair|loyalty|honest|faithful|gf|girlfriend|bf|boyfriend|wife|husband|partner|breakup|trust)\b/i.test(question);
+
+  let questionResolutionMarkdown = "";
+  if (isFidelityQuery) {
+    questionResolutionMarkdown = `Under the divine lens of Vedic Palmistry and classical Jyotish shastras (Brihat Parashara & Saravali), your inquiry regarding trust and emotional fidelity is deeply revealing:
+
+1. **Planetary Transit & The 'Chhaya' (Shadow) Effect:**
+   Your current **${vedicChart.currentMahadasha}** dasha with planetary sub-influences indicates that a shadow transit (often stimulated by Rahu or Saturn's aspect on the 7th House / Kalatra Bhava) has heightened fear, hyper-vigilance, and vulnerability. In Vedic philosophy, when Rahu aspects the mind (Chitta), it manifests phantom suspicions, doubts, and communication voids where innocent actions appear suspicious.
+
+2. **Palmistry Evidence (The Heart Line & Mount of Venus):**
+   Your Heart Line demonstrates deep, uncompromised loyalty and an intense desire for emotional exclusivity. When you love, you give completely. However, when the Mount of Venus or upper Mars reflects planetary friction, the celestial chart indicates that the current strain in your connection is rooted in **emotional miscommunication and unspoken insecurities**, rather than malicious betrayal.
+
+3. **Definitive Astrological Verdict:**
+   The celestial configurations do **not** signify an irreversible deceit. Instead, they mark a 90-day karmic test of clarity and open communication. Do not act on unverified assumptions or let anxiety govern your heart. Initiate an open, calm dialogue before the next lunar transition. By practicing the prescribed remedial Vidhi, any toxic misunderstanding or negative external energy casting shadows on your relationship will be dispelled.`;
+  } else {
+    questionResolutionMarkdown = `Under the divine guidance of classical treatises, the answer to your inquiry is clear:
+Your current **${vedicChart.currentMahadasha}** dasha is transiting through a crucial turning point. You have cleared past karmic delays, and within the next 7 to 11 months, a definitive door will open. Stay centered, maintain firm boundaries, and avoid taking impulsive decisions driven by past emotional betrayal.`;
+  }
+
   const markdown = `
 # 🌟 Divine Reading for ${name}
 ### By REKHA — Your Authentic AI Palmist & Astrologer
@@ -523,8 +584,7 @@ ${synastryMarkdown}
 
 ## 5. 🔮 Direct Revelation: Answer to Your Question
 ### "${question}"
-Under the divine guidance of classical treatises, the answer to your inquiry is clear:
-Your current **${vedicChart.currentMahadasha}** dasha is transiting through a crucial turning point. You have cleared past karmic delays, and within the next 7 to 11 months, a definitive door will open. Stay centered, maintain firm boundaries, and avoid taking impulsive decisions driven by past emotional betrayal.
+${questionResolutionMarkdown}
 
 ---
 

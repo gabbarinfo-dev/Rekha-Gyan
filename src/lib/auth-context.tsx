@@ -67,7 +67,7 @@ const ADMIN_DOB = "29-04-1987";
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
 
-  // Load existing session on mount & verify with server registry
+  // Load existing session on mount & verify live with server registry
   useEffect(() => {
     try {
       const activePhone = localStorage.getItem(ACTIVE_SESSION_KEY);
@@ -84,6 +84,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
           setUser(profile);
         }
+
+        // Live check against server registry to verify if Super Admin activated or switched a plan!
+        fetch(`/api/admin/users?phone=${activePhone}`)
+          .then((r) => r.json())
+          .then((data) => {
+            if (data.success && data.user) {
+              const serverUser = data.user;
+              setUser((prev) => {
+                if (!prev) return prev;
+                const updated: UserProfile = {
+                  ...prev,
+                  isSubscribed: Boolean(serverUser.isSubscribed),
+                  subscriptionPlan: serverUser.subscriptionPlan || null,
+                  subscriptionExpiryDate: serverUser.subscriptionExpiryDate,
+                };
+                // update local storage
+                try {
+                  const currentMap = JSON.parse(localStorage.getItem(USERS_DB_KEY) || "{}");
+                  if (currentMap[activePhone]) {
+                    currentMap[activePhone] = { ...currentMap[activePhone], ...updated };
+                    localStorage.setItem(USERS_DB_KEY, JSON.stringify(currentMap));
+                  }
+                } catch {}
+                return updated;
+              });
+            }
+          })
+          .catch((err) => console.warn("Live server plan check non-blocking error:", err));
       }
     } catch (e) {
       console.error("Failed to restore session:", e);
