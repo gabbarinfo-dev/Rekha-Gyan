@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Sparkles,
   Calendar,
@@ -12,34 +12,73 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowRight,
+  ArrowLeft,
   ShieldCheck,
   Zap,
+  Eye,
+  Trash2,
+  User,
+  Info,
+  Layers,
+  Lock,
 } from "lucide-react";
 import ReadingDisplay from "./ReadingDisplay";
+import AuthModal from "./AuthModal";
+import { useAuth } from "@/lib/auth-context";
 
 interface ReadingFormProps {
   initialFocus?: string;
 }
 
 export default function ReadingForm({ initialFocus }: ReadingFormProps) {
+  const { user, isLoggedIn, updateProfile } = useAuth();
+
+  // Wizard Steps: 1: Basic Details, 2: Dedicated Palm Upload, 3: Review Screen
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [name, setName] = useState("");
-  const [gender, setGender] = useState("Male");
-  const [dob, setDob] = useState("");
-  const [tob, setTob] = useState("12:00");
-  const [pob, setPob] = useState("");
+
+  // Form Fields
+  const [name, setName] = useState(user?.name || "");
+  const [gender, setGender] = useState(user?.gender || "Male");
+  const [dob, setDob] = useState(user?.dob || "");
+  const [tob, setTob] = useState(user?.tob || "12:00");
+  const [pob, setPob] = useState(user?.pob || "");
   const [lifeFocus, setLifeFocus] = useState(initialFocus || "Career & Wealth Breakthrough");
   const [question, setQuestion] = useState("");
 
-  const [leftPalmBase64, setLeftPalmBase64] = useState<string>("");
-  const [rightPalmBase64, setRightPalmBase64] = useState<string>("");
-  const [leftPreview, setLeftPreview] = useState<string>("");
-  const [rightPreview, setRightPreview] = useState<string>("");
+  // Palm Photos
+  const [leftPalmBase64, setLeftPalmBase64] = useState<string>(user?.savedLeftPalm || "");
+  const [rightPalmBase64, setRightPalmBase64] = useState<string>(user?.savedRightPalm || "");
+  const [leftPreview, setLeftPreview] = useState<string>(user?.savedLeftPalm || "");
+  const [rightPreview, setRightPreview] = useState<string>(user?.savedRightPalm || "");
 
+
+  // Loading & Results
   const [loading, setLoading] = useState(false);
   const [loadingStage, setLoadingStage] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [resultData, setResultData] = useState<any | null>(null);
+
+  // Auth Modal State
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  // Auto-prefill if user logs in
+  useEffect(() => {
+    if (user) {
+      if (user.name && !name) setName(user.name);
+      if (user.gender) setGender(user.gender);
+      if (user.dob && !dob) setDob(user.dob);
+      if (user.tob) setTob(user.tob);
+      if (user.pob && !pob) setPob(user.pob);
+      if (user.savedLeftPalm && !leftPalmBase64) {
+        setLeftPalmBase64(user.savedLeftPalm);
+        setLeftPreview(user.savedLeftPalm);
+      }
+      if (user.savedRightPalm && !rightPalmBase64) {
+        setRightPalmBase64(user.savedRightPalm);
+        setRightPreview(user.savedRightPalm);
+      }
+    }
+  }, [user]);
 
   const focusOptions = [
     "Career & Wealth Breakthrough",
@@ -56,22 +95,60 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
     "What specific gemstone and remedies will remove my present financial blockage?",
   ];
 
-  // File to base64 converter with size limit
-  const handleFileUpload = (
+  // Image optimization helper (client-side resize for fast uploads & crisp AI vision)
+  const processImageFile = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const MAX_DIM = 1600;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > MAX_DIM || height > MAX_DIM) {
+            if (width > height) {
+              height = Math.round((height * MAX_DIM) / width);
+              width = MAX_DIM;
+            } else {
+              width = Math.round((width * MAX_DIM) / height);
+              height = MAX_DIM;
+            }
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            resolve(event.target?.result as string);
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedB64 = canvas.toDataURL("image/jpeg", 0.86);
+          resolve(compressedB64);
+        };
+        img.onerror = () => {
+          resolve(event.target?.result as string);
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // File & Camera Upload Handler
+  const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     side: "left" | "right"
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 8 * 1024 * 1024) {
-      alert("Image is too large. Please upload an image under 8MB.");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const b64 = reader.result as string;
+    try {
+      const b64 = await processImageFile(file);
       if (side === "left") {
         setLeftPalmBase64(b64);
         setLeftPreview(b64);
@@ -79,22 +156,32 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
         setRightPalmBase64(b64);
         setRightPreview(b64);
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      console.error("Image processing error:", err);
+    } finally {
+      e.target.value = "";
+    }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim() || !dob || !pob.trim() || !question.trim()) {
-      setError("Please fill in your Name, Date of Birth, Place of Birth, and your Question.");
-      return;
-    }
-
+  // Final submission on Step 3 (Review Screen)
+  const handleFinalSubmit = async () => {
     setError(null);
     setLoading(true);
     setLoadingStage(1);
 
-    // Animated loading stages
+    // If user is logged in, save their details & palm photos for future 1-click use
+    if (isLoggedIn) {
+      updateProfile({
+        name,
+        gender,
+        dob,
+        tob,
+        pob,
+        savedLeftPalm: leftPalmBase64,
+        savedRightPalm: rightPalmBase64,
+      });
+    }
+
     const timer1 = setTimeout(() => setLoadingStage(2), 2200);
     const timer2 = setTimeout(() => setLoadingStage(3), 4800);
     const timer3 = setTimeout(() => setLoadingStage(4), 8500);
@@ -146,36 +233,43 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
       <ReadingDisplay
         reading={resultData.reading}
         insights={resultData.insights}
+        freeTeaser={resultData.freeTeaser}
+        userQuestion={resultData.userQuestion || question}
+        userName={resultData.userName || name}
+        userDob={resultData.userDob || dob}
         vedicChart={resultData.vedicChart}
         consensus={resultData.consensus}
+        pujaVidhi={resultData.pujaVidhi}
         onReset={handleReset}
       />
     );
   }
 
   return (
-    <div id="reading-form" className="w-full max-w-3xl mx-auto">
-      <div className="cosmic-card rounded-3xl p-6 sm:p-10 border border-gold-500/30 backdrop-blur-2xl shadow-2xl relative overflow-hidden">
+    <div id="reading-form" className="w-full max-w-3xl mx-auto px-1 sm:px-0">
+      <div className="cosmic-card rounded-3xl p-4 sm:p-8 md:p-10 border border-gold-500/30 backdrop-blur-2xl shadow-2xl relative overflow-hidden">
         {/* Step Indicator Header */}
-        <div className="flex items-center justify-between border-b border-white/10 pb-5 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4 sm:pb-5 mb-6 sm:mb-8">
           <div>
-            <span className="text-xs font-semibold uppercase tracking-widest text-gold-400 flex items-center gap-1.5">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-widest text-gold-400 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5" />
-              Live Consultation
+              Live Consultation Workflow
             </span>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-white font-serif mt-1">
-              Ask REKHA Your Deepest Question
+            <h3 className="text-lg sm:text-2xl md:text-3xl font-extrabold text-white font-serif mt-1">
+              {step === 1 && "Step 1: Your Birth & Focus Details"}
+              {step === 2 && "Step 2: Upload Both Palms (Left & Right)"}
+              {step === 3 && "Step 3: Review & Initiate Reading"}
             </h3>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-end sm:self-auto">
             {[1, 2, 3].map((num) => (
               <div
                 key={num}
                 onClick={() => {
                   if (num < step) setStep(num as any);
                 }}
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all cursor-pointer ${
+                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all cursor-pointer ${
                   step === num
                     ? "bg-gradient-to-br from-gold-300 to-amber-400 text-cosmic-950 shadow-md shadow-gold-500/40 scale-110"
                     : num < step
@@ -189,6 +283,37 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
           </div>
         </div>
 
+        {/* Guest Tip or Logged-in badge */}
+        {!isLoggedIn ? (
+          <div className="mb-6 p-3 sm:p-3.5 rounded-2xl bg-gold-500/10 border border-gold-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs">
+            <div className="flex items-center gap-2 text-slate-300">
+              <Info className="w-4 h-4 text-gold-400 shrink-0" />
+              <span>
+                <strong>Tip:</strong> Log in with phone to auto-save your palm photos &amp; birth details.
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowAuthModal(true)}
+              className="w-full sm:w-auto text-center px-3.5 py-1.5 rounded-xl bg-gold-400 hover:bg-gold-300 text-cosmic-950 font-bold uppercase tracking-wider text-[11px] shadow transition-all"
+            >
+              Login / Sign Up
+            </button>
+          </div>
+        ) : (
+          <div className="mb-6 p-3 rounded-2xl bg-emerald-950/30 border border-emerald-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-slate-300">
+            <span className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>Logged in as <strong className="text-white">{user?.name || user?.phone}</strong></span>
+            </span>
+            {user?.savedLeftPalm && (
+              <span className="text-[11px] text-gold-300 bg-gold-500/10 px-2 py-0.5 rounded-full">
+                Saved Palms Ready
+              </span>
+            )}
+          </div>
+        )}
+
         {error && (
           <div className="mb-6 p-4 rounded-2xl bg-red-950/40 border border-red-500/30 text-red-200 text-xs flex items-center gap-2.5 animate-fadeIn">
             <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
@@ -198,356 +323,553 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
 
         {/* Loading Overlay */}
         {loading && (
-          <div className="py-16 text-center space-y-6 animate-fadeIn">
-            <div className="relative mx-auto w-24 h-24 flex items-center justify-center">
-              <div className="absolute inset-0 rounded-full border-4 border-gold-500/20 animate-spin-slow" />
-              <div className="absolute inset-1 rounded-full border-4 border-t-gold-400 border-r-transparent border-b-purple-500 border-l-transparent animate-spin" />
-              <span className="text-3xl font-serif text-gold-300 font-bold animate-pulse">
-                र
-              </span>
+          <div className="absolute inset-0 z-40 bg-cosmic-950/95 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center animate-fadeIn">
+            <div className="relative mb-6">
+              <div className="w-20 h-20 rounded-full border-4 border-gold-500/20 border-t-gold-400 animate-spin"></div>
+              <Sparkles className="w-8 h-8 text-gold-400 absolute inset-0 m-auto animate-pulse" />
             </div>
 
-            <div className="space-y-2 max-w-md mx-auto">
-              <div className="text-lg font-bold text-white font-serif">
-                {loadingStage === 1 && "Aligning Sidereal Nirayana Zodiac & Kundali..."}
-                {loadingStage === 2 && "Searching 50+ Classical Palmistry Manuscripts..."}
-                {loadingStage === 3 && "Analyzing Mounts, Lines & Sacred Marks via Vision AI..."}
-                {loadingStage >= 4 && "Channeling REKHA's First-Person Discourse..."}
-              </div>
-              <p className="text-xs text-slate-400">
-                Cross-referencing Brihat Samhita, Hastasanjivani, and Cheiro&apos;s principles...
-              </p>
-            </div>
+            <h4 className="text-2xl font-bold font-serif text-white mb-2">
+              REKHA Vision &amp; Vedic Synthesis
+            </h4>
+            <p className="text-xs sm:text-sm text-gold-300/80 mb-6 max-w-md">
+              Please wait while REKHA executes real multimodal vision analysis and searches 50+ classical treatises...
+            </p>
 
-            <div className="w-48 mx-auto h-1.5 rounded-full bg-cosmic-800 overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-gold-400 to-purple-500 rounded-full animate-shimmer" />
+            {/* Stages */}
+            <div className="w-full max-w-sm space-y-2.5 text-left">
+              {[
+                "1. Scanning left & right palm mount elevation and skin creases",
+                "2. Computing Vedic Lagna, Moon sign & Vimshottari Mahadasha",
+                "3. Cross-validating markings across Brihat Samhita & Hastasanjivani",
+                "4. Formulating precise answers, timelines & sacred remedies",
+              ].map((text, idx) => (
+                <div
+                  key={idx}
+                  className={`flex items-center gap-2.5 text-xs p-2.5 rounded-xl transition-all ${
+                    loadingStage > idx
+                      ? "bg-gold-500/15 text-gold-300 border border-gold-500/30"
+                      : loadingStage === idx + 1
+                      ? "bg-white/10 text-white font-medium animate-pulse"
+                      : "text-slate-500 opacity-50"
+                  }`}
+                >
+                  {loadingStage > idx ? (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  ) : (
+                    <div className="w-3.5 h-3.5 rounded-full border border-current shrink-0"></div>
+                  )}
+                  <span>{text}</span>
+                </div>
+              ))}
             </div>
           </div>
         )}
 
-        {!loading && (
-          <form onSubmit={handleSubmit}>
-            {/* STEP 1: Personal Coordinates */}
-            {step === 1 && (
-              <div className="space-y-6 animate-fadeIn">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  {/* Name */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                      Your Full Name <span className="text-gold-400">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g. Aryan Sharma"
-                      className="w-full px-4 py-3 rounded-2xl bg-cosmic-950/70 border border-white/10 text-white placeholder-slate-500 focus:border-gold-400 focus:outline-none text-sm transition-all"
-                    />
-                  </div>
+        {/* STEP 1: Basic Details & Life Focus */}
+        {step === 1 && (
+          <div className="space-y-6 animate-fadeIn">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {/* Full Name */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                  Your Full Name <span className="text-gold-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Aryan Sharma"
+                  className="w-full px-4 py-3 rounded-2xl bg-cosmic-950/70 border border-white/10 text-white placeholder-slate-500 focus:border-gold-400 focus:outline-none text-sm transition-all"
+                />
+              </div>
 
-                  {/* Gender */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                      Gender
-                    </label>
-                    <select
-                      value={gender}
-                      onChange={(e) => setGender(e.target.value)}
-                      className="w-full px-4 py-3 rounded-2xl bg-cosmic-950/70 border border-white/10 text-white focus:border-gold-400 focus:outline-none text-sm transition-all"
-                    >
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                      <option value="Non-binary / Other">Non-binary / Other</option>
-                    </select>
-                  </div>
+              {/* Gender */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                  Gender
+                </label>
+                <select
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl bg-cosmic-950/70 border border-white/10 text-white focus:border-gold-400 focus:outline-none text-sm transition-all"
+                >
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Non-binary / Other">Non-binary / Other</option>
+                </select>
+              </div>
 
-                  {/* Date of Birth */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-gold-400" />
-                      Date of Birth <span className="text-gold-400">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={dob}
-                      onChange={(e) => setDob(e.target.value)}
-                      className="w-full px-4 py-3 rounded-2xl bg-cosmic-950/70 border border-white/10 text-white focus:border-gold-400 focus:outline-none text-sm transition-all"
-                    />
-                  </div>
+              {/* Date of Birth */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-gold-400" />
+                  Date of Birth <span className="text-gold-400">*</span>
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={dob}
+                  onChange={(e) => setDob(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl bg-cosmic-950/70 border border-white/10 text-white focus:border-gold-400 focus:outline-none text-sm transition-all"
+                />
+              </div>
 
-                  {/* Time of Birth */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-gold-400" />
-                      Time of Birth
-                    </label>
-                    <input
-                      type="time"
-                      value={tob}
-                      onChange={(e) => setTob(e.target.value)}
-                      className="w-full px-4 py-3 rounded-2xl bg-cosmic-950/70 border border-white/10 text-white focus:border-gold-400 focus:outline-none text-sm transition-all"
-                    />
-                  </div>
+              {/* Time of Birth */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-gold-400" />
+                  Time of Birth (Optional)
+                </label>
+                <input
+                  type="time"
+                  value={tob}
+                  onChange={(e) => setTob(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl bg-cosmic-950/70 border border-white/10 text-white focus:border-gold-400 focus:outline-none text-sm transition-all"
+                />
+              </div>
 
-                  {/* Place of Birth */}
-                  <div className="sm:col-span-2 space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 text-gold-400" />
-                      Place of Birth (City, Country) <span className="text-gold-400">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={pob}
-                      onChange={(e) => setPob(e.target.value)}
-                      placeholder="e.g. Mumbai, India or London, UK"
-                      className="w-full px-4 py-3 rounded-2xl bg-cosmic-950/70 border border-white/10 text-white placeholder-slate-500 focus:border-gold-400 focus:outline-none text-sm transition-all"
-                    />
-                  </div>
-                </div>
+              {/* Place of Birth */}
+              <div className="sm:col-span-2 space-y-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-gold-400" />
+                  Place of Birth (City, Country) <span className="text-gold-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={pob}
+                  onChange={(e) => setPob(e.target.value)}
+                  placeholder="e.g. Mumbai, India or London, UK"
+                  className="w-full px-4 py-3 rounded-2xl bg-cosmic-950/70 border border-white/10 text-white placeholder-slate-500 focus:border-gold-400 focus:outline-none text-sm transition-all"
+                />
+              </div>
+            </div>
 
-                <div className="pt-4 flex justify-end">
+            {/* Life Focus Area */}
+            <div className="space-y-2 pt-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                Primary Life Focus Area
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {focusOptions.map((f, i) => (
                   <button
                     type="button"
-                    onClick={() => {
-                      if (!name || !dob || !pob) {
-                        setError("Please fill in Name, Date of Birth, and Place of Birth.");
-                        return;
-                      }
-                      setError(null);
-                      setStep(2);
-                    }}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs font-bold uppercase tracking-wider text-cosmic-950 bg-gradient-to-r from-gold-300 to-amber-400 hover:shadow-lg hover:shadow-gold-500/30 transition-all"
+                    key={i}
+                    onClick={() => setLifeFocus(f)}
+                    className={`p-3 rounded-2xl text-left text-xs font-medium border transition-all ${
+                      lifeFocus === f
+                        ? "bg-gold-500/15 text-gold-200 border-gold-500/40 shadow-sm shadow-gold-500/20"
+                        : "bg-white/[0.02] text-slate-300 border-white/5 hover:border-gold-500/20"
+                    }`}
                   >
-                    Continue to Question <ArrowRight className="w-4 h-4" />
+                    {f}
                   </button>
-                </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Specific Question */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                <HelpCircle className="w-3.5 h-3.5 text-gold-400" />
+                Your Deepest Question for REKHA <span className="text-gold-400">*</span>
+              </label>
+              <textarea
+                rows={3}
+                required
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+                placeholder="Ask clearly about timing, business, career pivot, relationship compatibility, or karmic lessons..."
+                className="w-full px-4 py-3 rounded-2xl bg-cosmic-950/70 border border-white/10 text-white placeholder-slate-500 focus:border-gold-400 focus:outline-none text-sm transition-all resize-none"
+              />
+
+              {/* Quick Suggestion Pills */}
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {quickQuestions.map((q, idx) => (
+                  <button
+                    type="button"
+                    key={idx}
+                    onClick={() => setQuestion(q)}
+                    className="text-[11px] px-2.5 py-1 rounded-full bg-white/[0.03] hover:bg-gold-500/10 text-slate-400 hover:text-gold-300 border border-white/5 hover:border-gold-500/20 transition-all text-left"
+                  >
+                    + {q}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-4 flex justify-end w-full">
+              <button
+                type="button"
+                onClick={() => {
+                  if (!name.trim() || !dob || !pob.trim() || !question.trim()) {
+                    setError("Please fill in Name, Date of Birth, Place of Birth, and your Question.");
+                    return;
+                  }
+                  setError(null);
+                  setStep(2);
+                }}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full text-xs font-bold uppercase tracking-wider text-cosmic-950 bg-gradient-to-r from-gold-300 to-amber-400 hover:shadow-lg hover:shadow-gold-500/30 transition-all"
+              >
+                <span>Continue to Palm Upload</span>
+                <ArrowRight className="w-4 h-4 shrink-0" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 2: Dedicated Palm Photo Upload Screen */}
+        {step === 2 && (
+          <div className="space-y-6 animate-fadeIn">
+            {/* Guidelines Banner */}
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-gold-500/10 border border-gold-500/25 text-xs text-gold-200 flex items-start gap-2.5 sm:gap-3">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-gold-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="text-white block mb-0.5">Palm Photo Guidelines for Accurate AI Vision:</strong>
+                <span>Hold your palm flat with fingers slightly open. Take photo in clean daylight or soft light. Avoid heavy shadows, camera flash glare, or hand motion blur.</span>
+              </div>
+            </div>
+
+            {/* Re-use saved photos button if logged in */}
+            {isLoggedIn && user?.savedLeftPalm && (
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-3 rounded-xl bg-cosmic-950 border border-emerald-500/30 text-xs text-slate-300">
+                <span className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>Your previously saved palm photos are ready.</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (user.savedLeftPalm) {
+                      setLeftPalmBase64(user.savedLeftPalm);
+                      setLeftPreview(user.savedLeftPalm);
+                    }
+                    if (user.savedRightPalm) {
+                      setRightPalmBase64(user.savedRightPalm);
+                      setRightPreview(user.savedRightPalm);
+                    }
+                  }}
+                  className="w-full sm:w-auto text-center px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold hover:bg-emerald-500/30 transition-all text-[11px]"
+                >
+                  Reload Saved Photos
+                </button>
               </div>
             )}
 
-            {/* STEP 2: Question & Life Focus */}
-            {step === 2 && (
-              <div className="space-y-6 animate-fadeIn">
-                {/* Life Focus Pills */}
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                    Select Your Life Focus Area
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {focusOptions.map((f, i) => (
-                      <button
-                        type="button"
-                        key={i}
-                        onClick={() => setLifeFocus(f)}
-                        className={`p-3 rounded-2xl text-left text-xs font-medium border transition-all ${
-                          lifeFocus === f
-                            ? "bg-gold-500/15 text-gold-200 border-gold-500/40 shadow-sm shadow-gold-500/20"
-                            : "bg-white/[0.02] text-slate-300 border-white/5 hover:border-gold-500/20"
-                        }`}
-                      >
-                        {f}
-                      </button>
-                    ))}
+            {/* Two Column Upload Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+              {/* LEFT PALM CARD */}
+              <div className="p-4 sm:p-5 rounded-3xl bg-cosmic-950/70 border border-white/10 hover:border-gold-500/30 transition-all space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-bold text-white font-serif">Left Palm</h4>
+                    <span className="text-[11px] text-slate-400">Prarabdha Karma (Inborn Potential)</span>
                   </div>
-                </div>
-
-                {/* Specific Question */}
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center justify-between">
-                    <span>What is your specific question for REKHA? *</span>
-                    <span className="text-[11px] text-gold-400 lowercase font-normal">
-                      be honest &amp; specific
+                  {leftPreview ? (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      Uploaded ✓
                     </span>
-                  </label>
-                  <textarea
-                    required
-                    rows={4}
-                    value={question}
-                    onChange={(e) => setQuestion(e.target.value)}
-                    placeholder="Ask about your career crossroad, marriage prospects, business timing, or emotional blockages..."
-                    className="w-full p-4 rounded-2xl bg-cosmic-950/70 border border-white/10 text-white placeholder-slate-500 focus:border-gold-400 focus:outline-none text-sm transition-all leading-relaxed"
-                  />
+                  ) : (
+                    <span className="text-[10px] text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded-full">
+                      Required
+                    </span>
+                  )}
                 </div>
 
-                {/* Quick question suggestions */}
-                <div className="space-y-2">
-                  <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                    <Zap className="w-3 h-3 text-gold-400" />
-                    Popular Queries:
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    {quickQuestions.map((q, idx) => (
-                      <button
-                        type="button"
-                        key={idx}
-                        onClick={() => setQuestion(q)}
-                        className="text-[11px] px-3 py-1.5 rounded-xl bg-white/5 hover:bg-gold-500/10 text-slate-300 hover:text-gold-200 border border-white/5 hover:border-gold-500/20 text-left transition-all"
-                      >
-                        &ldquo;{q}&rdquo;
-                      </button>
-                    ))}
+                {leftPreview ? (
+                  <div className="relative rounded-2xl overflow-hidden aspect-[4/5] border border-gold-500/30 group">
+                    <img src={leftPreview} alt="Left Palm" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLeftPreview("");
+                        setLeftPalmBase64("");
+                      }}
+                      className="absolute top-2 right-2 p-2 rounded-xl bg-red-950/80 text-red-300 hover:bg-red-900 border border-red-500/30 transition-all opacity-90 group-hover:opacity-100"
+                      title="Remove image"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
-                </div>
-
-                <div className="pt-4 flex items-center justify-between">
-                  <button
-                    type="button"
-                    onClick={() => setStep(1)}
-                    className="text-xs text-slate-400 hover:text-white"
-                  >
-                    Back to Personal Details
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!question.trim()) {
-                        setError("Please enter your question.");
-                        return;
-                      }
-                      setError(null);
-                      setStep(3);
-                    }}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs font-bold uppercase tracking-wider text-cosmic-950 bg-gradient-to-r from-gold-300 to-amber-400 hover:shadow-lg hover:shadow-gold-500/30 transition-all"
-                  >
-                    Continue to Palm Photos <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 3: Palm Photo Upload & Synthesis */}
-            {step === 3 && (
-              <div className="space-y-6 animate-fadeIn">
-                <div className="text-center max-w-md mx-auto space-y-1 mb-6">
-                  <h4 className="text-lg font-bold text-white font-serif">
-                    Upload Palm Photos (Optional but Recommended)
-                  </h4>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    Uploading your left and right palms enables REKHA&apos;s neural vision to cross-reference mount elevations and sacred markings (Matsya, Trishul) with your Kundali.
-                  </p>
-                </div>
-
-                {/* Upload Cards Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Left Palm */}
-                  <div className="p-4 rounded-2xl bg-cosmic-950/60 border border-white/10 hover:border-gold-500/30 transition-all text-center space-y-3">
-                    <div className="text-xs font-bold uppercase tracking-wider text-gold-300">
-                      Left Palm (Inborn Potential)
+                ) : (
+                  <div className="rounded-2xl border-2 border-dashed border-white/15 p-5 sm:p-6 text-center space-y-3 hover:border-gold-500/40 transition-all">
+                    <div className="w-11 h-11 mx-auto rounded-2xl bg-gold-500/10 text-gold-400 flex items-center justify-center">
+                      <Upload className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-300 font-medium">Upload Left Palm Photo</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">JPG, PNG, WebP up to 10MB</p>
                     </div>
 
-                    {leftPreview ? (
-                      <div className="relative w-full h-40 rounded-xl overflow-hidden border border-gold-500/40">
-                        <img
-                          src={leftPreview}
-                          alt="Left Palm Preview"
-                          className="w-full h-full object-cover"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setLeftPalmBase64("");
-                            setLeftPreview("");
-                          }}
-                          className="absolute top-2 right-2 bg-cosmic-950/80 text-xs px-2 py-1 rounded-md text-red-300 border border-red-500/30"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ) : (
-                      <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-white/15 rounded-xl cursor-pointer hover:border-gold-400/50 hover:bg-gold-500/[0.02] transition-all">
-                        <Upload className="w-6 h-6 text-gold-400 mb-1" />
-                        <span className="text-xs font-medium text-slate-300">
-                          Upload Left Palm
-                        </span>
-                        <span className="text-[10px] text-slate-500">
-                          JPG, PNG up to 8MB
-                        </span>
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2 pt-1 w-full">
+                      <label className="cursor-pointer flex-1 py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 text-xs font-semibold transition-all flex items-center justify-center gap-1.5 text-center">
+                        <Upload className="w-3.5 h-3.5 text-gold-400 shrink-0" />
+                        <span>Browse File</span>
                         <input
                           type="file"
                           accept="image/*"
+                          className="hidden"
                           onChange={(e) => handleFileUpload(e, "left")}
-                          className="hidden"
                         />
                       </label>
-                    )}
-                  </div>
-
-                  {/* Right Palm */}
-                  <div className="p-4 rounded-2xl bg-cosmic-950/60 border border-white/10 hover:border-gold-500/30 transition-all text-center space-y-3">
-                    <div className="text-xs font-bold uppercase tracking-wider text-gold-300">
-                      Right Palm (Active Destiny)
-                    </div>
-
-                    {rightPreview ? (
-                      <div className="relative w-full h-40 rounded-xl overflow-hidden border border-gold-500/40">
-                        <img
-                          src={rightPreview}
-                          alt="Right Palm Preview"
-                          className="w-full h-full object-cover"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setRightPalmBase64("");
-                            setRightPreview("");
-                          }}
-                          className="absolute top-2 right-2 bg-cosmic-950/80 text-xs px-2 py-1 rounded-md text-red-300 border border-red-500/30"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ) : (
-                      <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-white/15 rounded-xl cursor-pointer hover:border-gold-400/50 hover:bg-gold-500/[0.02] transition-all">
-                        <Upload className="w-6 h-6 text-gold-400 mb-1" />
-                        <span className="text-xs font-medium text-slate-300">
-                          Upload Right Palm
-                        </span>
-                        <span className="text-[10px] text-slate-500">
-                          JPG, PNG up to 8MB
-                        </span>
+                      <label className="cursor-pointer flex-1 py-2 px-3 rounded-xl bg-gold-500/10 hover:bg-gold-500/20 text-gold-300 border border-gold-500/30 text-xs font-semibold transition-all flex items-center justify-center gap-1.5 text-center">
+                        <Camera className="w-3.5 h-3.5 shrink-0" />
+                        <span>Camera</span>
                         <input
                           type="file"
                           accept="image/*"
-                          onChange={(e) => handleFileUpload(e, "right")}
+                          capture="environment"
                           className="hidden"
+                          onChange={(e) => handleFileUpload(e, "left")}
                         />
                       </label>
-                    )}
+                    </div>
                   </div>
+                )}
+              </div>
+
+              {/* RIGHT PALM CARD */}
+              <div className="p-4 sm:p-5 rounded-3xl bg-cosmic-950/70 border border-white/10 hover:border-gold-500/30 transition-all space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-bold text-white font-serif">Right Palm</h4>
+                    <span className="text-[11px] text-slate-400">Kriyamana Karma (Active Destiny)</span>
+                  </div>
+                  {rightPreview ? (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      Uploaded ✓
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded-full">
+                      Required
+                    </span>
+                  )}
                 </div>
 
-                <div className="p-4 rounded-2xl bg-gold-500/5 border border-gold-500/20 text-xs text-slate-300 flex items-start gap-2.5">
-                  <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                  <span>
-                    Your photos are analyzed privately with encrypted end-to-end security. Even if you skip photo upload, REKHA will generate a complete Sidereal Vedic Kundali &amp; Dasha reading.
-                  </span>
+                {rightPreview ? (
+                  <div className="relative rounded-2xl overflow-hidden aspect-[4/5] border border-gold-500/30 group">
+                    <img src={rightPreview} alt="Right Palm" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRightPreview("");
+                        setRightPalmBase64("");
+                      }}
+                      className="absolute top-2 right-2 p-2 rounded-xl bg-red-950/80 text-red-300 hover:bg-red-900 border border-red-500/30 transition-all opacity-90 group-hover:opacity-100"
+                      title="Remove image"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border-2 border-dashed border-white/15 p-5 sm:p-6 text-center space-y-3 hover:border-gold-500/40 transition-all">
+                    <div className="w-11 h-11 mx-auto rounded-2xl bg-gold-500/10 text-gold-400 flex items-center justify-center">
+                      <Upload className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-300 font-medium">Upload Right Palm Photo</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">JPG, PNG, WebP up to 10MB</p>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2 pt-1 w-full">
+                      <label className="cursor-pointer flex-1 py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 text-xs font-semibold transition-all flex items-center justify-center gap-1.5 text-center">
+                        <Upload className="w-3.5 h-3.5 text-gold-400 shrink-0" />
+                        <span>Browse File</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleFileUpload(e, "right")}
+                        />
+                      </label>
+                      <label className="cursor-pointer flex-1 py-2 px-3 rounded-xl bg-gold-500/10 hover:bg-gold-500/20 text-gold-300 border border-gold-500/30 text-xs font-semibold transition-all flex items-center justify-center gap-1.5 text-center">
+                        <Camera className="w-3.5 h-3.5 shrink-0" />
+                        <span>Camera</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          className="hidden"
+                          onChange={(e) => handleFileUpload(e, "right")}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Navigation Buttons */}
+            <div className="pt-4 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-5 py-3 rounded-full text-xs font-medium text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-center"
+              >
+                <ArrowLeft className="w-4 h-4 shrink-0" />
+                <span>Back to Details</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (!leftPalmBase64 && !rightPalmBase64) {
+                    if (
+                      !confirm(
+                        "You haven't uploaded palm photos. REKHA works best when analyzing your real hand photos with AI Vision. Proceed anyway with Vedic Kundali only?"
+                      )
+                    ) {
+                      return;
+                    }
+                  }
+                  setError(null);
+                  setStep(3);
+                }}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full text-xs font-bold uppercase tracking-wider text-cosmic-950 bg-gradient-to-r from-gold-300 to-amber-400 hover:shadow-lg hover:shadow-gold-500/30 transition-all text-center"
+              >
+                <span>Continue to Review</span>
+                <ArrowRight className="w-4 h-4 shrink-0" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3: Review Screen */}
+        {step === 3 && (
+          <div className="space-y-6 animate-fadeIn">
+            <div className="text-center max-w-lg mx-auto mb-2">
+              <h4 className="text-lg sm:text-xl font-bold font-serif text-white">Review Your Consultation Dossier</h4>
+              <p className="text-xs text-slate-400 mt-1">
+                Please verify your details and uploaded palm photos before REKHA initiates the deep multimodal vision pipeline.
+              </p>
+            </div>
+
+            {/* Native Profile Summary Card */}
+            <div className="p-4 sm:p-5 rounded-3xl bg-cosmic-950/70 border border-white/10 space-y-4">
+              <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gold-400">
+                  <User className="w-4 h-4" /> Native Identity
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="text-[11px] text-slate-400 hover:text-gold-300 underline"
+                >
+                  Edit Details
+                </button>
+              </div>
 
-                <div className="pt-4 flex items-center justify-between">
-                  <button
-                    type="button"
-                    onClick={() => setStep(2)}
-                    className="text-xs text-slate-400 hover:text-white"
-                  >
-                    Back to Question
-                  </button>
-
-                  <button
-                    type="submit"
-                    className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full text-xs font-bold uppercase tracking-wider text-cosmic-950 bg-gradient-to-r from-gold-300 via-gold-400 to-amber-300 shadow-xl shadow-gold-500/30 hover:shadow-gold-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    Reveal My Destiny with REKHA
-                  </button>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div>
+                  <div className="text-[11px] text-slate-400">Name</div>
+                  <div className="text-white font-bold mt-0.5 truncate">{name}</div>
+                </div>
+                <div>
+                  <div className="text-[11px] text-slate-400">Gender</div>
+                  <div className="text-white font-bold mt-0.5">{gender}</div>
+                </div>
+                <div>
+                  <div className="text-[11px] text-slate-400">Date of Birth</div>
+                  <div className="text-white font-bold mt-0.5 truncate">{dob} {tob ? `(${tob})` : ""}</div>
+                </div>
+                <div>
+                  <div className="text-[11px] text-slate-400">Place of Birth</div>
+                  <div className="text-white font-bold mt-0.5 truncate">{pob}</div>
                 </div>
               </div>
-            )}
-          </form>
+
+              <div className="pt-2 border-t border-white/5">
+                <div className="text-[11px] text-slate-400">Core Life Focus &amp; Question:</div>
+                <div className="text-xs text-gold-300 font-semibold mt-0.5">{lifeFocus}</div>
+                <div className="text-xs text-slate-200 italic mt-1 bg-white/[0.02] p-2.5 rounded-xl border border-white/5 break-words">
+                  &ldquo;{question}&rdquo;
+                </div>
+              </div>
+            </div>
+
+            {/* Palm Photos Review Strip */}
+            <div className="p-4 sm:p-5 rounded-3xl bg-cosmic-950/70 border border-white/10 space-y-3">
+              <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gold-400">
+                  <Eye className="w-4 h-4" /> Uploaded Palm Scans
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  className="text-[11px] text-slate-400 hover:text-gold-300 underline"
+                >
+                  Change Photos
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                {/* Left Thumbnail */}
+                <div className="space-y-1.5 text-center">
+                  <div className="text-[11px] font-bold text-slate-300">Left Palm (Prarabdha)</div>
+                  {leftPreview ? (
+                    <div className="aspect-[4/5] rounded-2xl overflow-hidden border border-gold-500/30 max-h-48 mx-auto">
+                      <img src={leftPreview} alt="Left Preview" className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="aspect-[4/5] rounded-2xl border border-dashed border-white/10 flex items-center justify-center text-xs text-slate-500 max-h-48 mx-auto">
+                      No Photo
+                    </div>
+                  )}
+                </div>
+
+                {/* Right Thumbnail */}
+                <div className="space-y-1.5 text-center">
+                  <div className="text-[11px] font-bold text-slate-300">Right Palm (Kriyamana)</div>
+                  {rightPreview ? (
+                    <div className="aspect-[4/5] rounded-2xl overflow-hidden border border-gold-500/30 max-h-48 mx-auto">
+                      <img src={rightPreview} alt="Right Preview" className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="aspect-[4/5] rounded-2xl border border-dashed border-white/10 flex items-center justify-center text-xs text-slate-500 max-h-48 mx-auto">
+                      No Photo
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Privacy & Auto-cleanup note */}
+            <div className="flex items-center justify-center gap-2 text-[11px] sm:text-xs text-slate-400 text-center px-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>Photos are analyzed in real-time and auto-deleted from hosting server after processing.</span>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="pt-2 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
+              <button
+                type="button"
+                onClick={() => setStep(2)}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-5 py-3 rounded-full text-xs font-medium text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-center"
+              >
+                <ArrowLeft className="w-4 h-4 shrink-0" />
+                <span>Back to Photos</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleFinalSubmit}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full text-xs sm:text-sm font-black uppercase tracking-wider text-cosmic-950 bg-gradient-to-r from-gold-300 via-gold-400 to-amber-300 hover:shadow-xl hover:shadow-gold-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all text-center"
+              >
+                <span>Start My Reading</span>
+                <Sparkles className="w-4 h-4 shrink-0" />
+              </button>
+            </div>
+          </div>
         )}
       </div>
+
+      {/* Auth Modal for 1-Click Login */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
     </div>
   );
 }
