@@ -31,13 +31,18 @@ function getBasicAuthHeader(): string {
   return `Basic ${Buffer.from(credentials).toString("base64")}`;
 }
 
+export interface WordPressMediaUploadResult {
+  id: number;
+  url: string;
+}
+
 /**
  * Upload palm image file to WordPress Media Library
  */
 export async function uploadPalmToWordPress(
   base64Data: string,
   filename: string
-): Promise<string | null> {
+): Promise<WordPressMediaUploadResult | null> {
   try {
     const match = base64Data.match(/^data:([^;]+);base64,(.+)$/);
     if (!match) {
@@ -66,10 +71,39 @@ export async function uploadPalmToWordPress(
     }
 
     const data = await res.json();
-    return data.source_url || null;
+    return {
+      id: data.id,
+      url: data.source_url || "",
+    };
   } catch (err) {
     console.error("WordPress media upload failed:", err);
     return null;
+  }
+}
+
+/**
+ * Delete media file from WordPress hosting after vision analysis completes
+ */
+export async function deleteMediaFromWordPress(mediaId: number): Promise<boolean> {
+  try {
+    const endpoint = `${WP_URL.replace(/\/+$/, "")}/wp-json/wp/v2/media/${mediaId}?force=true`;
+    const res = await fetch(endpoint, {
+      method: "DELETE",
+      headers: {
+        Authorization: getBasicAuthHeader(),
+      },
+    });
+
+    if (!res.ok) {
+      console.warn(`WordPress media delete returned status ${res.status}`);
+      return false;
+    }
+
+    console.log(`Successfully deleted palm photo ${mediaId} from WordPress hosting.`);
+    return true;
+  } catch (err) {
+    console.error(`Failed to delete media ${mediaId} from WordPress:`, err);
+    return false;
   }
 }
 

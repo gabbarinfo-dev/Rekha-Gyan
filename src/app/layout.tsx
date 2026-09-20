@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Cinzel, Outfit } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
@@ -16,6 +16,13 @@ const outfit = Outfit({
   variable: "--font-outfit",
   display: "swap",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#06050e",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://rekhagyan.online"),
@@ -41,7 +48,7 @@ export const metadata: Metadata = {
     url: "https://rekhagyan.online",
     title: "REKHA — World's First Authentic AI Palmist & Vedic Astrologer",
     description:
-      "Jhoote babao aur galat horoscopes sunn-sunn ke pareshan hain? Meet REKHA — 50+ authentic classical Palmistry & Vedic texts analyzed minute-by-minute.",
+      "Fake babao aur galat horoscopes sunn-sunn ke pareshan hain? Meet REKHA — 50+ authentic classical Palmistry & Vedic texts analyzed minute-by-minute.",
     siteName: "REKHA GYAN",
     images: [
       {
@@ -62,6 +69,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { AuthProvider } from "@/lib/auth-context";
+
 export default function RootLayout({
   children,
 }: {
@@ -69,11 +78,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${cinzel.variable} ${outfit.variable} scroll-smooth`}>
-      <body className="font-sans min-h-screen flex flex-col bg-cosmic-950 text-slate-100">
-        <CosmicBackground />
-        <Navbar />
-        <main className="flex-grow relative z-10">{children}</main>
-        <Footer />
+      <body className="font-sans min-h-screen flex flex-col bg-cosmic-950 text-slate-100 overflow-x-hidden w-full max-w-full">
+        <AuthProvider>
+          <CosmicBackground />
+          <Navbar />
+          <main className="flex-grow relative z-10 w-full max-w-full overflow-x-hidden pt-20">{children}</main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

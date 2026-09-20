@@ -42,61 +42,65 @@ export default function HomePage() {
 
   return (
     <div className="relative overflow-hidden">
+      {/* Ambient background celestial orbs for dynamic mobile/desktop feel */}
+      <div className="absolute top-12 left-1/4 w-72 sm:w-96 h-72 sm:h-96 rounded-full bg-gold-500/10 blur-[100px] pointer-events-none animate-pulse-glow" />
+      <div className="absolute top-1/3 right-10 w-64 sm:w-80 h-64 sm:h-80 rounded-full bg-purple-600/15 blur-[100px] pointer-events-none animate-float-slow" />
+
       {/* HERO SECTION */}
-      <section className="relative pt-12 pb-20 sm:pt-20 sm:pb-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+      <section className="relative pt-8 pb-14 sm:pt-20 sm:pb-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center">
           {/* Left Column: Hook Copy & Call-To-Actions */}
-          <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
+          <div className="lg:col-span-7 space-y-5 sm:space-y-6 text-center lg:text-left">
             {/* Persuasive Hook Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold-500/10 border border-gold-500/25 text-gold-300 text-xs sm:text-sm font-semibold shadow-inner">
-              <Sparkles className="w-4 h-4 text-gold-400" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-gold-500/10 border border-gold-500/25 text-gold-300 text-xs sm:text-sm font-semibold shadow-inner shadow-gold-500/10 animate-float-slow">
+              <Sparkles className="w-4 h-4 text-gold-400 shrink-0 animate-spin-slow" />
               <span>Duniya Ka Pehla 50+ Source AI Palmist &amp; Astrologer</span>
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight font-serif leading-[1.15]">
-              Jhoote Babao Aur Galat Horoscopes Se Pareshan Hain?{" "}
-              <span className="block mt-2 bg-gradient-to-r from-gold-300 via-gold-400 to-amber-200 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-4xl lg:text-6xl font-extrabold text-white tracking-tight font-serif leading-tight sm:leading-[1.15]">
+              Fake Babao Aur Galat Horoscopes Se Pareshan Hain?{" "}
+              <span className="block mt-1 sm:mt-2 bg-gradient-to-r from-gold-300 via-gold-400 to-amber-200 bg-clip-text text-transparent">
                 Meet REKHA.
               </span>
             </h1>
 
             {/* Subtitle / Value Proposition */}
-            <p className="text-base sm:text-lg text-slate-300 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+            <p className="text-sm sm:text-lg text-slate-300 leading-relaxed max-w-2xl mx-auto lg:mx-0">
               Poore bramhand aur duniya ke <strong>50+ authentic classical Palmistry &amp; Vedic texts</strong> ko minute-by-minute analyze karke aapka accurate horoscope aur palm reading batane wali pehli authentic AI.
             </p>
 
             {/* Quick Proof Points */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 max-w-lg mx-auto lg:mx-0">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 pt-2 max-w-lg mx-auto lg:mx-0">
               <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/5 text-left">
-                <div className="text-gold-400 font-bold text-sm">50+ Texts</div>
-                <div className="text-[11px] text-slate-400">Brihat Samhita &amp; More</div>
+                <div className="text-gold-400 font-bold text-xs sm:text-sm">50+ Texts</div>
+                <div className="text-[10px] sm:text-[11px] text-slate-400">Brihat Samhita &amp; More</div>
               </div>
               <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/5 text-left">
-                <div className="text-emerald-400 font-bold text-sm">Vision AI</div>
-                <div className="text-[11px] text-slate-400">Mounts &amp; Rare Signs</div>
+                <div className="text-emerald-400 font-bold text-xs sm:text-sm">Vision AI</div>
+                <div className="text-[10px] sm:text-[11px] text-slate-400">Mounts &amp; Rare Signs</div>
               </div>
               <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/5 text-left col-span-2 sm:col-span-1">
-                <div className="text-amber-300 font-bold text-sm">100% Honest</div>
-                <div className="text-[11px] text-slate-400">Zero Fear Marketing</div>
+                <div className="text-amber-300 font-bold text-xs sm:text-sm">100% Honest</div>
+                <div className="text-[10px] sm:text-[11px] text-slate-400">Zero Fear Marketing</div>
               </div>
             </div>
 
             {/* CTA Buttons */}
-            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+            <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-3 w-full">
               <a
                 href="#reading-form"
-                className="w-full sm:w-auto px-8 py-4 text-xs sm:text-sm uppercase tracking-wider font-extrabold text-cosmic-950 bg-gradient-to-r from-gold-300 via-gold-400 to-amber-300 rounded-full shadow-xl shadow-gold-500/30 hover:shadow-gold-500/50 hover:scale-[1.03] active:scale-[0.98] transition-all text-center flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 text-xs sm:text-sm uppercase tracking-wider font-extrabold text-cosmic-950 bg-gradient-to-r from-gold-300 via-gold-400 to-amber-300 rounded-full shadow-xl shadow-gold-500/30 hover:shadow-gold-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all text-center flex items-center justify-center gap-2"
               >
                 <span>Get Your Free Reading</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 shrink-0" />
               </a>
 
               <a
                 href="#why-rekha"
-                className="w-full sm:w-auto px-6 py-4 text-xs sm:text-sm font-semibold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-full border border-white/10 transition-all text-center flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-5 sm:px-6 py-3.5 sm:py-4 text-xs sm:text-sm font-semibold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-full border border-white/10 transition-all text-center flex items-center justify-center gap-2"
               >
-                <BookOpen className="w-4 h-4 text-gold-400" />
+                <BookOpen className="w-4 h-4 text-gold-400 shrink-0" />
                 <span>See Why Rekha Is Different</span>
               </a>
             </div>

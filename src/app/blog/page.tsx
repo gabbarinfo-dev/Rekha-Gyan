@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     "Explore classical Samudrika Shastra secrets, rare palm signs (Matsya, Trishul), Saturn dasha career timings, and authentic Vedic astrology wisdom.",
 };
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 export default async function BlogIndexPage() {
   const posts = await getWordPressPosts();

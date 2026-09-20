@@ -280,3 +280,135 @@ export function calculateVedicChart(
     planetaryInfluences,
   };
 }
+
+export interface SynastryResult {
+  person1Name: string;
+  person2Name: string;
+  relation: string;
+  gunaScore: number;
+  gunaMax: number;
+  compatibilityTier: "Divine Alignment (उत्कृष्ट)" | "High Compatibility (श्रेष्ठ)" | "Moderate Compatibility (मध्यम)" | "Karmic Tension (संवेदनशील)";
+  manglikStatus: {
+    person1Manglik: boolean;
+    person2Manglik: boolean;
+    cancelledOrBalanced: boolean;
+    verdict: string;
+  };
+  kutas: {
+    varna: { points: number; max: 1; desc: string };
+    vashya: { points: number; max: 2; desc: string };
+    tara: { points: number; max: 3; desc: string };
+    yoni: { points: number; max: 4; desc: string };
+    grahaMaitri: { points: number; max: 5; desc: string };
+    gana: { points: number; max: 6; desc: string };
+    bhakoot: { points: number; max: 7; desc: string };
+    nadi: { points: number; max: 8; desc: string };
+  };
+  synastrySummary: string;
+  relationshipOutlook: string;
+}
+
+export function calculateSynastry(
+  chart1: VedicChartResult,
+  chart2: VedicChartResult,
+  p1Name: string,
+  p2Name: string,
+  relation: string
+): SynastryResult {
+  // Deterministic Ashta Kuta computation based on Nakshatra & Moon indices
+  const n1 = NAKSHATRAS.findIndex((n) => chart1.nakshatra.includes(n.name));
+  const n2 = NAKSHATRAS.findIndex((n) => chart2.nakshatra.includes(n.name));
+  const idx1 = n1 >= 0 ? n1 : 0;
+  const idx2 = n2 >= 0 ? n2 : 7;
+
+  // 1. Varna (1 pt)
+  const varna1 = idx1 % 4;
+  const varna2 = idx2 % 4;
+  const varnaPts = varna1 >= varna2 ? 1 : 0;
+
+  // 2. Vashya (2 pts)
+  const vashyaDiff = Math.abs(idx1 - idx2) % 5;
+  const vashyaPts = vashyaDiff === 0 || vashyaDiff === 1 ? 2 : vashyaDiff === 2 ? 1 : 0.5;
+
+  // 3. Tara (3 pts) - Destiny & Longevity of Bond
+  const taraVal1 = ((idx2 - idx1 + 27) % 9) + 1;
+  const taraVal2 = ((idx1 - idx2 + 27) % 9) + 1;
+  const goodTaras = [2, 4, 6, 8, 9];
+  const taraPts = (goodTaras.includes(taraVal1) ? 1.5 : 0) + (goodTaras.includes(taraVal2) ? 1.5 : 0);
+
+  // 4. Yoni (4 pts) - Biological & Emotional Chemistry
+  const yoni1 = idx1 % 14;
+  const yoni2 = idx2 % 14;
+  const yoniPts = yoni1 === yoni2 ? 4 : Math.abs(yoni1 - yoni2) <= 3 ? 3 : Math.abs(yoni1 - yoni2) <= 7 ? 2 : 1;
+
+  // 5. Graha Maitri (5 pts) - Mental Friendship of Moon Lords
+  const lordsMatch = chart1.nakshatraLord === chart2.nakshatraLord;
+  const grahaPts = lordsMatch ? 5 : 4;
+
+  // 6. Gana (6 pts) - Temperament (Deva, Manushya, Rakshasa)
+  const gana1 = idx1 % 3;
+  const gana2 = idx2 % 3;
+  const ganaPts = gana1 === gana2 ? 6 : (gana1 === 0 && gana2 === 1) || (gana1 === 1 && gana2 === 0) ? 5 : 1;
+
+  // 7. Bhakoot (7 pts) - Emotional & Financial Health
+  const rashi1 = RASHIS.findIndex((r) => chart1.moonSign.includes(r.split(" ")[0]));
+  const rashi2 = RASHIS.findIndex((r) => chart2.moonSign.includes(r.split(" ")[0]));
+  const dist = Math.abs((rashi1 >= 0 ? rashi1 : 0) - (rashi2 >= 0 ? rashi2 : 3));
+  const badDistances = [1, 5, 7]; // 2/12, 6/8, 9/5
+  const bhakootPts = badDistances.includes(dist) ? 0 : 7;
+
+  // 8. Nadi (8 pts) - Genetic, Spiritual & Soul Wave
+  const nadi1 = idx1 % 3;
+  const nadi2 = idx2 % 3;
+  const nadiPts = nadi1 !== nadi2 ? 8 : 0;
+
+  const totalGuna = Math.round(varnaPts + vashyaPts + taraPts + yoniPts + grahaPts + ganaPts + bhakootPts + nadiPts);
+
+  // Compatibility Tier
+  let tier: SynastryResult["compatibilityTier"] = "High Compatibility (श्रेष्ठ)";
+  if (totalGuna >= 28) tier = "Divine Alignment (उत्कृष्ट)";
+  else if (totalGuna >= 21) tier = "High Compatibility (श्रेष्ठ)";
+  else if (totalGuna >= 18) tier = "Moderate Compatibility (मध्यम)";
+  else tier = "Karmic Tension (संवेदनशील)";
+
+  // Manglik analysis
+  const isP1Manglik = ["Mesha", "Vrischika", "Makara"].some((s) => chart1.ascendant.includes(s)) || chart1.nakshatraLord === "Mars";
+  const isP2Manglik = ["Mesha", "Vrischika", "Makara"].some((s) => chart2.ascendant.includes(s)) || chart2.nakshatraLord === "Mars";
+  const cancelled = (isP1Manglik && isP2Manglik) || (!isP1Manglik && !isP2Manglik);
+
+  const manglikVerdict = cancelled
+    ? "Manglik equilibrium is harmoniously balanced. No destructive planetary friction detected."
+    : isP1Manglik
+    ? `${p1Name} carries active Manglik intensity which can be balanced with conscious communication and Jupiter mantras.`
+    : `${p2Name} carries active Manglik energy requiring mindful space and patience during Mars transits.`;
+
+  return {
+    person1Name: p1Name,
+    person2Name: p2Name,
+    relation,
+    gunaScore: totalGuna,
+    gunaMax: 36,
+    compatibilityTier: tier,
+    manglikStatus: {
+      person1Manglik: isP1Manglik,
+      person2Manglik: isP2Manglik,
+      cancelledOrBalanced: cancelled,
+      verdict: manglikVerdict,
+    },
+    kutas: {
+      varna: { points: varnaPts, max: 1, desc: "Ego and spiritual status alignment" },
+      vashya: { points: vashyaPts, max: 2, desc: "Mutual attraction, influence and command" },
+      tara: { points: taraPts, max: 3, desc: "Destiny, health and longevity of connection" },
+      yoni: { points: yoniPts, max: 4, desc: "Intimacy, physical harmony and instincts" },
+      grahaMaitri: { points: grahaPts, max: 5, desc: "Mental compatibility and friendship between Moon lords" },
+      gana: { points: ganaPts, max: 6, desc: "Temperament alignment (Deva, Manushya, Rakshasa)" },
+      bhakoot: { points: bhakootPts, max: 7, desc: "Emotional prosperity and growth together" },
+      nadi: { points: nadiPts, max: 8, desc: "Deepest spiritual, physiological and soul resonance" },
+    },
+    synastrySummary: `Between ${p1Name} (${chart1.moonSign}) and ${p2Name} (${chart2.moonSign}), REKHA detects an Ashta Kuta compatibility of ${totalGuna}/36 Gunas (${tier}). Their planetary rulers (${chart1.nakshatraLord} and ${chart2.nakshatraLord}) create a profound karmic dynamic.`,
+    relationshipOutlook: totalGuna >= 21
+      ? "Strong auspicious alignment for long-term emotional trust and shared life evolution."
+      : "Karmic growth bond that requires intentional transparency and emotional patience.",
+  };
+}
+

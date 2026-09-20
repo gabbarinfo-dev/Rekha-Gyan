@@ -21,9 +21,13 @@ import {
   Info,
   Layers,
   Lock,
+  HeartHandshake,
 } from "lucide-react";
 import ReadingDisplay from "./ReadingDisplay";
 import AuthModal from "./AuthModal";
+import SecondaryPersonModal, { SecondaryPersonData } from "./SecondaryPersonModal";
+import ProfileLockWarningModal from "./ProfileLockWarningModal";
+import PaywallModal, { SubscriptionTierType } from "./PaywallModal";
 import { useAuth } from "@/lib/auth-context";
 
 interface ReadingFormProps {
@@ -31,7 +35,7 @@ interface ReadingFormProps {
 }
 
 export default function ReadingForm({ initialFocus }: ReadingFormProps) {
-  const { user, isLoggedIn, updateProfile } = useAuth();
+  const { user, isLoggedIn, updateProfile, lockPrimaryProfile, consumeQuota, canAskPartnerQuestion } = useAuth();
 
   // Wizard Steps: 1: Basic Details, 2: Dedicated Palm Upload, 3: Review Screen
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -45,12 +49,18 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
   const [lifeFocus, setLifeFocus] = useState(initialFocus || "Career & Wealth Breakthrough");
   const [question, setQuestion] = useState("");
 
+  // Secondary Person / Partner State
+  const [secondaryPerson, setSecondaryPerson] = useState<SecondaryPersonData | null>(null);
+  const [showSecondaryModal, setShowSecondaryModal] = useState(false);
+  const [showLockWarningModal, setShowLockWarningModal] = useState(false);
+  const [showPaywallModal, setShowPaywallModal] = useState(false);
+  const [paywallTargetPlan, setPaywallTargetPlan] = useState<SubscriptionTierType>("trial_99");
+
   // Palm Photos
   const [leftPalmBase64, setLeftPalmBase64] = useState<string>(user?.savedLeftPalm || "");
   const [rightPalmBase64, setRightPalmBase64] = useState<string>(user?.savedRightPalm || "");
   const [leftPreview, setLeftPreview] = useState<string>(user?.savedLeftPalm || "");
   const [rightPreview, setRightPreview] = useState<string>(user?.savedRightPalm || "");
-
 
   // Loading & Results
   const [loading, setLoading] = useState(false);
@@ -94,6 +104,15 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
     "When will I meet my genuine life partner, and how will our bond be?",
     "What specific gemstone and remedies will remove my present financial blockage?",
   ];
+
+  const isRelationshipQuery = (text: string) => {
+    const patterns = [
+      /\b(boyfriend|bf|girlfriend|gf|husband|wife|spouse|partner|fianc[eé]|lover)\b/i,
+      /\b(cheat|cheating|affair|loyalty|honest|faithful)\b/i,
+      /\b(good match|compatibility|compatible|together forever|marry|marriage|shaadi|prem|relationship)\b/i,
+    ];
+    return patterns.some((p) => p.test(text));
+  };
 
   // Image optimization helper (client-side resize for fast uploads & crisp AI vision)
   const processImageFile = (file: File): Promise<string> => {
@@ -200,8 +219,13 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
           question,
           leftPalmBase64: leftPalmBase64 || undefined,
           rightPalmBase64: rightPalmBase64 || undefined,
+          secondaryPerson: secondaryPerson || undefined,
         }),
       });
+
+      if (isLoggedIn) {
+        consumeQuota(secondaryPerson ? "partnerQuestion" : "deepQuestion");
+      }
 
       clearTimeout(timer1);
       clearTimeout(timer2);
@@ -240,6 +264,8 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
         vedicChart={resultData.vedicChart}
         consensus={resultData.consensus}
         pujaVidhi={resultData.pujaVidhi}
+        synastry={resultData.synastry}
+        secondaryPerson={resultData.secondaryPerson}
         onReset={handleReset}
       />
     );
@@ -498,6 +524,51 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
                   </button>
                 ))}
               </div>
+              {/* Partner Synastry Add / Edit Button */}
+              <div className="pt-2">
+                {secondaryPerson ? (
+                  <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <HeartHandshake className="w-4 h-4 text-rose-400 shrink-0" />
+                      <span>
+                        Partner Added for Synastry: <strong className="text-white">{secondaryPerson.name}</strong> ({secondaryPerson.relation})
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowSecondaryModal(true)}
+                        className="text-[11px] text-rose-300 hover:underline"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSecondaryPerson(null)}
+                        className="text-[11px] text-red-400 hover:underline"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (user?.subscriptionPlan === "trial_99") {
+                        setPaywallTargetPlan("duo_599");
+                        setShowPaywallModal(true);
+                      } else {
+                        setShowSecondaryModal(true);
+                      }
+                    }}
+                    className="text-xs px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/25 transition-all flex items-center gap-1.5"
+                  >
+                    <HeartHandshake className="w-3.5 h-3.5" />
+                    <span>+ Add Partner / Second Person for Compatibility &amp; Synastry</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="pt-4 flex justify-end w-full">
@@ -508,6 +579,25 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
                     setError("Please fill in Name, Date of Birth, Place of Birth, and your Question.");
                     return;
                   }
+
+                  // 1. Check if question concerns another person and partner hasn't been added yet
+                  if (isRelationshipQuery(question) && !secondaryPerson) {
+                    if (user?.subscriptionPlan === "trial_99") {
+                      setError("Your question concerns a partner/relationship. Partner synastry is available on the ₹599 Duo Plan or ₹1099 Pro Plan.");
+                      setPaywallTargetPlan("duo_599");
+                      setShowPaywallModal(true);
+                      return;
+                    }
+                    setShowSecondaryModal(true);
+                    return;
+                  }
+
+                  // 2. Check ₹99 plan profile lock warning
+                  if (user?.subscriptionPlan === "trial_99" && !user.primaryProfileLocked) {
+                    setShowLockWarningModal(true);
+                    return;
+                  }
+
                   setError(null);
                   setStep(2);
                 }}
@@ -835,6 +925,43 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
               </div>
             </div>
 
+            {/* Secondary Person Review Strip if present */}
+            {secondaryPerson && (
+              <div className="p-4 sm:p-5 rounded-3xl bg-cosmic-950/70 border border-rose-500/30 space-y-3">
+                <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-rose-300">
+                    <HeartHandshake className="w-4 h-4 text-rose-400" />
+                    <span>Partner Synastry Profile</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowSecondaryModal(true)}
+                    className="text-[11px] text-rose-300 hover:underline"
+                  >
+                    Edit Partner
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                  <div>
+                    <div className="text-[11px] text-slate-400">Name</div>
+                    <div className="text-white font-bold mt-0.5 truncate">{secondaryPerson.name}</div>
+                  </div>
+                  <div>
+                    <div className="text-[11px] text-slate-400">Relation</div>
+                    <div className="text-white font-bold mt-0.5">{secondaryPerson.relation}</div>
+                  </div>
+                  <div>
+                    <div className="text-[11px] text-slate-400">Date of Birth</div>
+                    <div className="text-white font-bold mt-0.5 truncate">{secondaryPerson.dob} {secondaryPerson.tob ? `(${secondaryPerson.tob})` : ""}</div>
+                  </div>
+                  <div>
+                    <div className="text-[11px] text-slate-400">Place of Birth</div>
+                    <div className="text-white font-bold mt-0.5 truncate">{secondaryPerson.pob}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Privacy & Auto-cleanup note */}
             <div className="flex items-center justify-center gap-2 text-[11px] sm:text-xs text-slate-400 text-center px-2">
               <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -864,6 +991,45 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
           </div>
         )}
       </div>
+
+      {/* Secondary Person Details Modal */}
+      <SecondaryPersonModal
+        isOpen={showSecondaryModal}
+        onClose={() => setShowSecondaryModal(false)}
+        onConfirm={(data) => {
+          setSecondaryPerson(data);
+          setError(null);
+        }}
+      />
+
+      {/* Profile Lock Warning Modal (₹99 Plan) */}
+      <ProfileLockWarningModal
+        isOpen={showLockWarningModal}
+        onClose={() => setShowLockWarningModal(false)}
+        profileName={name}
+        onConfirmLock={() => {
+          lockPrimaryProfile();
+          setShowLockWarningModal(false);
+          setStep(2);
+        }}
+        onUpgrade={() => {
+          setShowLockWarningModal(false);
+          setPaywallTargetPlan("duo_599");
+          setShowPaywallModal(true);
+        }}
+      />
+
+      {/* Paywall Modal for 3 Tiers */}
+      <PaywallModal
+        isOpen={showPaywallModal}
+        onClose={() => setShowPaywallModal(false)}
+        defaultPlan={paywallTargetPlan}
+        userName={name}
+        userDob={dob}
+        onSuccess={() => {
+          setShowPaywallModal(false);
+        }}
+      />
 
       {/* Auth Modal for 1-Click Login */}
       <AuthModal

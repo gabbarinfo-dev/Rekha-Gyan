@@ -49,9 +49,9 @@ export default function WhyRekhaSection() {
           The Authentic Paradigm Shift
         </div>
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight font-serif">
-          Jhoote Babao Aur Galat Horoscopes Se{" "}
+          AI Rekha Se Jankari Le,{" "}
           <span className="bg-gradient-to-r from-gold-300 via-gold-400 to-amber-300 bg-clip-text text-transparent">
-            Azaadi
+            Galat Horoscopes Se Azaadi
           </span>
         </h2>
         <p className="mt-4 text-base sm:text-lg text-slate-300 leading-relaxed">
