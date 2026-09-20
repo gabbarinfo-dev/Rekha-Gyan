@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 245 40% 4%;
+    --foreground: 45 30% 96%;
+  }
+
+  body {
+    @apply bg-cosmic-950 text-slate-100 antialiased selection:bg-gold-500/30 selection:text-gold-300;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* Custom Cosmic Glow & Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #06050e;
+}
+::-webkit-scrollbar-thumb {
+  background: #251e44;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #d4af37;
+}
+
+.gold-text-glow {
+  text-shadow: 0 0 20px rgba(212, 175, 55, 0.45);
+}
+
+.cosmic-card {
+  background: radial-gradient(100% 100% at 50% 0%, rgba(36, 18, 66, 0.4) 0%, rgba(14, 12, 34, 0.75) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  backdrop-filter: blur(12px);
+}
+
+.cosmic-card:hover {
+  border-color: rgba(212, 175, 55, 0.4);
+  box-shadow: 0 0 30px rgba(112, 26, 117, 0.25), 0 0 15px rgba(212, 175, 55, 0.15);
+}
+
+.gold-border-glow {
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.35);
+}
+
+/* Shimmer animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(212, 175, 55, 0) 0%,
+    rgba(212, 175, 55, 0.35) 50%,
+    rgba(212, 175, 55, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite;
+}
