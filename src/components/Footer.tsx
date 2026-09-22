@@ -59,8 +59,7 @@ export default function Footer() {
               </li>
               <li>
                 <a href="https://rekhagyan.online" target="_blank" rel="noopener noreferrer" className="hover:text-gold-300 transition-colors flex items-center gap-1 text-gold-400/90">
-                  <span>Main Website (rekhagyan.online)</span>
-                  <span className="text-[10px]">&nearr;</span>
+                  <span>Website: Rekhagyan.online</span>
                 </a>
               </li>
             </ul>
@@ -123,7 +122,12 @@ export default function Footer() {
                 <span>Ahmedabad, Gujarat, India</span>
               </div>
               <div className="pt-2 text-[11px] text-slate-400 border-t border-white/5 space-y-0.5">
-                <div><strong className="text-slate-300">Grievance Officer:</strong> Nishant Dantare</div>
+                <div>
+                  <strong className="text-slate-300">Grievance email:</strong>{" "}
+                  <a href="mailto:grievance@rekhagyan.online" className="text-gold-400 hover:text-gold-300 transition-colors">
+                    grievance@rekhagyan.online
+                  </a>
+                </div>
                 <div><strong className="text-slate-300">Response:</strong> 24-48 Hours</div>
               </div>
             </div>
@@ -138,7 +142,7 @@ export default function Footer() {
             <span>Statutory Disclaimer:</span>
           </div>
           <p className="italic">
-            &ldquo;Astrology &amp; Palmistry readings are based on traditional scriptures and AI synthesis. Readings are provided for guidance and informational/entertainment purposes only. We do not guarantee 100% precision or life outcomes.&rdquo;
+            &ldquo;Astrology &amp; Palmistry readings are based on traditional scriptures and AI synthesis. Readings are provided for guidance and informational/entertainment purposes only. We do not guarantee 100% precision or life outcomes. AI can make mistakes.&rdquo;
           </p>
         </div>
 

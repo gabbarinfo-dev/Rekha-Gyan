@@ -33,7 +33,7 @@ export default function RefundPolicyPage() {
           <span>Strict Non-Refundable Policy for Digital Deliverables</span>
         </div>
         <p className="font-medium text-slate-200">
-          All purchases made on <strong className="text-white">REKHA GYAN</strong> (<a href="https://rekhagyan.online" className="text-gold-300 hover:underline">rekhagyan.online</a> and <a href="https://ai.rekhagyan.online" className="text-gold-300 hover:underline">ai.rekhagyan.online</a>), including single scan tokens, bundled packs, and subscriptions (₹99, ₹599, ₹1099), are <strong className="text-rose-300 uppercase">strictly non-refundable</strong> once payment is processed and computational AI analysis is initiated.
+          All purchases made on <strong className="text-white">REKHA GYAN</strong> (<a href="https://rekhagyan.online" className="text-gold-300 hover:underline">rekhagyan.online</a> and <a href="https://ai.rekhagyan.online" className="text-gold-300 hover:underline">ai.rekhagyan.online</a>), including single scan tokens, bundled packs, and subscriptions (₹99, ₹599, ₹1099), constitute customized digital content and instant AI computational analysis. Due to immediate automated digital delivery, <strong className="text-rose-300 uppercase">no refund is applicable after delivery/generation</strong> under any circumstances.
         </p>
       </div>
 
@@ -51,7 +51,7 @@ export default function RefundPolicyPage() {
               <strong className="text-white">Instant Server &amp; GPU Resource Consumption:</strong> As soon as you complete your purchase and submit palm images or birth credentials, specialized high-performance AI vision models and Vedic algorithms immediately execute complex planetary and palmistry matrix computations on our cloud infrastructure.
             </li>
             <li>
-              <strong className="text-white">Digital Delivery:</strong> Insights, divisional charts, and comprehensive palm analysis reports are delivered in real time to your screen and account dashboard. Because these digital assets cannot be &ldquo;returned&rdquo; or unconsumed, no refunds or chargebacks can be entertained once a report has been generated.
+              <strong className="text-white">Instant Digital Delivery &amp; Non-Refundability:</strong> Insights, divisional charts, and comprehensive palm analysis reports are delivered in real time to your screen and saved to your account. Because personalized digital content and computational AI analysis are irrevocably consumed upon delivery, <strong>refunds and cancellations are strictly non-applicable once the report or reading has been delivered</strong>.
             </li>
           </ul>
         </section>
@@ -128,10 +128,10 @@ export default function RefundPolicyPage() {
           </p>
           <div className="text-xs space-y-1.5 text-slate-300 font-sans pt-1">
             <p><strong className="text-white">Merchant / Brand:</strong> REKHA GYAN</p>
-            <p><strong className="text-white">Support Email:</strong> <a href="mailto:contactus@rekhagyan.online" className="text-gold-400 hover:underline">contactus@rekhagyan.online</a></p>
-            <p><strong className="text-white">Support Phone:</strong> <a href="tel:9274090534" className="text-gold-400 hover:underline">9274090534</a></p>
-            <p><strong className="text-white">Grievance Officer:</strong> Nishant Dantare</p>
-            <p><strong className="text-white">Operational Office Location:</strong> Ahmedabad, Gujarat, India</p>
+            <p><strong className="text-white">Official Support Email:</strong> <a href="mailto:contactus@rekhagyan.online" className="text-gold-400 hover:underline">contactus@rekhagyan.online</a></p>
+            <p><strong className="text-white">Grievance Email:</strong> <a href="mailto:grievance@rekhagyan.online" className="text-gold-400 hover:underline">grievance@rekhagyan.online</a></p>
+            <p><strong className="text-white">Support Phone:</strong> <a href="tel:9274090534" className="text-gold-400 hover:underline">+91 9274090534</a></p>
+            <p><strong className="text-white">Business Address:</strong> Ahmedabad, Gujarat, India</p>
           </div>
         </section>
       </div>

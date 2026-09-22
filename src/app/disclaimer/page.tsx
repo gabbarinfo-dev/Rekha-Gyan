@@ -33,7 +33,7 @@ export default function DisclaimerPage() {
           <span>Statutory Disclosure on Readings</span>
         </div>
         <p className="font-serif text-sm sm:text-base italic text-amber-100 font-medium">
-          &ldquo;Astrology &amp; Palmistry readings are based on traditional scriptures and AI synthesis. Readings are provided for guidance and informational/entertainment purposes only. We do not guarantee 100% precision or life outcomes.&rdquo;
+          &ldquo;Astrology &amp; Palmistry readings are based on traditional scriptures and AI synthesis. Readings are provided for guidance and informational/entertainment purposes only. We do not guarantee 100% precision or life outcomes. AI can make mistakes.&rdquo;
         </p>
       </div>
 
@@ -47,10 +47,10 @@ export default function DisclaimerPage() {
             <h2 className="text-lg font-bold text-gold-300 font-serif">1. Traditional Scripture Synthesis &amp; AI Nature</h2>
           </div>
           <p>
-            REKHA GYAN (<a href="https://rekhagyan.online" className="text-gold-400 hover:underline">rekhagyan.online</a> and <a href="https://ai.rekhagyan.online" className="text-gold-400 hover:underline">ai.rekhagyan.online</a>) utilizes computational artificial intelligence, deep learning pattern recognition, and traditional Sanskrit texts (including Brihat Samhita, Hastasamudrika Shastra, and Vedic Jyotish fundamentals) to formulate interpretations.
+            REKHA GYAN (<a href="https://rekhagyan.online" className="text-gold-400 hover:underline">rekhagyan.online</a> and <a href="https://ai.rekhagyan.online" className="text-gold-400 hover:underline">ai.rekhagyan.online</a>) provides automated, AI-driven computational insights by synthesizing traditional Sanskrit texts (including Brihat Samhita, Hastasamudrika Shastra, and Vedic Jyotish fundamentals) with computer vision and deep learning models.
           </p>
           <p>
-            These algorithmic outputs reflect ancient statistical models and metaphysical lore. They are generated automatically and should never be interpreted as infallible predictions, absolute fatalistic facts, or guarantees of future occurrences.
+            All generated outputs are automated AI-driven insights designed solely for informational, guidance, and educational purposes. Artificial intelligence can make mistakes, and its algorithmic inferences must never be construed as definitive predictions, empirical guarantees, or fatalistic facts.
           </p>
         </section>
 
@@ -104,10 +104,10 @@ export default function DisclaimerPage() {
           <h2 className="text-base font-bold text-gold-300 font-serif">4. Office &amp; Contact Point</h2>
           <div className="text-xs space-y-1.5 text-slate-300 font-sans">
             <p><strong className="text-white">Website:</strong> rekhagyan.online &amp; ai.rekhagyan.online</p>
-            <p><strong className="text-white">Support &amp; Grievance Email:</strong> <a href="mailto:contactus@rekhagyan.online" className="text-gold-400 hover:underline">contactus@rekhagyan.online</a></p>
-            <p><strong className="text-white">Support &amp; Grievance Phone:</strong> <a href="tel:9274090534" className="text-gold-400 hover:underline">9274090534</a></p>
-            <p><strong className="text-white">Grievance Officer:</strong> Nishant Dantare</p>
-            <p><strong className="text-white">Operational Jurisdiction:</strong> Ahmedabad, Gujarat, India</p>
+            <p><strong className="text-white">Official Support Email:</strong> <a href="mailto:contactus@rekhagyan.online" className="text-gold-400 hover:underline">contactus@rekhagyan.online</a></p>
+            <p><strong className="text-white">Grievance Email:</strong> <a href="mailto:grievance@rekhagyan.online" className="text-gold-400 hover:underline">grievance@rekhagyan.online</a></p>
+            <p><strong className="text-white">Support Phone:</strong> <a href="tel:9274090534" className="text-gold-400 hover:underline">+91 9274090534</a></p>
+            <p><strong className="text-white">Business Address &amp; Jurisdiction:</strong> Ahmedabad, Gujarat, India</p>
           </div>
         </section>
       </div>

@@ -63,8 +63,13 @@ export default function PrivacyPage() {
               </p>
             </div>
           </div>
-          <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs">
-            <strong>Zero Reselling &amp; Non-Sharing Pledge:</strong> We do <span className="underline">NOT</span> sell, rent, license, or monetize your palm photographs, personal identities, or birth charts to third-party advertisers, data aggregators, or unauthorized external entities.
+          <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs space-y-2">
+            <p>
+              <strong>Ephemeral Processing &amp; Zero External Storage:</strong> All biometric palm photographs, line vectors, and astrological birth details are processed strictly <em>ephemerally in real-time volatile memory</em> to compute your requested Vedic analysis. Your raw images and astrological coordinates are <strong>never stored on or shared with any external persistent storage or 3rd-party database providers (such as Supabase or third-party cloud data warehouses)</strong>.
+            </p>
+            <p>
+              <strong>Zero Reselling Pledge:</strong> We do <span className="underline">NOT</span> sell, rent, license, or monetize your palm photographs, personal identities, or birth charts to third-party advertisers, data aggregators, or unauthorized external entities.
+            </p>
           </div>
         </section>
 
@@ -118,11 +123,11 @@ export default function PrivacyPage() {
             In compliance with the Information Technology Act 2000, Rules made thereunder, and the DPDP Act 2023, the details of our designated Grievance Officer are as follows:
           </p>
           <div className="text-xs space-y-1.5 text-slate-300 font-sans pt-1">
-            <p><strong className="text-white">Grievance Officer:</strong> Nishant Dantare</p>
-            <p><strong className="text-white">Designation:</strong> Compliance &amp; Data Protection Officer</p>
+            <p><strong className="text-white">Grievance Desk:</strong> Grievance Redressal Cell</p>
+            <p><strong className="text-white">Grievance Email:</strong> <a href="mailto:grievance@rekhagyan.online" className="text-gold-400 hover:underline">grievance@rekhagyan.online</a></p>
             <p><strong className="text-white">Official Support Email:</strong> <a href="mailto:contactus@rekhagyan.online" className="text-gold-400 hover:underline">contactus@rekhagyan.online</a></p>
-            <p><strong className="text-white">Support &amp; Grievance Contact Number:</strong> <a href="tel:9274090534" className="text-gold-400 hover:underline">9274090534</a></p>
-            <p><strong className="text-white">Operational Jurisdiction / City:</strong> Ahmedabad, Gujarat, India</p>
+            <p><strong className="text-white">Support &amp; Helpline Contact:</strong> <a href="tel:9274090534" className="text-gold-400 hover:underline">+91 9274090534</a></p>
+            <p><strong className="text-white">Business Address &amp; Jurisdiction:</strong> Ahmedabad, Gujarat, India</p>
             <p className="text-[11px] text-slate-400 pt-1">
               *Acknowledgment timeline: Within 24 to 48 hours. Redressal timeline: Within 15 calendar days from receipt of grievance.
             </p>

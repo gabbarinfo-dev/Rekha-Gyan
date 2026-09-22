@@ -33,7 +33,7 @@ export default function TermsPage() {
           <span>Statutory Disclaimer &amp; Nature of Service</span>
         </div>
         <p className="italic font-medium">
-          &ldquo;Astrology &amp; Palmistry readings are based on traditional scriptures and AI synthesis. Readings are provided for guidance and informational/entertainment purposes only. We do not guarantee 100% precision or life outcomes.&rdquo;
+          &ldquo;Astrology &amp; Palmistry readings are based on traditional scriptures and AI synthesis. Readings are provided for guidance and informational/entertainment purposes only. We do not guarantee 100% precision or life outcomes. AI can make mistakes.&rdquo;
         </p>
       </div>
 
@@ -52,10 +52,10 @@ export default function TermsPage() {
         <section className="space-y-3 border-b border-white/5 pb-6">
           <h2 className="text-lg font-bold text-gold-300 font-serif">2. Platform Role &amp; Methodology</h2>
           <p>
-            REKHA GYAN is an AI-augmented Vedic synthesis software application. It interprets user-submitted birth data and palm imagery using classical Samudrika Shastra texts and algorithmic astrological principles.
+            REKHA GYAN is an AI-augmented Vedic synthesis software application that provides automated, AI-driven insights for informational and guidance purposes only. It interprets user-submitted birth data and palm imagery using classical Samudrika Shastra texts and computational algorithms.
           </p>
           <p>
-            These interpretations represent probabilistic astrological assessments and symbolic alignments, not deterministic certainties. You remain exclusively responsible for all personal, professional, and lifestyle choices made following any reading.
+            These interpretations represent probabilistic astrological assessments and symbolic alignments, not deterministic certainties. Artificial intelligence can make mistakes; therefore, readings must never replace certified professional advice. You remain exclusively responsible for all personal, professional, and lifestyle choices made following any reading.
           </p>
         </section>
 
@@ -127,10 +127,11 @@ export default function TermsPage() {
         <section className="space-y-3 bg-cosmic-900/80 p-5 rounded-2xl border border-gold-500/20">
           <h2 className="text-base font-bold text-gold-300 font-serif">7. Contact &amp; Grievance Redressal</h2>
           <div className="text-xs space-y-1.5 text-slate-300 font-sans">
-            <p><strong className="text-white">Grievance Officer:</strong> Nishant Dantare</p>
-            <p><strong className="text-white">Support Email:</strong> <a href="mailto:contactus@rekhagyan.online" className="text-gold-400 hover:underline">contactus@rekhagyan.online</a></p>
-            <p><strong className="text-white">Contact Phone:</strong> <a href="tel:9274090534" className="text-gold-400 hover:underline">9274090534</a></p>
-            <p><strong className="text-white">Location:</strong> Ahmedabad, Gujarat, India</p>
+            <p><strong className="text-white">Grievance Desk:</strong> Grievance Redressal Cell</p>
+            <p><strong className="text-white">Official Support Email:</strong> <a href="mailto:contactus@rekhagyan.online" className="text-gold-400 hover:underline">contactus@rekhagyan.online</a></p>
+            <p><strong className="text-white">Grievance Email:</strong> <a href="mailto:grievance@rekhagyan.online" className="text-gold-400 hover:underline">grievance@rekhagyan.online</a></p>
+            <p><strong className="text-white">Contact Phone:</strong> <a href="tel:9274090534" className="text-gold-400 hover:underline">+91 9274090534</a></p>
+            <p><strong className="text-white">Business Address:</strong> Ahmedabad, Gujarat, India</p>
           </div>
         </section>
       </div>

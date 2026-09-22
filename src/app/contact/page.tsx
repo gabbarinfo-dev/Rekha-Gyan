@@ -111,12 +111,18 @@ export default function ContactPage() {
             <div className="p-4 rounded-2xl bg-cosmic-900/90 border border-gold-500/30 space-y-3 text-xs">
               <div className="flex items-center gap-2.5">
                 <User className="w-4 h-4 text-gold-400" />
-                <span className="text-white font-bold text-sm">Nishant Dantare</span>
+                <span className="text-white font-bold text-sm">Grievance Redressal Desk</span>
               </div>
               <div className="space-y-1 text-slate-300">
-                <div className="text-slate-400 text-[11px]">Designation: Grievance Officer &amp; Compliance Lead</div>
+                <div className="text-slate-400 text-[11px]">Designation: Statutory Grievance &amp; Compliance Cell</div>
                 <div>
-                  Email:{" "}
+                  Grievance Email:{" "}
+                  <a href="mailto:grievance@rekhagyan.online" className="text-gold-400 hover:underline font-mono">
+                    grievance@rekhagyan.online
+                  </a>
+                </div>
+                <div>
+                  Support Email:{" "}
                   <a href="mailto:contactus@rekhagyan.online" className="text-gold-400 hover:underline font-mono">
                     contactus@rekhagyan.online
                   </a>
@@ -127,7 +133,7 @@ export default function ContactPage() {
                     +91 9274090534
                   </a>
                 </div>
-                <div>Jurisdiction: Ahmedabad, Gujarat, India</div>
+                <div>Operational Headquarters &amp; Jurisdiction: Ahmedabad, Gujarat, India</div>
               </div>
             </div>
 
