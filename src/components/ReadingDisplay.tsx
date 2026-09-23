@@ -23,10 +23,14 @@ import {
   Eye,
   ShieldAlert,
   HeartHandshake,
+  Globe,
+  Loader2,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage, LanguageType } from "@/lib/language-context";
 import PaywallModal, { SubscriptionTierType } from "./PaywallModal";
+import LanguageSelectionModal from "./LanguageSelectionModal";
 
 interface PujaVidhiData {
   primaryDeity: string;
@@ -103,6 +107,13 @@ export default function ReadingDisplay({
   onReset,
 }: ReadingDisplayProps) {
   const { user } = useAuth();
+  const { language, setLanguage, t, hasChosenLanguage } = useLanguage();
+  const [currentReading, setCurrentReading] = useState(reading);
+  const [currentTeaser, setCurrentTeaser] = useState(freeTeaser);
+  const [activeLang, setActiveLang] = useState<LanguageType>(language);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
+
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
@@ -110,6 +121,50 @@ export default function ReadingDisplay({
   const [unlockedLocally, setUnlockedLocally] = useState(false);
 
   const isUnlocked = user?.isSubscribed || unlockedLocally;
+
+  // Auto popup on Screen 1 if user hasn't explicitly chosen a language
+  React.useEffect(() => {
+    if (!hasChosenLanguage) {
+      const timer = setTimeout(() => {
+        setShowLanguageModal(true);
+      }, 700);
+      return () => clearTimeout(timer);
+    }
+  }, [hasChosenLanguage]);
+
+  // Synchronize on language change
+  const handleLanguageSwitch = async (newLang: LanguageType) => {
+    setLanguage(newLang);
+    if (newLang === activeLang) return;
+    setIsTranslating(true);
+    try {
+      const res = await fetch("/api/translate-reading", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          freeTeaser: currentTeaser,
+          rawMarkdown: currentReading,
+          targetLanguage: newLang,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (data.freeTeaser) setCurrentTeaser(data.freeTeaser);
+        if (data.rawMarkdown) setCurrentReading(data.rawMarkdown);
+        setActiveLang(newLang);
+      }
+    } catch (err) {
+      console.error("Language translation failed:", err);
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (language !== activeLang && !isTranslating) {
+      handleLanguageSwitch(language);
+    }
+  }, [language]);
 
   // Trigger celebratory confetti once mounted
   React.useEffect(() => {
@@ -137,7 +192,7 @@ export default function ReadingDisplay({
       return;
     }
 
-    const cleanText = reading
+    const cleanText = currentReading
       .replace(/[#*`_~[\]()]/g, "")
       .replace(/\n+/g, ". ")
       .slice(0, 3000);
@@ -285,25 +340,87 @@ export default function ReadingDisplay({
 
       {/* FREE MIND-BLOWING TEASER SECTION (Trust Builder & Psychological Mirror) */}
       <div className="cosmic-card rounded-3xl p-4 sm:p-8 border border-gold-500/30 bg-cosmic-950/85 backdrop-blur-xl relative space-y-5 sm:space-y-6 shadow-2xl">
+        {/* Translation Loading Overlay */}
+        {isTranslating && (
+          <div className="absolute inset-0 z-30 rounded-3xl bg-cosmic-950/85 backdrop-blur-md flex flex-col items-center justify-center gap-3 p-6 text-center animate-fadeIn">
+            <Loader2 className="w-9 h-9 text-gold-400 animate-spin" />
+            <div className="text-base font-bold text-white font-serif">
+              REKHA is adapting your reading into {activeLang === "hindi" ? "हिन्दी (Hindi)" : activeLang === "hinglish" ? "Hinglish" : "English"}...
+            </div>
+            <div className="text-xs text-slate-300 max-w-sm">
+              Translating your unique palm lines and planetary alignments in real-time.
+            </div>
+          </div>
+        )}
+
         {/* Section B: Part 1 Main Title & Summary Quote */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gold-400">
               <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>Part 1: Aapka Mukhya Swabhav, Bhootkaal Ki Ghatna &amp; Palm Kundali Rahasya</span>
+              <span>{t.part1Header}</span>
             </div>
             <h3 className="text-lg sm:text-2xl font-serif font-bold text-white mt-1 leading-snug">
-              {freeTeaser?.swabhavHeadline || "Bahar Se Shaant, Andar Se Bhavuk Samundar (The Deep Empath & Intuitive Guardian)"}
+              {currentTeaser?.swabhavHeadline || t.swabhavFallbackHeadline}
             </h3>
           </div>
-          <span className="self-start sm:self-auto px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold tracking-wide uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center gap-1.5 shrink-0">
-            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> 100% Free Instant Analysis
-          </span>
+
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+            {/* Quick In-card Language Switcher */}
+            <div className="inline-flex items-center gap-1 p-1 rounded-full bg-white/5 border border-gold-500/20 text-xs">
+              <button
+                type="button"
+                onClick={() => setShowLanguageModal(true)}
+                className="px-2 py-0.5 rounded-full text-slate-400 hover:text-gold-300 transition-colors flex items-center gap-1 text-[11px]"
+                title="Open detailed language selector"
+              >
+                <Globe className="w-3 h-3 text-gold-400" />
+                <span className="hidden xs:inline">Lang:</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleLanguageSwitch("hinglish")}
+                className={`px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold transition-all ${
+                  activeLang === "hinglish"
+                    ? "bg-gold-500/25 text-gold-300 border border-gold-400/40 shadow-sm"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                💬 Hinglish
+              </button>
+              <button
+                type="button"
+                onClick={() => handleLanguageSwitch("hindi")}
+                className={`px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold transition-all ${
+                  activeLang === "hindi"
+                    ? "bg-gold-500/25 text-gold-300 border border-gold-400/40 shadow-sm"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                🇮🇳 हिन्दी
+              </button>
+              <button
+                type="button"
+                onClick={() => handleLanguageSwitch("english")}
+                className={`px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold transition-all ${
+                  activeLang === "english"
+                    ? "bg-gold-500/25 text-gold-300 border border-gold-400/40 shadow-sm"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                🇬🇧 English
+              </button>
+            </div>
+
+            <span className="px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold tracking-wide uppercase bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center gap-1.5 shrink-0">
+              <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> {t.freeAnalysisBadge}
+            </span>
+          </div>
         </div>
 
         {/* Personalized Emotional Summary Quote */}
         <div className="p-3.5 sm:p-4 rounded-2xl bg-cosmic-900/90 border border-gold-500/25 text-xs sm:text-sm text-amber-100/90 leading-relaxed italic shadow-inner">
-          &ldquo;{freeTeaser?.summaryNarrative || `${userName || "Aap"}, aap ek aisa vyaktitva hain jo doosron ke aansu pochne mein sabse aage rehta hai, lekin apne dard aur bhootkaal ke sangharsh ko duniya se chupane mein maahir hai. Aapka aatma-samman sabse upar hai.`}&rdquo;
+          &ldquo;{currentTeaser?.summaryNarrative || (userName ? `${userName}, ${t.swabhavFallbackQuote}` : t.swabhavFallbackQuote)}&rdquo;
         </div>
 
         {/* Section C: 4 Core Character Cards */}
@@ -313,15 +430,14 @@ export default function ReadingDisplay({
             <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5">
               <span className="text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
                 <MessageSquare className="w-4 h-4 text-amber-400 shrink-0" />
-                <span>Asli Swabhav: Baatuni Ya Introvert?</span>
+                <span>{t.card1Title}</span>
               </span>
               <span className="self-start xs:self-auto text-[9px] sm:text-[10px] uppercase font-bold px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                Selective Expressive
+                {t.card1Badge}
               </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-              {freeTeaser?.introvertExtrovertTrait ||
-                "Log aapko dekhkar aksar galat andaza laga lete hain. Vastavikta yeh hai ki aap 'Selective Talkative' hain — har kisi ke aage aap bilkul chup ya introvert rehte hain, par jin 1-2 doston par aapko bharosa hai unke aage bina ruke dil ki har baat keh dete hain."}
+              {currentTeaser?.introvertExtrovertTrait || t.card1Fallback}
             </p>
           </div>
 
@@ -330,15 +446,14 @@ export default function ReadingDisplay({
             <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5">
               <span className="text-xs font-bold uppercase tracking-wider text-rose-300 flex items-center gap-1.5">
                 <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0" />
-                <span>Bhootkaal Ki Ghatna &amp; Vishwasghaat</span>
+                <span>{t.card2Title}</span>
               </span>
               <span className="self-start xs:self-auto text-[9px] sm:text-[10px] uppercase font-bold px-2 py-0.5 rounded-md bg-rose-500/15 text-rose-300 border border-rose-500/30">
-                Past Betrayal Scar
+                {t.card2Badge}
               </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-              {freeTeaser?.pastGhatnaAndDhokha ||
-                `Aapke haath ki Hriday Rekha aur ${vedicChart.currentMahadasha} dasha darshati hai ki pichle 2 se 4 saalon ke dauran aapne kisi bohot kareebi vyakti se bada vishwasghaat (emotional betrayal / dhokha) jhela hai, jinhone aapke bina shart samarpan ke baad bhi mushkil waqt par akele chhod diya.`}
+              {currentTeaser?.pastGhatnaAndDhokha || t.card2Fallback}
             </p>
           </div>
 
@@ -347,17 +462,15 @@ export default function ReadingDisplay({
             <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5">
               <span className="text-xs font-bold uppercase tracking-wider text-purple-300 flex items-center gap-1.5">
                 <Heart className="w-4 h-4 text-purple-400 shrink-0" />
-                <span>Dil Vs Dimaag Ki Jung &amp; Raat Ka Chintan</span>
+                <span>{t.card3Title}</span>
               </span>
               <span className="self-start xs:self-auto text-[9px] sm:text-[10px] uppercase font-bold px-2 py-0.5 rounded-md bg-purple-500/15 text-purple-300 border border-purple-500/30">
-                Emotional Loyalty
+                {t.card3Badge}
               </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-              {freeTeaser?.heartMindConflict ||
-                "Aap hamesha dimaag ke bajaye dil se faisle lete hain aur doosron ko doosra mauka dekar khud chot khaate hain."}{" "}
-              {freeTeaser?.nightOverthinkingTrait ||
-                "Raat ko bistar par jaate hi dimaag mein baatein ghoomti hain aur purani baatein bhulana aapke liye mushkil hota hai."}
+              {currentTeaser?.heartMindConflict || t.card3Fallback}{" "}
+              {currentTeaser?.nightOverthinkingTrait || ""}
             </p>
           </div>
 
@@ -366,17 +479,15 @@ export default function ReadingDisplay({
             <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5">
               <span className="text-xs font-bold uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
                 <Eye className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Haath Ki Rekhaon Ka Sakshya &amp; 6th Sense</span>
+                <span>{t.card4Title}</span>
               </span>
               <span className="self-start xs:self-auto text-[9px] sm:text-[10px] uppercase font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                High Intuition
+                {t.card4Badge}
               </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-              {freeTeaser?.palmSignsWitness ||
-                `Aapke palm par ${insights.dominantMount} ka ubhaar aur Matri Rekha ka gumaav saaf batata hai ki aap aam bheed se alag hain.`}{" "}
-              {freeTeaser?.secretIntuition ||
-                "Aapka sixth sense bohot tez hai — kisi vyakti se milne ke 2 minute mein hi aapko uski sachai ka aabhaas ho jata hai."}
+              {currentTeaser?.palmSignsWitness || t.card4Fallback}{" "}
+              {currentTeaser?.secretIntuition || ""}
             </p>
           </div>
         </div>
@@ -515,7 +626,7 @@ export default function ReadingDisplay({
           <div className="cosmic-card rounded-3xl p-6 sm:p-10 border border-gold-500/30 bg-cosmic-950/70 backdrop-blur-xl shadow-2xl">
             <div className="prose prose-invert max-w-none prose-headings:font-serif prose-headings:text-gold-300 prose-headings:border-b prose-headings:border-white/10 prose-headings:pb-2 prose-h2:text-2xl prose-h3:text-xl prose-p:text-slate-200 prose-p:leading-relaxed prose-strong:text-amber-200 prose-li:text-slate-200">
               <Markdown>
-                {reading
+                {currentReading
                   .replace(/^```(?:json-teaser|json)?[\s\S]*?```/i, "")
                   .replace(/^\s*\{[\s\S]*?"swabhavHeadline"[\s\S]*?\}\s*/i, "")
                   .trim()}
@@ -620,6 +731,13 @@ export default function ReadingDisplay({
         onSuccess={() => {
           setUnlockedLocally(true);
         }}
+      />
+
+      {/* Language Selection Modal (Auto-triggers on Screen 1 or via Lang button) */}
+      <LanguageSelectionModal
+        isOpen={showLanguageModal}
+        onClose={() => setShowLanguageModal(false)}
+        onLanguageSelected={handleLanguageSwitch}
       />
     </div>
   );

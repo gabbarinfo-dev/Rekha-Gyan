@@ -70,6 +70,7 @@ export const metadata: Metadata = {
 };
 
 import { AuthProvider } from "@/lib/auth-context";
+import { LanguageProvider } from "@/lib/language-context";
 
 export default function RootLayout({
   children,
@@ -80,10 +81,12 @@ export default function RootLayout({
     <html lang="en" className={`${cinzel.variable} ${outfit.variable} scroll-smooth`}>
       <body className="font-sans min-h-screen flex flex-col bg-cosmic-950 text-slate-100 overflow-x-hidden w-full max-w-full">
         <AuthProvider>
-          <CosmicBackground />
-          <Navbar />
-          <main className="flex-grow relative z-10 w-full max-w-full overflow-x-hidden pt-20">{children}</main>
-          <Footer />
+          <LanguageProvider>
+            <CosmicBackground />
+            <Navbar />
+            <main className="flex-grow relative z-10 w-full max-w-full overflow-x-hidden pt-20">{children}</main>
+            <Footer />
+          </LanguageProvider>
         </AuthProvider>
       </body>
     </html>

@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
       leftPalmBase64,
       rightPalmBase64,
       secondaryPerson,
+      language = "hinglish",
     } = body;
 
     if (!name || !dob || !pob || !question) {
@@ -116,6 +117,7 @@ export async function POST(req: NextRequest) {
       consensus,
       secondaryPerson,
       synastry,
+      language,
     });
 
     // Step 6: WordPress Media Auto-Cleanup
@@ -204,6 +206,7 @@ export async function POST(req: NextRequest) {
         leftPalmUploaded: !!leftPalmUrl,
         rightPalmUploaded: !!rightPalmUrl,
       },
+      language,
     });
   } catch (error: any) {
     console.error("Critical error in /api/analyze pipeline:", error);

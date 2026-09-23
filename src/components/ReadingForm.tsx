@@ -22,6 +22,7 @@ import {
   Layers,
   Lock,
   HeartHandshake,
+  Globe,
 } from "lucide-react";
 import ReadingDisplay from "./ReadingDisplay";
 import AuthModal from "./AuthModal";
@@ -29,6 +30,7 @@ import SecondaryPersonModal, { SecondaryPersonData } from "./SecondaryPersonModa
 import ProfileLockWarningModal from "./ProfileLockWarningModal";
 import PaywallModal, { SubscriptionTierType } from "./PaywallModal";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage, LanguageType } from "@/lib/language-context";
 
 interface ReadingFormProps {
   initialFocus?: string;
@@ -36,6 +38,7 @@ interface ReadingFormProps {
 
 export default function ReadingForm({ initialFocus }: ReadingFormProps) {
   const { user, isLoggedIn, updateProfile, lockPrimaryProfile, consumeQuota, canAskPartnerQuestion } = useAuth();
+  const { language, setLanguage, setIsLanguageModalOpen } = useLanguage();
 
   // Wizard Steps: 1: Basic Details, 2: Dedicated Palm Upload, 3: Review Screen
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -235,6 +238,7 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
           pob,
           lifeFocus,
           question,
+          language,
           leftPalmBase64: leftPalmBase64 || undefined,
           rightPalmBase64: rightPalmBase64 || undefined,
           secondaryPerson: secondaryPerson || undefined,
@@ -979,6 +983,57 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
                 </div>
               </div>
             )}
+
+            {/* Preferred Reading Language Strip */}
+            <div className="p-4 sm:p-5 rounded-3xl bg-cosmic-950/70 border border-gold-500/25 space-y-3">
+              <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gold-400">
+                  <Globe className="w-4 h-4" /> Reading Language / भाषा
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsLanguageModalOpen(true)}
+                  className="text-[11px] text-amber-300 hover:underline flex items-center gap-1"
+                >
+                  Change / Examples
+                </button>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setLanguage("hinglish")}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                    language === "hinglish"
+                      ? "bg-gold-500/25 text-gold-300 border border-gold-400/50 shadow-sm"
+                      : "bg-white/5 text-slate-300 border border-white/10 hover:bg-white/10"
+                  }`}
+                >
+                  <span>💬 Hinglish (Default)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLanguage("hindi")}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                    language === "hindi"
+                      ? "bg-gold-500/25 text-gold-300 border border-gold-400/50 shadow-sm"
+                      : "bg-white/5 text-slate-300 border border-white/10 hover:bg-white/10"
+                  }`}
+                >
+                  <span>🇮🇳 हिन्दी (Hindi)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLanguage("english")}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                    language === "english"
+                      ? "bg-gold-500/25 text-gold-300 border border-gold-400/50 shadow-sm"
+                      : "bg-white/5 text-slate-300 border border-white/10 hover:bg-white/10"
+                  }`}
+                >
+                  <span>🇬🇧 English</span>
+                </button>
+              </div>
+            </div>
 
             {/* Privacy & Auto-cleanup note */}
             <div className="flex items-center justify-center gap-2 text-[11px] sm:text-xs text-slate-400 text-center px-2">

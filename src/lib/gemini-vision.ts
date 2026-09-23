@@ -23,6 +23,7 @@ export interface PalmAnalysisRequest {
   pob: string;
   question: string;
   lifeFocus: string;
+  language?: string;
   leftPalmBase64?: string;
   leftPalmUrl?: string;
   rightPalmBase64?: string;
@@ -165,9 +166,27 @@ MANDATORY: In your final reading, you MUST explicitly evaluate the relationship,
 `;
   }
 
+  const requestedLang = (input.language || "hinglish").toLowerCase();
+  const languageInstruction =
+    requestedLang === "hindi"
+      ? `MANDATORY LANGUAGE SPECIFICATION:
+Target Language: PURE HINDI (देवनागरी लिपि).
+- You MUST write ALL text, including every field inside the \`\`\`json-teaser block and every section of the full markdown reading, strictly in PURE HINDI using Devanagari script (e.g., "प्रचंड संकल्प और शांत आत्मा", "आर्यन, आपके पास एक उग्र ऊर्जा है...").
+- Do NOT output English or Romanized words in the body, except for specific planetary numbers or chart references where helpful.`
+      : requestedLang === "english"
+      ? `MANDATORY LANGUAGE SPECIFICATION:
+Target Language: ENGLISH.
+- You MUST write ALL text, including every field inside the \`\`\`json-teaser block and every section of the full markdown reading, in articulate, empathetic, and poetic ENGLISH (e.g., "Fiery Determination with a Soothing Spirit", "Aryan, you possess a fiery drive...").`
+      : `MANDATORY LANGUAGE SPECIFICATION:
+Target Language: HINGLISH (Hindi written using English/Latin alphabet).
+- You MUST write ALL text, including every field inside the \`\`\`json-teaser block and every section of the full markdown reading, in conversational, natural HINGLISH (e.g., "Bahar Se Shaant, Andar Se Bhavuk Samundar", "Aryan, aapke paas ek tejaswi urja hai jo Mangal ke prabhav se aati hai...").
+- Do NOT write in Devanagari script; write Hindi in English alphabet letters.`;
+
   return `
 You are REKHA — The World's First and Most Authentic AI Palmist & Vedic Astrologer (from rekhagyan.online).
 You speak in a warm, deeply empathetic, authoritative, mystical yet rigorously accurate first-person voice ("I am REKHA...").
+
+${languageInstruction}
 
 USER PROFILE:
 - Native's Name: ${name}
