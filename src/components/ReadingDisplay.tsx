@@ -112,7 +112,13 @@ export default function ReadingDisplay({
   const [currentTeaser, setCurrentTeaser] = useState(freeTeaser);
   const [activeLang, setActiveLang] = useState<LanguageType>(language);
   const [isTranslating, setIsTranslating] = useState(false);
+  const [targetTranslatingLang, setTargetTranslatingLang] = useState<LanguageType | null>(null);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
+
+  // Translation cache to ensure instant zero-latency toggling once loaded
+  const [langCache, setLangCache] = useState<Record<string, { teaser: any; markdown: string }>>(() => ({
+    [language]: { teaser: freeTeaser, markdown: reading },
+  }));
 
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -136,7 +142,17 @@ export default function ReadingDisplay({
   const handleLanguageSwitch = async (newLang: LanguageType) => {
     setLanguage(newLang);
     if (newLang === activeLang) return;
+
+    // Instant switch if already cached
+    if (langCache[newLang]) {
+      setCurrentTeaser(langCache[newLang].teaser);
+      setCurrentReading(langCache[newLang].markdown);
+      setActiveLang(newLang);
+      return;
+    }
+
     setIsTranslating(true);
+    setTargetTranslatingLang(newLang);
     try {
       const res = await fetch("/api/translate-reading", {
         method: "POST",
@@ -149,14 +165,21 @@ export default function ReadingDisplay({
       });
       const data = await res.json();
       if (data.success) {
-        if (data.freeTeaser) setCurrentTeaser(data.freeTeaser);
-        if (data.rawMarkdown) setCurrentReading(data.rawMarkdown);
+        const nextTeaser = data.freeTeaser || currentTeaser;
+        const nextMarkdown = data.rawMarkdown || currentReading;
+        setCurrentTeaser(nextTeaser);
+        setCurrentReading(nextMarkdown);
+        setLangCache((prev) => ({
+          ...prev,
+          [newLang]: { teaser: nextTeaser, markdown: nextMarkdown },
+        }));
         setActiveLang(newLang);
       }
     } catch (err) {
       console.error("Language translation failed:", err);
     } finally {
       setIsTranslating(false);
+      setTargetTranslatingLang(null);
     }
   };
 
@@ -345,7 +368,13 @@ export default function ReadingDisplay({
           <div className="absolute inset-0 z-30 rounded-3xl bg-cosmic-950/85 backdrop-blur-md flex flex-col items-center justify-center gap-3 p-6 text-center animate-fadeIn">
             <Loader2 className="w-9 h-9 text-gold-400 animate-spin" />
             <div className="text-base font-bold text-white font-serif">
-              REKHA is adapting your reading into {activeLang === "hindi" ? "हिन्दी (Hindi)" : activeLang === "hinglish" ? "Hinglish" : "English"}...
+              REKHA is adapting your reading into{" "}
+              {(targetTranslatingLang || activeLang) === "hindi"
+                ? "हिन्दी (Hindi)"
+                : (targetTranslatingLang || activeLang) === "hinglish"
+                ? "Hinglish"
+                : "English"}
+              ...
             </div>
             <div className="text-xs text-slate-300 max-w-sm">
               Translating your unique palm lines and planetary alignments in real-time.

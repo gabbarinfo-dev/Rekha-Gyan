@@ -313,8 +313,8 @@ async function callGeminiVision(
   if (input.secondaryPerson?.leftPalmBase64) addImagePart(input.secondaryPerson.leftPalmBase64);
   if (input.secondaryPerson?.rightPalmBase64) addImagePart(input.secondaryPerson.rightPalmBase64);
 
-  // Try Gemini 1.5 Flash first, then 1.5 Pro
-  const models = ["gemini-1.5-flash", "gemini-1.5-pro"];
+  // Try Gemini 2.5 Flash first, then 2.5 Pro
+  const models = ["gemini-2.5-flash", "gemini-2.5-pro"];
 
   for (const model of models) {
     try {
@@ -395,13 +395,102 @@ function synthesizeDynamicTeaser(
   dominantMount: string
 ): FreeTeaserProfile {
   const { name, vedicChart } = input;
+  const lang = (input.language || "hinglish").toLowerCase();
   const asc = vedicChart.ascendant;
   const nakshatra = vedicChart.nakshatra;
   const lord = vedicChart.nakshatraLord;
   const dasha = vedicChart.currentMahadasha;
   const element = vedicChart.element;
 
-  // Distinct Archetype Title based on Lagna & Element
+  if (lang === "hindi") {
+    const titlesByElementHindi: Record<string, string> = {
+      Fire: `${name}: बाहर से तेजस्वी आत्मविश्वास, भीतर से एकांत की खोज (${asc} अग्नितत्व)`,
+      Water: `${name}: बाहर से गंभीर, भीतर एक भावनात्मक महासागर (${asc} जलतत्व)`,
+      Air: `${name}: बाहर से मिलनसार, भीतर विचारों का तूफ़ान (${asc} वायुतत्व)`,
+      Earth: `${name}: बाहर से दृढ़ चट्टान, भीतर से कोमल हृदय (${asc} पृथ्वीतत्व)`,
+    };
+    const headline = titlesByElementHindi[element] || `${name}: प्रखर विचारक एवं अंतर्ज्ञानी रक्षक (${asc})`;
+
+    const introvertExtrovertTrait = lord === "Mercury" || lord === "Venus"
+      ? `आपकी कुंडली में ${nakshatra} (${lord}) का सक्रिय प्रभाव है। लोग शुरुआत में आपको काफी बातूनी या बहिर्मुखी समझ लेते हैं, परंतु वास्तव में आप 'चयनात्मक मुखर' (Selective Expressive) हैं। आप हर किसी के सामने अपना दिल नहीं खोलते, केवल उन 1-2 विश्वसनीय मित्रों के साथ ही खुलकर बातें करते हैं जिन पर आपको अटूट विश्वास हो।`
+      : `आपका ${asc} लग्न और ${nakshatra} नक्षत्र आपको अपरिचितों के बीच अत्यंत शांत और सतर्क बनाता है। लोग अक्सर आपको गंभीर या अंतर्मुखी समझ बैठते हैं, परंतु यह आपका सुरक्षा-कवच है। जब कोई आपका सच्चा विश्वास जीत लेता है, तो आप पूरी निष्ठा से जुड़ जाते हैं।`;
+
+    const pastGhatnaAndDhokha =
+      `आपके हाथ की हृदय रेखा और वर्तमान ${dasha} महादशा दर्शाती है कि पिछले 2 से 3 वर्षों में आपने किसी अत्यंत निकट व्यक्ति से गहरा विश्वासघात या अप्रत्याशित आघात सहन किया है। आपने बिना किसी स्वार्थ के उनका साथ दिया, परंतु उन्होंने आपकी निष्ठा पर प्रश्न उठाए या कठिन समय में अकेला छोड़ दिया। इस घटना ने आपके विश्वास करने के दृष्टिकोण को सदैव के लिए बदल दिया है।`;
+
+    const heartMindConflict = element === "Water" || element === "Earth"
+      ? `आपका हृदय और मस्तिष्क निरंतर द्वंद्व में रहते हैं। मस्तिष्क चेतावनी देता है कि सामने वाला व्यक्ति स्वार्थी हो सकता है, परंतु आपका उदार हृदय 'एक अंतिम अवसर' देकर प्रायः स्वयं को ही पीड़ा पहुँचा बैठता है।`
+      : `आप व्यावहारिक मस्तिष्क से निर्णय लेने का पूर्ण प्रयास करते हैं, परंतु अपनों के संबंध में भावनाएँ प्रबल हो जाती हैं। आप दूसरों के संकट में सदैव तत्पर रहते हैं, परंतु स्वयं की आवश्यकता के समय लोगों को दूरी बनाते पाते हैं।`;
+
+    const nightOverthinkingTrait =
+      `रात्रि में विश्राम के समय ${nakshatra} का मानसिक प्रभाव जागृत हो जाता है — अतीत के अनुभव, अनकहे अपमान और भविष्य की चिंताएँ देर रात्रि तक चिंतन में लीन रखती हैं। आप अनादर को सरलता से विस्मृत नहीं करते; बाह्य रूप से मुस्कुराते हैं परंतु हृदय में सब स्मरण रहता है।`;
+
+    const secretIntuition =
+      `आपका षष्ठ इंद्रिय (Sixth Sense - ${lord} के प्रभाव से) असाधारण रूप से जागृत है। किसी व्यक्ति से प्रथम भेंट के 2 मिनट में ही आपको उसकी अंतरात्मा और वास्तविक मंशा का पूर्वाभास हो जाता है, जो प्रायः पूर्णतः सत्य सिद्ध होता है।`;
+
+    const palmSignsWitness =
+      `आपकी हथेली पर ${dominantMount} का उभार और हृदय रेखा का स्पष्ट चाप साक्षी है कि आप साधारण भीड़ से भिन्न हैं और संघर्षों की अग्नि में तपकर निखरे हैं।`;
+
+    const summaryNarrative =
+      `${name}, आप एक ऐसा व्यक्तित्व हैं जो दूसरों के आँसू पोंछने में सदैव अग्रणी रहता है, परंतु अपनी निजी पीड़ा को संसार से छिपाने में निपुण है। आपका स्वाभिमान आपके लिए सर्वोपरि है।`;
+
+    return {
+      swabhavHeadline: headline,
+      introvertExtrovertTrait,
+      pastGhatnaAndDhokha,
+      heartMindConflict,
+      nightOverthinkingTrait,
+      secretIntuition,
+      palmSignsWitness,
+      summaryNarrative,
+    };
+  }
+
+  if (lang === "english") {
+    const titlesByElementEng: Record<string, string> = {
+      Fire: `${name}: Radiant Confidence on the Outside, Solitary Seeker Within (${asc} Fire)`,
+      Water: `${name}: Calm & Serious on the Outside, Emotional Ocean Within (${asc} Water)`,
+      Air: `${name}: Sociable on the Surface, a Storm of Ideas Within (${asc} Air)`,
+      Earth: `${name}: Steady Rock on the Surface, Gentle Soul Within (${asc} Earth)`,
+    };
+    const headline = titlesByElementEng[element] || `${name}: Deep Thinker & Intuitive Guardian (${asc})`;
+
+    const introvertExtrovertTrait = lord === "Mercury" || lord === "Venus"
+      ? `Your chart carries the active signature of ${nakshatra} (${lord}). While people initially perceive you as lively and talkative, in reality you are 'Selectively Expressive.' You never bare your heart to casual acquaintances, opening up only to the 1 or 2 true companions who have earned your complete trust.`
+      : `Your ${asc} ascendant and ${nakshatra} nakshatra make you observant, quiet, and composed among strangers. People frequently mistake this for aloofness or introversion, but it is your spiritual armor. Once someone truly wins your respect, your warmth knows no bounds.`;
+
+    const pastGhatnaAndDhokha =
+      `Your Heart Line curvature and active ${dasha} dasha reveal that over the past 2 to 3 years, you weathered an unexpected emotional betrayal or hurt from someone very close. You stood by them with unselfish devotion, yet they questioned your integrity or left you to navigate the trial alone. This crucible profoundly reshaped how you bestow trust.`;
+
+    const heartMindConflict = element === "Water" || element === "Earth"
+      ? `Your head and heart are locked in an eternal duel. Your keen intellect sounds the alarm when someone is taking advantage, yet your compassionate heart yields 'one last chance,' often bearing the wound yourself.`
+      : `You strive to govern life with analytical logic, yet when it comes to the few you love, empathy overrules calculation. You readily stand as a shield for others, but in your own hour of need, you often find yourself standing alone.`;
+
+    const nightOverthinkingTrait =
+      `As night falls, the contemplative frequency of ${nakshatra} awakens — replay of past conversations, boundary breaches, and future planning keep you awake. You rarely forget disrespect; you may smile with grace on the surface, but your memory registers everything.`;
+
+    const secretIntuition =
+      `Your Sixth Sense (governed by ${lord}) is extraordinarily acute. Within the first two minutes of meeting someone, your gut accurately decodes their hidden agenda, a revelation that almost always proves accurate.`;
+
+    const palmSignsWitness =
+      `The elevation of ${dominantMount} and the clean sweep of your Heart Line prove that you walk your own sovereign path, refined through intense life tests.`;
+
+    const summaryNarrative =
+      `${name}, you are the rare soul who steps forward first to dry the tears of others, while concealing your own trials with silent dignity. Your self-respect remains your highest sanctuary.`;
+
+    return {
+      swabhavHeadline: headline,
+      introvertExtrovertTrait,
+      pastGhatnaAndDhokha,
+      heartMindConflict,
+      nightOverthinkingTrait,
+      secretIntuition,
+      palmSignsWitness,
+      summaryNarrative,
+    };
+  }
+
+  // Default: Conversational Hinglish
   const titlesByElement = {
     Fire: `${name}: Bahar Se Tejasvi Atma-Vishwas, Bheetar Se Ekant Ki Khoj (${asc} Agnitatva)`,
     Water: `${name}: Bahar Se Gambhir, Bheetar Se Bhavuk Samundar (${asc} Jal-Tatva)`,
@@ -411,12 +500,10 @@ function synthesizeDynamicTeaser(
 
   const headline = titlesByElement[element] || `${name}: Deep Thinker & Intuitive Guardian (${asc})`;
 
-  // Social & Expressive nature based on Nakshatra Lord & Moon Sign
   const introvertExtrovertTrait = lord === "Mercury" || lord === "Venus"
     ? `Aapki kundali mein ${nakshatra} (${lord}) ka sakriya prabhav hai. Log aapko shuruat mein kaafi baatuni ya lively samajhte hain, lekin vastavikta mein aap 'Selective Expressive' hain. Aap sabhi ke aage dil nahi kholte. Sirf un 1-2 doston ke saath ghanto baatein karte hain jinpar aapka poora vishwas ho.`
     : `Aapka ${asc} lagna aur ${nakshatra} nakshatra aapko anjaan logon ke beech behad shaant aur observant banata hai. Log aksar aapko ghamandi ya introvert samajh lete hain, par yeh aapka suraksha-kavach hai. Jab koi aapka dil jeet leta hai, toh aap khul kar baatein karte hain.`;
 
-  // Past betrayal & struggle based on Dasha Lord
   const pastGhatnaAndDhokha =
     `Aapke haath ki Hriday Rekha aur chal rahi ${dasha} dasha darshati hai ki pichle 2 se 3 saalon ke dauran aapne kisi bohot kareebi vyakti se vishwasghaat ya anpeksheet chot jheli hai. Aapne bina kisi lalach ke unka saath diya tha, par unhone aapki niyat par sawal uthaya ya akele chhod diya. Is ghatna ne aapke vishwas karne ke tareeqe ko badal diya hai.`;
 
