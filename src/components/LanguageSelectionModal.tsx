@@ -59,11 +59,14 @@ export default function LanguageSelectionModal({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-lg rounded-3xl bg-cosmic-950/95 border border-gold-500/40 p-5 sm:p-7 shadow-2xl shadow-gold-500/10 text-white overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+      <div className="relative w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl bg-cosmic-950/95 border border-gold-500/40 shadow-2xl shadow-gold-500/10 text-white overflow-hidden flex flex-col max-h-[90dvh] sm:max-h-[90vh]">
         {/* Glow ambient background */}
         <div className="absolute -top-24 -right-24 w-52 h-52 bg-gold-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -left-24 w-52 h-52 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        {/* Scrollable content area */}
+        <div className="overflow-y-auto flex-1 p-5 sm:p-7">
 
         {/* Close Button */}
         <button
@@ -149,24 +152,28 @@ export default function LanguageSelectionModal({
             For Marathi, Gujarati, Tamil, Telugu, Bengali, Spanish, or any other language, you can conveniently translate this entire page anytime using your browser&apos;s built-in Google Translate options.
           </p>
         </div>
+        {/* end scrollable content */}
+        </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 py-2.5 px-4 rounded-xl border border-white/15 text-slate-300 text-xs sm:text-sm font-semibold hover:bg-white/5 transition-all text-center"
-          >
-            Keep Default
-          </button>
-          <button
-            type="button"
-            onClick={handleApply}
-            className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-gold-400 to-amber-500 text-cosmic-950 text-xs sm:text-sm font-black shadow-lg shadow-gold-500/25 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-1.5"
-          >
-            <Sparkles className="w-4 h-4" />
-            Apply Language
-          </button>
+        {/* Sticky bottom: Action Buttons — always visible */}
+        <div className="shrink-0 px-5 sm:px-7 pb-5 sm:pb-7 pt-3 border-t border-white/10 bg-cosmic-950/95">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-2.5 px-4 rounded-xl border border-white/15 text-slate-300 text-xs sm:text-sm font-semibold hover:bg-white/5 transition-all text-center"
+            >
+              Keep Default
+            </button>
+            <button
+              type="button"
+              onClick={handleApply}
+              className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-gold-400 to-amber-500 text-cosmic-950 text-xs sm:text-sm font-black shadow-lg shadow-gold-500/25 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-1.5"
+            >
+              <Sparkles className="w-4 h-4" />
+              Apply Language
+            </button>
+          </div>
         </div>
       </div>
     </div>

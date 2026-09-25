@@ -88,6 +88,7 @@ interface ReadingDisplayProps {
   };
   pujaVidhi?: PujaVidhiData;
   synastry?: any;
+  palmFeatures?: any;
   secondaryPerson?: { name: string; relation: string };
   onReset: () => void;
 }
@@ -96,6 +97,7 @@ export default function ReadingDisplay({
   reading,
   insights,
   freeTeaser,
+  palmFeatures,
   userQuestion,
   userName,
   userDob,
@@ -525,11 +527,12 @@ export default function ReadingDisplay({
         <div className="p-3.5 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-gold-500/10 to-amber-500/15 border border-amber-500/35 text-xs sm:text-sm text-amber-200 leading-relaxed space-y-2.5">
           <div className="flex items-center gap-2 font-bold text-amber-300 text-xs sm:text-sm">
             <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
-            <span>Kripya Dhyan Dein / Important Note:</span>
+            <span>{t.importantNoteTitle}</span>
           </div>
           <p>
-            Upar diya gaya vishleshan sirf aapki aatma ke gupt swabhav aur haath ke mukhya parvat-rekhaon ka satya darpan tha. 
-            Aapne jo mukhya sawaal pucha hai: <strong className="text-white underline font-serif text-xs sm:text-sm">&ldquo;{userQuestion || "Aapka Mukhya Sawaal"}&rdquo;</strong> — uska satya samadhan, 3-saal predictive timeline, aur Pooja Vidhi neeche locked hain.
+            {t.importantNotePrefix}{" "}
+            <strong className="text-white underline font-serif text-xs sm:text-sm">&ldquo;{userQuestion || "Aapka Mukhya Sawaal"}&rdquo;</strong>{" "}
+            {t.importantNoteSuffix}
           </p>
         </div>
       </div>

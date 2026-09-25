@@ -2,10 +2,13 @@ export interface VedicChartResult {
   sunSign: string;
   moonSign: string;
   ascendant: string;
+  lagnaLord: string;
   nakshatra: string;
   nakshatraLord: string;
   pada: number;
   currentMahadasha: string;
+  previousMahadasha: string;
+  dashaShiftYear: number;
   currentAntardasha: string;
   dashaEndYear: number;
   lifePathNumber: number;
@@ -14,6 +17,7 @@ export interface VedicChartResult {
   favorableMantra: string;
   favorableColor: string;
   rashiSummary: string;
+  calculatedYogas: string[];
   planetaryInfluences: {
     planet: string;
     sign: string;
@@ -130,6 +134,22 @@ export function calculateVedicChart(
   const lagnaIndex = (sunSignIndex + Math.floor(lagnaOffsetHours / 2)) % 12;
   const ascendant = RASHIS[lagnaIndex] || RASHIS[0];
 
+  const lagnaRulers = [
+    "Mars", // Mesha (Aries)
+    "Venus", // Vrishabha (Taurus)
+    "Mercury", // Mithuna (Gemini)
+    "Moon", // Karka (Cancer)
+    "Sun", // Simha (Leo)
+    "Mercury", // Kanya (Virgo)
+    "Venus", // Tula (Libra)
+    "Mars", // Vrischika (Scorpio)
+    "Jupiter", // Dhanu (Sagittarius)
+    "Saturn", // Makara (Capricorn)
+    "Saturn", // Kumbha (Aquarius)
+    "Jupiter", // Meena (Pisces)
+  ];
+  const lagnaLord = lagnaRulers[lagnaIndex] || "Mars";
+
   // Vimshottari Dasha calculation:
   // Starts from Nakshatra lord. Elapsed fraction depends on posInNakshatra.
   const startingLord = nakshatraObj.lord;
@@ -143,6 +163,8 @@ export function calculateVedicChart(
   let accumulatedYears = remainingYearsOfFirstDasha;
   let lordIdx = DASHA_SEQUENCE.indexOf(startingLord);
   let currentMahadasha = startingLord;
+  let previousMahadasha = startingLord;
+  let dashaShiftYear = birthYear + Math.round(accumulatedYears);
   let dashaEndYear = birthYear + Math.round(accumulatedYears);
 
   if (currentAge > remainingYearsOfFirstDasha) {
@@ -151,10 +173,14 @@ export function calculateVedicChart(
       const nextLord = DASHA_SEQUENCE[lordIdx];
       const period = DASHA_PERIODS[nextLord];
       if (accumulatedYears + period >= currentAge) {
+        previousMahadasha = currentMahadasha;
+        dashaShiftYear = birthYear + Math.round(accumulatedYears);
         currentMahadasha = nextLord;
         dashaEndYear = birthYear + Math.round(accumulatedYears + period);
         break;
       }
+      previousMahadasha = currentMahadasha;
+      currentMahadasha = nextLord;
       accumulatedYears += period;
       lordIdx = (lordIdx + 1) % DASHA_SEQUENCE.length;
     }
@@ -164,6 +190,16 @@ export function calculateVedicChart(
   const antardashaList = DASHA_SEQUENCE;
   const antardashaIndex = (lordIdx + Math.floor((currentAge % 10) / 2)) % antardashaList.length;
   const currentAntardasha = antardashaList[antardashaIndex];
+
+  // Calculated Yogas
+  const calculatedYogas: string[] = [];
+  const jupiterRashiIndex = (sunSignIndex + 4) % 12;
+  const moonJupDiff = Math.abs(moonSignIndex - jupiterRashiIndex) % 3;
+  if (moonJupDiff === 0) calculatedYogas.push("Gaja Kesari Yoga (Honor, Mental Nobility & Divine Protection)");
+  if (sunSignIndex % 2 === 0) calculatedYogas.push("Budhaditya Yoga (Sharp Analytical Intellect & Speech Eloquence)");
+  const marsHouse = ((lagnaIndex + 3) % 12) + 1;
+  if ([1, 4, 7, 8, 12].includes(marsHouse)) calculatedYogas.push("Tejasvi Mars Aura (High Drive, Directness & Courage)");
+  if (calculatedYogas.length === 0) calculatedYogas.push("Dhana-Labha Yoga (Independent Wealth Creation)");
 
   // Life path number
   const digits = `${dob}`.replace(/\D/g, "");
@@ -265,10 +301,13 @@ export function calculateVedicChart(
     sunSign,
     moonSign,
     ascendant,
+    lagnaLord,
     nakshatra: nakshatraObj.name,
     nakshatraLord: nakshatraObj.lord,
     pada,
     currentMahadasha,
+    previousMahadasha,
+    dashaShiftYear,
     currentAntardasha,
     dashaEndYear,
     lifePathNumber: sum,
@@ -277,6 +316,7 @@ export function calculateVedicChart(
     favorableMantra: dashaInfo.mantra,
     favorableColor: dashaInfo.color,
     rashiSummary: dashaInfo.summary,
+    calculatedYogas,
     planetaryInfluences,
   };
 }

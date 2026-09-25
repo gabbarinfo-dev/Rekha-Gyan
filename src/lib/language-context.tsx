@@ -25,6 +25,9 @@ export interface TranslationDictionary {
   lockedSubheading: string;
   unlockCta: string;
   changeLanguageBtn: string;
+  importantNoteTitle: string;
+  importantNotePrefix: string;
+  importantNoteSuffix: string;
 }
 
 export const translations: Record<LanguageType, TranslationDictionary> = {
@@ -49,6 +52,9 @@ export const translations: Record<LanguageType, TranslationDictionary> = {
     lockedSubheading: "Deep predictions, 3-year timeline, and direct answers to your question.",
     unlockCta: "Unlock Full Reading & Remedy",
     changeLanguageBtn: "Language",
+    importantNoteTitle: "Important Notice / Sacred Gateway:",
+    importantNotePrefix: "The above reading was a mirror of your hidden soul essence, palm markings, and karmic past. The deep resolution to your sacred question:",
+    importantNoteSuffix: "— along with your 3-year predictive timeline, planetary transit milestones, and customized Pooja Vidhi are locked below.",
   },
   hindi: {
     part1Header: "भाग 1: आपका मुख्य स्वभाव, भूतकाल की घटना एवं हस्तरेखा रहस्य",
@@ -71,6 +77,9 @@ export const translations: Record<LanguageType, TranslationDictionary> = {
     lockedSubheading: "गहन भविष्यवाणियां, 3-वर्षीय कालचक्र और आपके विशिष्ट प्रश्न का स्पष्ट उत्तर।",
     unlockCta: "संपूर्ण फलादेश एवं वैदिक उपाय देखें",
     changeLanguageBtn: "भाषा",
+    importantNoteTitle: "कृपया ध्यान दें / महत्वपूर्ण सूचना:",
+    importantNotePrefix: "उपरोक्त विश्लेषण केवल आपकी आत्मा के गुप्त स्वभाव, हथेली के मुख्य पर्वतों और भूतकाल के कर्मों का सत्य दर्पण था। आपके द्वारा पूछा गया मुख्य प्रश्न:",
+    importantNoteSuffix: "— उसका सटीक समाधान, 3-वर्षीय भविष्यफल और संपूर्ण पूजा विधि नीचे सुरक्षित हैं।",
   },
   hinglish: {
     part1Header: "Part 1: Aapka Mukhya Swabhav, Bhootkaal Ki Ghatna & Palm Kundali Rahasya",
@@ -93,6 +102,9 @@ export const translations: Record<LanguageType, TranslationDictionary> = {
     lockedSubheading: "Deep predictions, 3-saal ka timeline, aur aapke sawal ka direct jawab.",
     unlockCta: "Unlock Full Reading & Remedy",
     changeLanguageBtn: "Bhasha",
+    importantNoteTitle: "Kripya Dhyan Dein / Important Note:",
+    importantNotePrefix: "Upar diya gaya vishleshan sirf aapki aatma ke gupt swabhav aur haath ke mukhya parvat-rekhaon ka satya darpan tha. Aapne jo mukhya sawaal pucha hai:",
+    importantNoteSuffix: "— uska satya samadhan, 3-saal predictive timeline, aur Pooja Vidhi neeche locked hain.",
   },
 };
 

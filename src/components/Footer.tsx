@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { ShieldCheck, Heart, Mail, Phone, MapPin, AlertCircle, Lock } from "lucide-react";
+import { ShieldCheck, Heart, Mail, Phone, MapPin, AlertCircle, Lock, CreditCard } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -55,6 +55,12 @@ export default function Footer() {
               <li>
                 <Link href="/blog" className="hover:text-gold-300 transition-colors">
                   Vedic Astro &amp; Palmistry Blog
+                </Link>
+              </li>
+              <li>
+                <Link href="/subscription" className="hover:text-gold-300 transition-colors flex items-center gap-1.5 text-gold-400/90 font-semibold">
+                  <CreditCard className="w-3.5 h-3.5 text-gold-400 flex-shrink-0" />
+                  <span>Subscription Plans</span>
                 </Link>
               </li>
               <li>

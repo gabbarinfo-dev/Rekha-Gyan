@@ -19,10 +19,10 @@ export async function POST(req: NextRequest) {
 
     const langInstruction =
       targetLanguage === "hindi"
-        ? `Translate ALL text strictly into PURE HINDI using Devanagari script (देवनागरी लिपि). E.g., 'प्रचंड संकल्प और शांत आत्मा', 'आर्यन, आपके पास...'. Do not write English letters.`
+        ? `Translate ALL text strictly into PURE HINDI using Devanagari script (देवनागरी लिपि). Faithful, poetic translation of the exact provided content without altering facts or adding generic templates.`
         : targetLanguage === "english"
-        ? `Translate ALL text into articulate, poetic ENGLISH. E.g., 'Fiery Determination with a Soothing Spirit'.`
-        : `Translate ALL text into natural, conversational HINGLISH (Hindi written strictly using English/Latin alphabet letters). E.g., 'Bahar Se Shaant, Andar Se Bhavuk Samundar', 'Aapka aatma-samman sabse upar hai...'. Do NOT use Devanagari script.`;
+        ? `Translate ALL text faithfully into articulate, deeply empathetic ENGLISH without altering facts or adding generic templates.`
+        : `Translate ALL text faithfully into natural, conversational HINGLISH (Hindi written strictly using English/Latin alphabet letters). Do NOT use Devanagari script.`;
 
     const prompt = `
 You are an expert Vedic astrologer and master multilingual translator for REKHA (rekhagyan.online).

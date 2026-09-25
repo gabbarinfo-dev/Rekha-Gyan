@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Sparkles, Compass, BookOpen, Menu, X, ShieldCheck, User, LogOut, Shield, Globe, ChevronDown, Check } from "lucide-react";
+import { Sparkles, Compass, BookOpen, Menu, X, ShieldCheck, User, LogOut, Shield, Globe, ChevronDown, Check, CreditCard } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useLanguage, LanguageType } from "@/lib/language-context";
 import AuthModal from "./AuthModal";
@@ -87,6 +87,13 @@ export default function Navbar() {
               className="text-sm font-medium text-slate-300 hover:text-gold-300 transition-colors"
             >
               Astro Blog
+            </Link>
+            <Link
+              href="/subscription"
+              className="text-sm font-medium text-slate-300 hover:text-gold-300 transition-colors flex items-center gap-1.5"
+            >
+              <CreditCard className="w-3.5 h-3.5 text-gold-400" />
+              Subscription
             </Link>
           </nav>
 
@@ -250,6 +257,14 @@ export default function Navbar() {
               className="block px-3 py-2 text-base font-medium text-slate-200 hover:text-gold-300"
             >
               Astro Blog
+            </Link>
+            <Link
+              href="/subscription"
+              onClick={() => setMobileOpen(false)}
+              className="block px-3 py-2 text-base font-medium text-slate-200 hover:text-gold-300 flex items-center gap-2"
+            >
+              <CreditCard className="w-4 h-4 text-gold-400" />
+              Subscription
             </Link>
 
             {/* Mobile Language Switcher */}

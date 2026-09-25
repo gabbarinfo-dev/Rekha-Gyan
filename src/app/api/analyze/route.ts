@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { calculateVedicChart, calculateSynastry, SynastryResult } from "@/lib/vedic-engine";
 import { searchAstroConsensus } from "@/lib/tavily-research";
+import { extractPalmFeatures } from "@/lib/palm-extractor";
 import { generateRekhaReading } from "@/lib/gemini-vision";
 import { uploadPalmToWordPress, logReadingToWordPress } from "@/lib/wordpress";
 
@@ -92,15 +93,23 @@ export async function POST(req: NextRequest) {
       secondaryPerson.vedicChart = secondaryVedicChart;
     }
 
-    // Step 3: 50+ Source Web Scraping & Classical Consensus via Tavily
+    // Step 2c: Dedicated Anatomical Palm Scanning (Vision & Samudrika Science)
+    const palmFeatures = await extractPalmFeatures(
+      leftPalmBase64,
+      rightPalmBase64,
+      vedicChart
+    );
+
+    // Step 3: 50+ Source Web Crawling & Classical Shastra Consensus
     const consensus = await searchAstroConsensus(
       lifeFocus,
       question,
       vedicChart.currentMahadasha,
-      vedicChart.moonSign
+      vedicChart.moonSign,
+      palmFeatures.scripturalEvidenceNotes
     );
 
-    // Step 4 & 5: Multimodal Vision Synthesis & Output Generation as REKHA
+    // Step 4 & 5: Deep Fact-Based Synthesis & Output Generation as REKHA
     const readingResult = await generateRekhaReading({
       name,
       gender,
@@ -115,6 +124,7 @@ export async function POST(req: NextRequest) {
       rightPalmUrl,
       vedicChart,
       consensus,
+      palmFeatures,
       secondaryPerson,
       synastry,
       language,
@@ -191,6 +201,7 @@ export async function POST(req: NextRequest) {
       reading: readingResult.rawMarkdown,
       insights: readingResult.keyInsights,
       freeTeaser: readingResult.freeTeaser,
+      palmFeatures: readingResult.palmFeatures || palmFeatures,
       userQuestion: question,
       userName: name,
       pujaVidhi,

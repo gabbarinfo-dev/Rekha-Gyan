@@ -69,7 +69,11 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
   const [loading, setLoading] = useState(false);
   const [loadingStage, setLoadingStage] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [step1Error, setStep1Error] = useState<string | null>(null);
   const [resultData, setResultData] = useState<any | null>(null);
+
+  // Ref for inline step-1 error (scrolls into view on mobile)
+  const step1ErrorRef = useRef<HTMLDivElement>(null);
 
   // Auth Modal State
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -280,6 +284,7 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
         reading={resultData.reading}
         insights={resultData.insights}
         freeTeaser={resultData.freeTeaser}
+        palmFeatures={resultData.palmFeatures}
         userQuestion={resultData.userQuestion || question}
         userName={resultData.userName || name}
         userDob={resultData.userDob || dob}
@@ -593,19 +598,27 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
               </div>
             </div>
 
-            <div className="pt-4 flex justify-end w-full">
+            <div className="pt-4 flex flex-col items-end gap-3 w-full">
               <button
                 type="button"
                 onClick={() => {
                   if (!name.trim() || !dob || !pob.trim() || !question.trim()) {
-                    setError("Please fill in Name, Date of Birth, Place of Birth, and your Question.");
+                    const missing: string[] = [];
+                    if (!name.trim()) missing.push("Name");
+                    if (!dob) missing.push("Date of Birth");
+                    if (!pob.trim()) missing.push("Place of Birth");
+                    if (!question.trim()) missing.push("Your Question");
+                    setStep1Error(`⚠️ Please fill in: ${missing.join(", ")}`);
+                    // Scroll the error into view after render
+                    setTimeout(() => step1ErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
                     return;
                   }
 
                   // 1. Check if question concerns another person and partner hasn't been added yet
                   if (isRelationshipQuery(question) && !secondaryPerson) {
                     if (user?.subscriptionPlan === "trial_99") {
-                      setError("Your question concerns a partner/relationship. Partner synastry is available on the ₹599 Duo Plan or ₹1099 Pro Plan.");
+                      setStep1Error("Your question concerns a partner/relationship. Partner synastry is available on the ₹599 Duo Plan or ₹1099 Pro Plan.");
+                      setTimeout(() => step1ErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
                       setPaywallTargetPlan("duo_599");
                       setShowPaywallModal(true);
                       return;
@@ -620,6 +633,7 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
                     return;
                   }
 
+                  setStep1Error(null);
                   setError(null);
                   setStep(2);
                 }}
@@ -628,6 +642,17 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
                 <span>Continue to Palm Upload</span>
                 <ArrowRight className="w-4 h-4 shrink-0" />
               </button>
+
+              {/* Inline validation error — shown BELOW the button so user sees it immediately */}
+              {step1Error && (
+                <div
+                  ref={step1ErrorRef}
+                  className="w-full p-3.5 rounded-2xl bg-red-950/50 border border-red-500/40 text-red-200 text-xs flex items-start gap-2.5 animate-fadeIn"
+                >
+                  <AlertCircle className="w-4 h-4 shrink-0 text-red-400 mt-0.5" />
+                  <span>{step1Error}</span>
+                </div>
+              )}
             </div>
           </div>
         )}
