@@ -52,6 +52,121 @@ export interface FreeTeaserData {
   summaryNarrative?: string;
 }
 
+function formatReadingMarkdown(raw: string): string {
+  if (!raw) return "";
+
+  let text = raw
+    .replace(/^```(?:json-teaser|json)?[\s\S]*?```/i, "")
+    .replace(/^\s*\{[\s\S]*?"swabhavHeadline"[\s\S]*?\}\s*/i, "")
+    .trim();
+
+  // Normalize standalone numbered headers: "1. 💫 ...", "2. ✋ ..."
+  text = text.replace(/^(\d+\.\s*[^\n]+)$/gm, "\n\n## $1\n\n");
+
+  // Normalize subheaders like Left Palm, Right Palm, Physical Markings
+  text = text.replace(/^(Left Palm[^\n]*)$/gim, "\n\n### ✋ $1\n\n");
+  text = text.replace(/^(Right Palm[^\n]*)$/gim, "\n\n### ✋ $1\n\n");
+  text = text.replace(/^(Physical Markings Verified[^\n]*)$/gim, "\n\n### 🔍 $1\n\n");
+
+  // Format distinct markings / traits if on their own line with a colon into bullet items
+  text = text.replace(
+    /^((?:Trishul|Mystic Cross|Dhana Triangle|Solomon Ring|Matsya|Star on Jupiter|Fish sign|Temple sign|Lotus sign|Astrological Verdict|Critical Breakthrough Window|Karmic Guidance|Year \d+)[^:\n]*:)([\s\S]*?)$/gim,
+    "\n- **$1** $2"
+  );
+
+  // Eliminate triple+ blank lines
+  text = text.replace(/\n{3,}/g, "\n\n");
+
+  return text.trim();
+}
+
+const markdownCustomOverrides = {
+  overrides: {
+    h1: {
+      component: ({ children, ...props }: any) => (
+        <h1
+          className="text-2xl sm:text-3xl font-extrabold font-serif text-transparent bg-clip-text bg-gradient-to-r from-gold-300 via-amber-200 to-gold-400 border-b-2 border-gold-500/30 pb-3 mb-6 mt-4"
+          {...props}
+        >
+          {children}
+        </h1>
+      ),
+    },
+    h2: {
+      component: ({ children, ...props }: any) => (
+        <h2
+          className="text-lg sm:text-xl font-bold font-serif text-amber-200 bg-gradient-to-r from-gold-500/20 via-gold-500/5 to-transparent border-l-4 border-gold-400 pl-4 pr-3 py-3 rounded-r-2xl mt-8 mb-5 tracking-wide shadow-sm flex items-center gap-2"
+          {...props}
+        >
+          <span>👑</span>
+          <span>{children}</span>
+        </h2>
+      ),
+    },
+    h3: {
+      component: ({ children, ...props }: any) => (
+        <h3
+          className="text-base sm:text-lg font-bold font-serif text-gold-300 mt-6 mb-3 flex items-center gap-2 border-b border-white/5 pb-2"
+          {...props}
+        >
+          <span className="w-2.5 h-2.5 rounded-full bg-gold-400 shrink-0"></span>
+          <span>{children}</span>
+        </h3>
+      ),
+    },
+    p: {
+      component: ({ children, ...props }: any) => (
+        <p
+          className="text-slate-200 text-sm sm:text-base leading-relaxed sm:leading-loose mb-5 font-normal tracking-wide"
+          {...props}
+        >
+          {children}
+        </p>
+      ),
+    },
+    strong: {
+      component: ({ children, ...props }: any) => (
+        <strong
+          className="font-extrabold text-amber-300 bg-amber-400/10 px-1.5 py-0.5 rounded-md border border-amber-400/30 tracking-wide inline-block my-0.5"
+          {...props}
+        >
+          {children}
+        </strong>
+      ),
+    },
+    ul: {
+      component: ({ children, ...props }: any) => (
+        <ul className="space-y-3.5 my-5 pl-1 list-none" {...props}>
+          {children}
+        </ul>
+      ),
+    },
+    li: {
+      component: ({ children, ...props }: any) => (
+        <li
+          className="text-slate-200 text-sm sm:text-base leading-relaxed flex items-start gap-3 p-3 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-gold-500/25 transition-all"
+          {...props}
+        >
+          <span className="text-gold-400 text-base mt-0.5 shrink-0">✦</span>
+          <div className="flex-1">{children}</div>
+        </li>
+      ),
+    },
+    ol: {
+      component: ({ children, ...props }: any) => (
+        <ol className="space-y-4 my-6 pl-2" {...props}>
+          {children}
+        </ol>
+      ),
+    },
+    hr: {
+      component: (props: any) => (
+        <hr className="my-8 border-gold-500/20 border-t-2" {...props} />
+      ),
+    },
+  },
+};
+
 interface ReadingDisplayProps {
   reading: string;
   insights: {
@@ -729,13 +844,10 @@ export default function ReadingDisplay({
           )}
 
           {/* Main Markdown Content */}
-          <div className="cosmic-card rounded-3xl p-6 sm:p-10 border border-gold-500/30 bg-cosmic-950/70 backdrop-blur-xl shadow-2xl">
-            <div className="prose prose-invert max-w-none prose-headings:font-serif prose-headings:text-gold-300 prose-headings:border-b prose-headings:border-white/10 prose-headings:pb-2 prose-h2:text-2xl prose-h3:text-xl prose-p:text-slate-200 prose-p:leading-relaxed prose-strong:text-amber-200 prose-li:text-slate-200">
-              <Markdown>
-                {currentReading
-                  .replace(/^```(?:json-teaser|json)?[\s\S]*?```/i, "")
-                  .replace(/^\s*\{[\s\S]*?"swabhavHeadline"[\s\S]*?\}\s*/i, "")
-                  .trim()}
+          <div className="cosmic-card rounded-3xl p-6 sm:p-10 border border-gold-500/30 bg-cosmic-950/80 backdrop-blur-xl shadow-2xl">
+            <div className="max-w-none text-slate-200">
+              <Markdown options={markdownCustomOverrides}>
+                {formatReadingMarkdown(currentReading)}
               </Markdown>
             </div>
           </div>
