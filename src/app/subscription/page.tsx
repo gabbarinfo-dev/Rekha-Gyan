@@ -35,11 +35,7 @@ export default function SubscriptionPage() {
     setPendingPlan(plan);
     setPaywallTab("plans");
     setPendingOption(plan);
-    if (isLoggedIn || isAdmin) {
-      setPaywallOpen(true);
-    } else {
-      setAuthOpen(true);
-    }
+    setPaywallOpen(true);
   };
 
   const handleTopupClick = () => {
@@ -58,12 +54,29 @@ export default function SubscriptionPage() {
     setPaywallOpen(true);
   };
 
-  // Check URL query params for ?tab=topup
+  // Check URL query params for ?plan=... and ?tab=topup
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
-      if (params.get("tab") === "topup") {
+      const planParam = params.get("plan");
+      const tabParam = params.get("tab");
+
+      if (tabParam === "topup") {
         handleTopupClick();
+      } else if (planParam) {
+        let targetPlan: SubscriptionTierType = "trial_99";
+        const cleanPlan = planParam.toLowerCase().trim();
+        if (cleanPlan === "499" || cleanPlan === "duo" || cleanPlan === "duo_599") {
+          targetPlan = "duo_599";
+        } else if (cleanPlan === "999" || cleanPlan === "ultimate" || cleanPlan === "unlimited_1009" || cleanPlan === "pro" || cleanPlan === "family") {
+          targetPlan = "unlimited_1009";
+        } else {
+          targetPlan = "trial_99";
+        }
+        setPendingPlan(targetPlan);
+        setPaywallTab("plans");
+        setPendingOption(targetPlan);
+        setPaywallOpen(true);
       }
     }
   }, [isLoggedIn, isSubscribed, isAdmin]);
