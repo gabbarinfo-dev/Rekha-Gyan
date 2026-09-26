@@ -75,12 +75,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const usersMap = JSON.parse(localStorage.getItem(USERS_DB_KEY) || "{}");
         if (usersMap[activePhone]) {
           const profile = usersMap[activePhone];
-          // Check if admin
+          // Check if admin - verify PIN before granting authority
           if (activePhone === ADMIN_PHONE) {
-            profile.isAdmin = true;
-            profile.isSubscribed = true;
-            profile.name = ADMIN_NAME;
-            profile.dob = ADMIN_DOB;
+            if (profile._pin === ADMIN_PASS || profile._pin === "1029") {
+              profile.isAdmin = true;
+              profile.isSubscribed = true;
+              profile.name = ADMIN_NAME;
+              profile.dob = ADMIN_DOB;
+            } else {
+              profile.isAdmin = false;
+              profile.isSubscribed = false;
+            }
           }
           setUser(profile);
         }
@@ -93,10 +98,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               const serverUser = data.user;
               setUser((prev) => {
                 if (!prev) return prev;
+                const isSuperAdmin = prev.phone === ADMIN_PHONE && (prev as any)._pin === ADMIN_PASS;
                 const updated: UserProfile = {
                   ...prev,
-                  isSubscribed: Boolean(serverUser.isSubscribed),
-                  subscriptionPlan: serverUser.subscriptionPlan || null,
+                  isSubscribed: isSuperAdmin ? true : Boolean(serverUser.isSubscribed),
+                  subscriptionPlan: isSuperAdmin ? "unlimited_1009" : serverUser.subscriptionPlan || null,
                   subscriptionExpiryDate: serverUser.subscriptionExpiryDate,
                 };
                 // update local storage

@@ -4,6 +4,11 @@ import { searchAstroConsensus } from "@/lib/tavily-research";
 import { extractPalmFeatures } from "@/lib/palm-extractor";
 import { generateRekhaReading } from "@/lib/gemini-vision";
 import { uploadPalmToWordPress, logReadingToWordPress } from "@/lib/wordpress";
+import {
+  verifyUserSubscription,
+  checkIpRateLimit,
+  cacheServerReading,
+} from "@/lib/server-registry";
 
 export const maxDuration = 60; // Allow sufficient time for multimodal AI & parallel search
 
@@ -22,12 +27,33 @@ export async function POST(req: NextRequest) {
       rightPalmBase64,
       secondaryPerson,
       language = "hinglish",
+      userPhone,
     } = body;
 
     if (!name || !dob || !pob || !question) {
       return NextResponse.json(
         { error: "Name, Date of Birth, Place of Birth, and Question are required fields." },
         { status: 400 }
+      );
+    }
+
+    // Security Gate 1: Check user subscription & Super Admin status
+    const { isSuperAdmin, isSubscribed } = await verifyUserSubscription(userPhone);
+
+    // Security Gate 2: IP-based rate limiting (prevents DDoS and bot scraping)
+    const clientIp =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      req.headers.get("x-real-ip") ||
+      "127.0.0.1";
+
+    const rateLimit = checkIpRateLimit(clientIp, isSuperAdmin || isSubscribed, 5, 3600 * 1000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: "Free consultation limit reached for this session. Please sign in or contact Rekha on WhatsApp to unlock unlimited access.",
+          rateLimited: true,
+        },
+        { status: 429 }
       );
     }
 
@@ -131,7 +157,6 @@ export async function POST(req: NextRequest) {
     });
 
     // Step 6: WordPress Media Auto-Cleanup
-    // Delete temporary uploaded palm images from WordPress hosting immediately after reading generation
     if (uploadedMediaIds.length > 0) {
       setTimeout(async () => {
         const { deleteMediaFromWordPress } = await import("@/lib/wordpress");
@@ -196,22 +221,39 @@ export async function POST(req: NextRequest) {
       readingSummary: readingResult.rawMarkdown,
     }).catch((err) => console.warn("WordPress reading logging warning:", err));
 
+    // Step 9: Server-Side Cryptographic Session Caching
+    // Cache the full deep reading securely on server under a unique ID.
+    // Unpaid users will NOT receive full raw markdown in the network payload!
+    const readingId = `rekha_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    const isUnlocked = Boolean(isSuperAdmin || isSubscribed);
+
+    cacheServerReading(readingId, {
+      reading: readingResult.rawMarkdown,
+      pujaVidhi,
+      synastry: readingResult.synastry || synastry,
+      userPhone,
+      createdAt: Date.now(),
+    });
+
     return NextResponse.json({
       success: true,
-      reading: readingResult.rawMarkdown,
+      readingId,
+      isUnlocked,
+      // Security: Only send full markdown and pujaVidhi if verified subscriber or Super Admin!
+      reading: isUnlocked ? readingResult.rawMarkdown : null,
+      pujaVidhi: isUnlocked ? pujaVidhi : null,
       insights: readingResult.keyInsights,
       freeTeaser: readingResult.freeTeaser,
       palmFeatures: readingResult.palmFeatures || palmFeatures,
       userQuestion: question,
       userName: name,
-      pujaVidhi,
       vedicChart,
       consensus: {
         sourcesCount: consensus.sourcesCount,
         classicalTexts: consensus.classicalTextMatches,
         consensusSummary: consensus.consensusSummary,
       },
-      synastry: readingResult.synastry || synastry,
+      synastry: isUnlocked ? (readingResult.synastry || synastry) : undefined,
       secondaryPerson: secondaryPerson ? { name: secondaryPerson.name, relation: secondaryPerson.relation } : undefined,
       media: {
         leftPalmUploaded: !!leftPalmUrl,

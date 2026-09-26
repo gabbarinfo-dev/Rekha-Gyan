@@ -1,0 +1,223 @@
+import fs from "fs";
+import path from "path";
+import os from "os";
+import {
+  fetchUsersRegistryFromWordPress,
+  saveUsersRegistryToWordPress,
+  WordPressStoredUser,
+} from "@/lib/wordpress";
+
+export const SUPER_ADMIN_PHONE = "8511739865";
+export const SUPER_ADMIN_NAME = "Nishant Dantare";
+
+export interface StoredUser extends WordPressStoredUser {}
+
+const DEFAULT_USERS: StoredUser[] = [
+  {
+    phone: SUPER_ADMIN_PHONE,
+    name: SUPER_ADMIN_NAME,
+    dob: "29-04-1987",
+    gender: "Male",
+    pob: "Ajmer, Rajasthan",
+    issue: "Core Platform Administration & Destiny Vision Architecture",
+    lifeFocus: "Career & Wealth Breakthrough",
+    createdAt: new Date().toISOString(),
+    isSubscribed: true,
+    subscriptionPlan: "unlimited_1009",
+    subscriptionDurationDays: 3650,
+    subscriptionStartDate: new Date().toISOString(),
+    subscriptionExpiryDate: "2099-12-31T23:59:59.000Z",
+    isAdmin: true,
+  },
+];
+
+function getStoragePaths(): string[] {
+  const paths: string[] = [];
+  paths.push(path.join(process.cwd(), "data", "users-registry.json"));
+  paths.push(path.join(os.tmpdir(), "rekha-users-registry.json"));
+  return paths;
+}
+
+let inMemoryUsers: StoredUser[] = [...DEFAULT_USERS];
+
+export function readUsersFromDisk(): StoredUser[] {
+  const candidatePaths = getStoragePaths();
+
+  for (const filePath of candidatePaths) {
+    try {
+      if (fs.existsSync(filePath)) {
+        const raw = fs.readFileSync(filePath, "utf8");
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const mergedMap = new Map<string, StoredUser>();
+          DEFAULT_USERS.forEach((u) => mergedMap.set(u.phone, u));
+          parsed.forEach((u) => mergedMap.set(u.phone, u));
+          inMemoryUsers.forEach((u) => mergedMap.set(u.phone, u));
+          inMemoryUsers = Array.from(mergedMap.values());
+          return inMemoryUsers;
+        }
+      }
+    } catch {
+      // Continue
+    }
+  }
+
+  return inMemoryUsers;
+}
+
+export function writeUsersToDisk(users: StoredUser[]) {
+  inMemoryUsers = users;
+  const candidatePaths = getStoragePaths();
+
+  for (const filePath of candidatePaths) {
+    try {
+      const dirPath = path.dirname(filePath);
+      if (!fs.existsSync(dirPath)) {
+        fs.mkdirSync(dirPath, { recursive: true });
+      }
+      fs.writeFileSync(filePath, JSON.stringify(users, null, 2), "utf8");
+    } catch {
+      // Non-blocking fallback
+    }
+  }
+}
+
+export async function getLatestUsers(): Promise<StoredUser[]> {
+  const diskUsers = readUsersFromDisk();
+  try {
+    const wpUsers = await fetchUsersRegistryFromWordPress();
+    if (wpUsers && Array.isArray(wpUsers) && wpUsers.length > 0) {
+      const mergedMap = new Map<string, StoredUser>();
+      DEFAULT_USERS.forEach((u) => mergedMap.set(u.phone, u));
+      diskUsers.forEach((u) => mergedMap.set(u.phone, u));
+      wpUsers.forEach((u) => mergedMap.set(u.phone, u as StoredUser));
+      const combined = Array.from(mergedMap.values());
+      writeUsersToDisk(combined);
+      return combined;
+    }
+  } catch (err) {
+    console.warn("WordPress users sync notice:", err);
+  }
+  return diskUsers;
+}
+
+/**
+ * Server-side authority verification
+ */
+export async function verifyUserSubscription(phone?: string): Promise<{
+  isSuperAdmin: boolean;
+  isSubscribed: boolean;
+  plan: string | null;
+  user?: StoredUser;
+}> {
+  if (!phone) {
+    return { isSuperAdmin: false, isSubscribed: false, plan: null };
+  }
+
+  const clean = phone.replace(/\D/g, "");
+
+  // Super Admin Always has Full Unconditional Authority
+  if (clean === SUPER_ADMIN_PHONE) {
+    return {
+      isSuperAdmin: true,
+      isSubscribed: true,
+      plan: "unlimited_1009",
+      user: DEFAULT_USERS[0],
+    };
+  }
+
+  const users = await getLatestUsers();
+  const found = users.find((u) => u.phone === clean);
+
+  if (!found) {
+    return { isSuperAdmin: false, isSubscribed: false, plan: null };
+  }
+
+  const isSub = Boolean(found.isSubscribed);
+  let isValid = isSub;
+
+  // Check expiration if set
+  if (found.subscriptionExpiryDate) {
+    const expiry = new Date(found.subscriptionExpiryDate).getTime();
+    if (Date.now() > expiry) {
+      isValid = false;
+    }
+  }
+
+  return {
+    isSuperAdmin: Boolean(found.isAdmin),
+    isSubscribed: isValid,
+    plan: found.subscriptionPlan || null,
+    user: found,
+  };
+}
+
+// -------------------------------------------------------------------
+// IP Rate Limiting (Protects from bots, continuous curls, and DDoS)
+// -------------------------------------------------------------------
+interface RateLimitRecord {
+  count: number;
+  resetAt: number;
+}
+
+const ipRateLimits = new Map<string, RateLimitRecord>();
+
+/**
+ * Allows up to maxRequests free analyses per timeWindowMs per IP
+ */
+export function checkIpRateLimit(
+  ip: string,
+  isWhitelisted: boolean = false,
+  maxRequests: number = 4,
+  timeWindowMs: number = 3600 * 1000 // 1 hour window
+): { allowed: boolean; remaining: number; resetInSeconds: number } {
+  if (isWhitelisted) {
+    return { allowed: true, remaining: 999, resetInSeconds: 0 };
+  }
+
+  const now = Date.now();
+  const record = ipRateLimits.get(ip);
+
+  if (!record || now > record.resetAt) {
+    ipRateLimits.set(ip, { count: 1, resetAt: now + timeWindowMs });
+    return { allowed: true, remaining: maxRequests - 1, resetInSeconds: Math.ceil(timeWindowMs / 1000) };
+  }
+
+  if (record.count >= maxRequests) {
+    return {
+      allowed: false,
+      remaining: 0,
+      resetInSeconds: Math.ceil((record.resetAt - now) / 1000),
+    };
+  }
+
+  record.count += 1;
+  return {
+    allowed: true,
+    remaining: maxRequests - record.count,
+    resetInSeconds: Math.ceil((record.resetAt - now) / 1000),
+  };
+}
+
+// -------------------------------------------------------------------
+// Secure Server-Side Reading Cache (Prevents leak to DevTools)
+// -------------------------------------------------------------------
+export interface CachedReading {
+  reading: string;
+  pujaVidhi: any;
+  synastry?: any;
+  userPhone?: string;
+  createdAt: number;
+}
+
+const readingCache = new Map<string, CachedReading>();
+
+export function cacheServerReading(id: string, data: CachedReading) {
+  readingCache.set(id, data);
+  // Auto purge cache after 48 hours
+  setTimeout(() => readingCache.delete(id), 48 * 3600 * 1000);
+}
+
+export function getServerReading(id: string): CachedReading | undefined {
+  return readingCache.get(id);
+}

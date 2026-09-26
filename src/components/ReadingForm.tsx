@@ -246,6 +246,7 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
           leftPalmBase64: leftPalmBase64 || undefined,
           rightPalmBase64: rightPalmBase64 || undefined,
           secondaryPerson: secondaryPerson || undefined,
+          userPhone: user?.phone || undefined,
         }),
       });
 
@@ -293,6 +294,8 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
         pujaVidhi={resultData.pujaVidhi}
         synastry={resultData.synastry}
         secondaryPerson={resultData.secondaryPerson}
+        readingId={resultData.readingId}
+        isUnlocked={resultData.isUnlocked}
         onReset={handleReset}
       />
     );

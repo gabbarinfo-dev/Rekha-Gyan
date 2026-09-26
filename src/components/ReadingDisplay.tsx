@@ -90,6 +90,8 @@ interface ReadingDisplayProps {
   synastry?: any;
   palmFeatures?: any;
   secondaryPerson?: { name: string; relation: string };
+  readingId?: string;
+  isUnlocked?: boolean;
   onReset: () => void;
 }
 
@@ -106,11 +108,14 @@ export default function ReadingDisplay({
   pujaVidhi,
   synastry,
   secondaryPerson,
+  readingId,
+  isUnlocked: isUnlockedProp,
   onReset,
 }: ReadingDisplayProps) {
   const { user } = useAuth();
   const { language, setLanguage, t, hasChosenLanguage } = useLanguage();
   const [currentReading, setCurrentReading] = useState(reading);
+  const [currentPujaVidhi, setCurrentPujaVidhi] = useState<PujaVidhiData | undefined>(pujaVidhi);
   const [currentTeaser, setCurrentTeaser] = useState(freeTeaser);
   const [activeLang, setActiveLang] = useState<LanguageType>(language);
   const [isTranslating, setIsTranslating] = useState(false);
@@ -127,8 +132,48 @@ export default function ReadingDisplay({
   const [showPaywall, setShowPaywall] = useState(false);
   const [paywallPlan, setPaywallPlan] = useState<SubscriptionTierType>("trial_99");
   const [unlockedLocally, setUnlockedLocally] = useState(false);
+  const [isUnlocking, setIsUnlocking] = useState(false);
+  const [unlockError, setUnlockError] = useState<string | null>(null);
 
-  const isUnlocked = user?.isSubscribed || unlockedLocally;
+  const isUnlocked = Boolean(isUnlockedProp || user?.isSubscribed || unlockedLocally);
+
+  const handleUnlockFullReport = async () => {
+    if (!readingId) return;
+    setIsUnlocking(true);
+    setUnlockError(null);
+    try {
+      const res = await fetch("/api/analyze/unlock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          readingId,
+          userPhone: user?.phone || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.reading) {
+        setCurrentReading(data.reading);
+        if (data.pujaVidhi) {
+          setCurrentPujaVidhi(data.pujaVidhi);
+        }
+        setUnlockedLocally(true);
+      } else {
+        setUnlockError(data.error || "Could not unlock report. Please verify subscription.");
+      }
+    } catch (err: any) {
+      console.error("Unlock error:", err);
+      setUnlockError(err.message || "Failed to contact unlock server");
+    } finally {
+      setIsUnlocking(false);
+    }
+  };
+
+  // If user has subscription/admin authority but reading was deferred, fetch full reading
+  React.useEffect(() => {
+    if (isUnlocked && !currentReading && readingId && !isUnlocking) {
+      handleUnlockFullReport();
+    }
+  }, [isUnlocked, currentReading, readingId]);
 
   // Auto popup on Screen 1 if user hasn't explicitly chosen a language
   React.useEffect(() => {
@@ -667,7 +712,9 @@ export default function ReadingDisplay({
           </div>
 
           {/* SAMPOORNA SACRED POOJA VIDHI SECTION */}
-          {pujaVidhi && (
+          {(currentPujaVidhi || pujaVidhi) && (() => {
+            const activePuja = currentPujaVidhi || pujaVidhi!;
+            return (
             <div className="cosmic-card rounded-3xl p-6 sm:p-8 border border-gold-500/40 bg-gradient-to-b from-cosmic-900/90 to-purple-950/30 backdrop-blur-2xl shadow-2xl space-y-6">
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <div className="flex items-center gap-2.5">
@@ -692,11 +739,11 @@ export default function ReadingDisplay({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-1">
                   <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Primary Presiding Deity</div>
-                  <div className="text-base font-bold text-gold-300">{pujaVidhi.primaryDeity}</div>
+                  <div className="text-base font-bold text-gold-300">{activePuja.primaryDeity}</div>
                 </div>
                 <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-1">
                   <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Auspicious Day &amp; Muhurat</div>
-                  <div className="text-base font-bold text-amber-200">{pujaVidhi.auspiciousDay}</div>
+                  <div className="text-base font-bold text-amber-200">{activePuja.auspiciousDay}</div>
                 </div>
               </div>
 
@@ -706,7 +753,7 @@ export default function ReadingDisplay({
                   <Sparkles className="w-3.5 h-3.5 text-gold-400" /> Essential Pooja Samagri (सामग्री)
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {pujaVidhi.samagri.map((item, idx) => (
+                  {activePuja.samagri.map((item, idx) => (
                     <div key={idx} className="flex items-start gap-2 text-xs text-slate-300 p-2.5 rounded-xl bg-cosmic-950/60 border border-white/5">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
                       <span>{item}</span>
@@ -721,7 +768,7 @@ export default function ReadingDisplay({
                   Sacred Sankalp (संकल्प मंत्र)
                 </div>
                 <p className="text-sm font-serif italic text-amber-100 leading-relaxed">
-                  &ldquo;{pujaVidhi.sankalp}&rdquo;
+                  &ldquo;{activePuja.sankalp}&rdquo;
                 </p>
               </div>
 
@@ -731,7 +778,7 @@ export default function ReadingDisplay({
                   <Flame className="w-3.5 h-3.5 text-gold-400" /> Step-by-Step Pooja Vidhi (पूजा विधि क्रम)
                 </h4>
                 <div className="space-y-2.5">
-                  {pujaVidhi.steps.map((step, idx) => (
+                  {activePuja.steps.map((step, idx) => (
                     <div key={idx} className="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-xs text-slate-200 leading-relaxed">
                       {step}
                     </div>
@@ -745,11 +792,12 @@ export default function ReadingDisplay({
                   Recommended Karmic Daana (दान)
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  {pujaVidhi.daana}
+                  {activePuja.daana}
                 </p>
               </div>
             </div>
-          )}
+            );
+          })()}
         </div>
       )}
 
