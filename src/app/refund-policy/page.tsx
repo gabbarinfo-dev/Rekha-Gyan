@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { RotateCcw, AlertOctagon, CheckCircle2, HelpCircle, Clock, ShieldCheck, Mail, Phone, MapPin } from "lucide-react";
+import { RotateCcw, AlertOctagon, CheckCircle2, HelpCircle, Clock, ShieldCheck, Mail, Phone, MapPin, Camera, RefreshCw } from "lucide-react";
 
 export const metadata = {
   title: "Refund & Cancellation Policy — REKHA GYAN",
@@ -19,7 +19,7 @@ export default function RefundPolicyPage() {
           Refund &amp; Cancellation Policy
         </h1>
         <p className="text-xs sm:text-sm text-slate-400 max-w-2xl mx-auto leading-relaxed">
-          Clear Terms on Digital Intangible Goods, Technical Generation Failures, Processing Timelines &amp; Subscription Cancellation
+          Clear Terms on Digital Intangible Goods, Credit Restorations, Screenshot Requirements &amp; Cancellation Procedures
         </p>
         <div className="inline-block px-4 py-1 bg-white/5 border border-white/10 rounded-full text-[11px] text-gold-300 font-mono">
           Last Updated: September 2026 | Registered in Ahmedabad, Gujarat, India
@@ -40,123 +40,138 @@ export default function RefundPolicyPage() {
       {/* Main Content */}
       <div className="cosmic-card rounded-3xl p-6 sm:p-10 border border-white/10 space-y-8 text-xs sm:text-sm text-slate-300 leading-relaxed">
 
-        {/* Section 1: Crucial Technical FAQs */}
+        {/* Section 1: Core Policy & AI Generation Failures */}
         <section className="space-y-4 border-b border-white/5 pb-6">
           <div className="flex items-center gap-2">
             <HelpCircle className="w-5 h-5 text-gold-400" />
             <h2 className="text-lg font-bold text-gold-300 font-serif">
-              1. Direct Clarifications &amp; Key Questions
+              1. Direct Clarifications &amp; AI Error Resolution
             </h2>
           </div>
 
-          {/* Question 1: AI generation fails */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 space-y-2">
+          {/* Question 1: AI generation fails or hangs */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 space-y-3">
             <div className="text-sm font-bold text-emerald-300 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-400" />
-              <span>Are refunds provided if the AI generation fails or hangs or gives unusual error?</span>
+              <span>Are refunds provided if the AI generation fails, hangs, or gives an unusual error?</span>
             </div>
             <p className="text-slate-200 font-medium text-xs sm:text-sm">
-              <strong className="text-emerald-300 uppercase font-bold">Yes.</strong> If an unexpected server timeout, AI model hang, network interruption, or unusual computational error occurs and prevents your paid reading/report from generating successfully, we guarantee full protection. You are entitled to an immediate re-generation credit or a 100% full refund upon contacting our support desk.
+              <strong className="text-emerald-300 uppercase font-bold">Yes.</strong> For already paid services, if an unexpected error occurs from our end (e.g., AI model hang, server timeout, or unhandled system crash), compensation is strictly provided in the form of <strong className="text-white underline">service credits / consultation re-issuance</strong> to your account.
             </p>
+            
+            {/* Mandatory SS requirement */}
+            <div className="p-3.5 rounded-xl bg-cosmic-950/70 border border-emerald-500/20 text-xs space-y-1.5">
+              <div className="flex items-center gap-2 text-gold-300 font-bold">
+                <Camera className="w-4 h-4 text-gold-400 flex-shrink-0" />
+                <span>Mandatory Verification Requirement (Real-Time Screenshot):</span>
+              </div>
+              <p className="text-slate-300">
+                To claim credit restoration, you must provide a <strong className="text-white">real-time screenshot (SS) clearly displaying the error state and error code</strong> generated on the AI interface, alongside your registered email/phone and payment transaction ID sent to <a href="mailto:contactus@rekhagyan.online" className="text-gold-300 hover:underline">contactus@rekhagyan.online</a>.
+              </p>
+            </div>
           </div>
 
           {/* Question 2: Exact processing timeframe */}
           <div className="p-4 sm:p-5 rounded-2xl bg-cosmic-900/80 border border-gold-500/25 space-y-2">
             <div className="text-sm font-bold text-gold-300 flex items-center gap-2">
               <Clock className="w-4 h-4 flex-shrink-0 text-gold-400" />
-              <span>What is the exact refund processing timeframe?</span>
+              <span>What is the exact refund &amp; credit processing timeframe?</span>
             </div>
-            <p className="text-slate-200 font-medium text-xs sm:text-sm">
-              <strong className="text-white">Eligible refunds will be credited back to the original payment source within 5–7 business days.</strong> For digital services and consultation reports, refund initiation occurs within standard 5–7 working days from the moment your request is reviewed and validated by our billing desk.
-            </p>
+            <ul className="list-disc list-inside space-y-1.5 text-slate-200 pl-1 text-xs sm:text-sm">
+              <li>
+                <strong className="text-white">Service Credit Restoration:</strong> Processed and re-credited to your profile within <strong className="text-emerald-300 font-bold">24–48 hours</strong> of verification of the error screenshot.
+              </li>
+              <li>
+                <strong className="text-white">Payment Gateway / Duplicate Charges:</strong> Where an actual bank debit occurred multiple times due to a gateway timeout, <strong className="text-white">eligible refunds will be credited back to the original payment source within 5–7 business days</strong>. Standard refund initiation takes 5–7 working days.
+              </li>
+            </ul>
           </div>
         </section>
 
-        {/* Section 2: Nature of Digital & Computational Products */}
+        {/* Section 2: Non-Refundable / Non-Cancellable Digital Services */}
         <section className="space-y-3 border-b border-white/5 pb-6">
-          <h2 className="text-lg font-bold text-gold-300 font-serif">
-            2. Nature of Digital &amp; Computational Products
-          </h2>
+          <div className="flex items-center gap-2 text-rose-300 font-serif font-bold text-base">
+            <AlertOctagon className="w-5 h-5 text-rose-400" />
+            <span>2. Non-Refundable &amp; Non-Cancellable Digital Deliverables</span>
+          </div>
           <p>
-            Unlike physical goods, REKHA GYAN provides instant, intangible digital deliverables and computational synthesis:
+            Unlike physical manufactured products, REKHA GYAN provides instant, intangible, irrevocable digital analysis and server GPU computations:
           </p>
           <ul className="list-disc list-inside space-y-2 text-slate-300 pl-1">
             <li>
-              <strong className="text-white">Instant Server &amp; GPU Resource Consumption:</strong> As soon as you confirm a consultation request and submit palm imagery or birth coordinates, high-performance computer vision pipelines and planetary ephemeris calculation matrices execute immediately on our cloud infrastructure.
+              <strong className="text-white">Instant GPU Computation:</strong> Upon submitting your palm photos or birth details, cloud servers instantly execute complex planetary matrices and computer vision palmistry models.
             </li>
             <li>
-              <strong className="text-white">Completed Digital Delivery:</strong> Once the astrological analysis, palmistry interpretation, and comprehensive guidance report have been successfully computed and presented on your screen or saved to your profile, the digital service is considered fully consumed. Because personalized digital content cannot be returned once successfully rendered, <strong>refunds are not applicable once the reading has been successfully delivered without error</strong>.
+              <strong className="text-white">Delivered Reports are Non-Refundable:</strong> Once your personalized astrological consultation or palm analysis report has been generated and rendered on your screen, the service is fully consumed. <strong className="text-rose-300 uppercase">Successfully delivered reports are non-refundable and non-returnable</strong> under any circumstances.
             </li>
           </ul>
         </section>
 
-        {/* Section 3: Pricing & Product Transparency */}
+        {/* Section 3: Return & Replace Request Process */}
+        <section className="space-y-3 border-b border-white/5 pb-6">
+          <div className="flex items-center gap-2 text-gold-300 font-serif font-bold text-base">
+            <RefreshCw className="w-5 h-5 text-gold-400" />
+            <span>3. Return / Replace Request Process for Digital Services</span>
+          </div>
+          <p>
+            Because digital reports cannot be physically returned, our &ldquo;replace&rdquo; procedure operates through credit restoration:
+          </p>
+          <ol className="list-decimal list-inside space-y-2 text-slate-300 pl-1">
+            <li>
+              <strong className="text-white">Step 1 — Capture Error:</strong> If the AI interface hangs or throws an unhandled error code, immediately take a full-screen screenshot showing the URL, timestamp, and visible error message/code.
+            </li>
+            <li>
+              <strong className="text-white">Step 2 — Submit Request:</strong> Email <a href="mailto:contactus@rekhagyan.online" className="text-gold-300 hover:underline">contactus@rekhagyan.online</a> within 24 hours with subject <span className="font-mono bg-white/10 px-1.5 py-0.5 rounded text-white">&ldquo;Technical Error Credit Claim - [Transaction ID]&rdquo;</span> and attach the real-time screenshot.
+            </li>
+            <li>
+              <strong className="text-white">Step 3 — Verification &amp; Credit Re-Issue:</strong> Our technical team verifies server logs against your screenshot within 24–48 hours and re-issues full consultation credits so you can re-run your reading without charge.
+            </li>
+          </ol>
+        </section>
+
+        {/* Section 4: Cancellation Procedures, Fees & Requirements */}
         <section className="space-y-3 border-b border-white/5 pb-6">
           <h2 className="text-lg font-bold text-gold-300 font-serif">
-            3. Pricing &amp; Service Tiers
+            4. Cancellation Procedures, Fees &amp; Requirements
           </h2>
-          <p>
-            We offer transparent, upfront pricing with zero hidden surcharges:
-          </p>
+          <div className="space-y-2 text-slate-300">
+            <p>
+              <strong className="text-white">Cancellation Fees:</strong> <span className="text-emerald-400 font-bold">₹0 (Zero Fees)</span>. We do not charge any cancellation penalties or processing fees for terminating future subscriptions.
+            </p>
+            <p>
+              <strong className="text-white">Cancellation Requirement:</strong> Subscription cancellation requests must be submitted at least <strong className="text-white">24 hours prior</strong> to the next recurring billing renewal date.
+            </p>
+            <p>
+              <strong className="text-white">Procedure:</strong> You can cancel recurring subscriptions directly from your user dashboard settings or by sending an email with your registered details to <a href="mailto:contactus@rekhagyan.online" className="text-gold-400 hover:underline">contactus@rekhagyan.online</a>. Upon cancellation, your access remains valid through the remainder of your paid billing term with zero further debits.
+            </p>
+          </div>
+        </section>
+
+        {/* Section 5: Pricing Breakdown */}
+        <section className="space-y-3 border-b border-white/5 pb-6">
+          <h2 className="text-lg font-bold text-gold-300 font-serif">
+            5. Pricing &amp; Service Tiers
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
             <div className="p-3.5 rounded-xl bg-cosmic-900/60 border border-white/10 space-y-1">
               <div className="font-bold text-white text-xs">₹0 Free Reading</div>
               <p className="text-[11px] text-slate-400">
-                Introductory complimentary palm scan preview and basic Kundli analysis. No payment required.
+                Introductory palm preview and basic summary. 100% free of charge.
               </p>
             </div>
             <div className="p-3.5 rounded-xl bg-cosmic-900/60 border border-gold-500/20 space-y-1">
-              <div className="font-bold text-gold-300 text-xs">₹51 / ₹99 Single Readings</div>
+              <div className="font-bold text-gold-300 text-xs">₹51 / ₹99 Single Consultations</div>
               <p className="text-[11px] text-slate-400">
-                Single-session deep palm scan, specific life question analysis, or trial report generation.
+                Single-session palmistry synthesis or focused planetary query with remedies.
               </p>
             </div>
             <div className="p-3.5 rounded-xl bg-cosmic-900/60 border border-gold-500/30 space-y-1">
               <div className="font-bold text-amber-300 text-xs">₹599 / ₹1099 Multi-Query Packs</div>
               <p className="text-[11px] text-slate-400">
-                Pro Vedic &amp; Ultimate Samudrika access, synastry / matchmaking, remedies, and lifetime chart storage.
+                Pro Vedic &amp; Ultimate Samudrika access, partner synastry, and priority processing.
               </p>
             </div>
           </div>
-        </section>
-
-        {/* Section 4: Refund Eligibility Scenarios */}
-        <section className="space-y-3 border-b border-white/5 pb-6">
-          <h2 className="text-lg font-bold text-gold-300 font-serif">
-            4. Refund Eligibility &amp; Initiation Process
-          </h2>
-          <p>
-            Refunds will be approved and initiated within our standard 5–7 working days window under the following scenarios:
-          </p>
-          <ul className="list-disc list-inside space-y-2 text-slate-300 pl-1">
-            <li>
-              <strong className="text-white">Technical Failure / Server Hang:</strong> If your payment was successful, but the AI system crashed, hung indefinitely, or returned an unrecoverable system error without providing your completed report.
-            </li>
-            <li>
-              <strong className="text-white">Duplicate Deduction:</strong> If your bank account, credit/debit card, or UPI was debited more than once for a single transaction attempt due to a payment gateway latency.
-            </li>
-            <li>
-              <strong className="text-white">Service Non-Delivery:</strong> If the paid report is not generated and delivered to your account within 30 minutes of payment confirmation due to technical bottlenecks.
-            </li>
-          </ul>
-          <p className="pt-1 text-slate-400 text-xs">
-            <em>How to claim:</em> Email our support desk at <a href="mailto:contactus@rekhagyan.online" className="text-gold-400 hover:underline">contactus@rekhagyan.online</a> or WhatsApp <a href="tel:8511739865" className="text-gold-400 hover:underline">+91 8511739865</a> with your registered phone number/email and Transaction ID. Eligible refunds will be credited back to the original payment source within 5–7 business days.
-          </p>
-        </section>
-
-        {/* Section 5: Subscription Cancellation */}
-        <section className="space-y-3 border-b border-white/5 pb-6">
-          <h2 className="text-lg font-bold text-gold-300 font-serif">
-            5. Subscription Cancellation Policy
-          </h2>
-          <p>
-            If you enroll in any recurring subscription:
-          </p>
-          <ul className="list-disc list-inside space-y-1.5 text-slate-300 pl-1">
-            <li>You may cancel recurring renewals anytime before the next billing cycle via your user profile or by writing to <a href="mailto:contactus@rekhagyan.online" className="text-gold-400 hover:underline">contactus@rekhagyan.online</a>.</li>
-            <li>Once cancelled, access remains valid through the paid period and will not renew.</li>
-            <li>Past or current billing cycles already initiated or consumed cannot be refunded retroactively.</li>
-          </ul>
         </section>
 
         {/* Section 6: Official Business & Support Information */}
@@ -174,7 +189,7 @@ export default function RefundPolicyPage() {
             <div className="space-y-1.5">
               <p><strong className="text-white">Official Email:</strong> <a href="mailto:contactus@rekhagyan.online" className="text-gold-400 hover:underline">contactus@rekhagyan.online</a></p>
               <p><strong className="text-white">Grievance Email:</strong> <a href="mailto:grievance@rekhagyan.online" className="text-gold-400 hover:underline">grievance@rekhagyan.online</a></p>
-              <p><strong className="text-white">Phone Numbers:</strong> <a href="tel:8511739865" className="text-gold-400 hover:underline">+91 8511739865</a> / <a href="tel:9274090534" className="text-gold-400 hover:underline">+91 9274090534</a></p>
+              <p><strong className="text-white">Phone Numbers:</strong> <a href="tel:8511739865" className="text-gold-400 hover:underline">+91 8511739865 (Udyam)</a> / <a href="tel:9274090534" className="text-gold-400 hover:underline">+91 9274090534</a></p>
               <p><strong className="text-white">Customer Support Response Time:</strong> 24–48 Hours</p>
             </div>
           </div>
