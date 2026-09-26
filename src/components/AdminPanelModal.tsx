@@ -41,9 +41,16 @@ interface StoredUser {
 interface AdminPanelModalProps {
   isOpen: boolean;
   onClose: () => void;
+  isStandalonePage?: boolean;
 }
 
-export default function AdminPanelModal({ isOpen, onClose }: AdminPanelModalProps) {
+export default function AdminPanelModal({
+  isOpen,
+  onClose,
+  isStandalonePage = false,
+}: AdminPanelModalProps) {
+  if (!isOpen) return null;
+
   const { isAdmin } = useAuth();
   const [users, setUsers] = useState<StoredUser[]>([]);
   const [loading, setLoading] = useState(false);
@@ -284,9 +291,13 @@ export default function AdminPanelModal({ isOpen, onClose }: AdminPanelModalProp
 
   const activeSubscribersCount = users.filter((u) => u.isSubscribed).length;
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center p-3 sm:p-6 pt-20 sm:pt-12 pb-16 bg-black/90 backdrop-blur-md animate-fadeIn overflow-y-auto">
-      <div className="relative w-full max-w-7xl my-auto rounded-3xl bg-cosmic-950 border border-gold-500/40 shadow-2xl shadow-purple-950/80 overflow-hidden flex flex-col max-h-[92vh]">
+  const panelContent = (
+    <>
+      <div
+        className={`relative w-full max-w-7xl mx-auto rounded-3xl bg-cosmic-950 border border-gold-500/40 shadow-2xl shadow-purple-950/80 overflow-hidden flex flex-col ${
+          isStandalonePage ? "min-h-[85vh]" : "max-h-[92vh] my-auto"
+        }`}
+      >
         {/* Header */}
         <div className="p-4 sm:p-6 border-b border-white/10 bg-cosmic-900/90 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -878,6 +889,16 @@ export default function AdminPanelModal({ isOpen, onClose }: AdminPanelModalProp
           </div>
         </div>
       )}
+    </>
+  );
+
+  if (isStandalonePage) {
+    return panelContent;
+  }
+
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-6 bg-black/90 backdrop-blur-md animate-fadeIn overflow-y-auto">
+      {panelContent}
     </div>
   );
 }
