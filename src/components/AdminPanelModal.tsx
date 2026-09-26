@@ -17,6 +17,7 @@ import {
   Eye,
   Calendar,
   Sparkles,
+  HeartHandshake,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 
@@ -36,6 +37,7 @@ interface StoredUser {
   subscriptionStartDate?: string;
   subscriptionExpiryDate?: string;
   isAdmin?: boolean;
+  matchmakingRemaining?: number;
 }
 
 interface AdminPanelModalProps {
@@ -186,6 +188,32 @@ export default function AdminPanelModal({
         fetchUsers();
       } else {
         alert(data.error || "Failed to update subscription");
+      }
+    } catch (e: any) {
+      alert("Network error: " + e.message);
+    }
+  };
+
+  const handleAddMatchmaking = async (phone: string, count: number) => {
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone,
+          addMatchmaking: count,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setActionMessage(data.message);
+        setTimeout(() => setActionMessage(null), 4000);
+        if (viewingUser && viewingUser.phone === phone) {
+          setViewingUser(data.user);
+        }
+        fetchUsers();
+      } else {
+        alert(data.error || "Failed to add matchmaking credits");
       }
     } catch (e: any) {
       alert("Network error: " + e.message);
@@ -528,6 +556,27 @@ export default function AdminPanelModal({
                                 ? "₹499 Duo Pass"
                                 : "₹99 Starter"}
                             </span>
+                            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                              <span className="text-[10px] text-rose-300 font-semibold bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded-full">
+                                🎯 {u.matchmakingRemaining ?? (u.subscriptionPlan === "trial_99" ? 1 : u.subscriptionPlan === "duo_599" ? 3 : u.subscriptionPlan === "unlimited_1009" ? 5 : 0)} Matches Left
+                              </span>
+                              <button
+                                type="button"
+                                title="Add 2 Matchmakings (₹60 Top-up)"
+                                onClick={() => handleAddMatchmaking(u.phone, 2)}
+                                className="px-1.5 py-0.5 rounded bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-300 text-[10px] text-slate-300 border border-white/10"
+                              >
+                                +2 (₹60)
+                              </button>
+                              <button
+                                type="button"
+                                title="Add 5 Matchmakings (₹99 Top-up)"
+                                onClick={() => handleAddMatchmaking(u.phone, 5)}
+                                className="px-1.5 py-0.5 rounded bg-white/5 hover:bg-gold-500/20 hover:text-gold-300 text-[10px] text-slate-300 border border-white/10"
+                              >
+                                +5 (₹99)
+                              </button>
+                            </div>
                             {u.subscriptionExpiryDate && (
                               <div className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
                                 <Clock className="w-3 h-3 text-slate-400" />
@@ -536,10 +585,24 @@ export default function AdminPanelModal({
                             )}
                           </div>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-white/10 text-[11px]">
-                            <XCircle className="w-3 h-3" />
-                            Free / Unsubscribed
-                          </span>
+                          <div>
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-white/10 text-[11px]">
+                              <XCircle className="w-3 h-3" />
+                              Free / Unsubscribed
+                            </span>
+                            <div className="flex items-center gap-1.5 mt-1.5">
+                              <span className="text-[10px] text-slate-400">
+                                Matches: {u.matchmakingRemaining ?? 0}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleAddMatchmaking(u.phone, 1)}
+                                className="px-1.5 py-0.5 rounded bg-white/5 hover:bg-white/10 text-[10px] text-slate-300 border border-white/10"
+                              >
+                                +1 Grant
+                              </button>
+                            </div>
+                          </div>
                         )}
                       </td>
 
@@ -875,6 +938,45 @@ export default function AdminPanelModal({
                     Expires on: {new Date(viewingUser.subscriptionExpiryDate).toLocaleString()}
                   </div>
                 )}
+              </div>
+
+              {/* Matchmaking Quota & Manual Override Controls */}
+              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="text-rose-400 font-bold uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                    <HeartHandshake className="w-3.5 h-3.5" />
+                    <span>Matchmaking Quota &amp; Manual Overrides</span>
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-black text-xs border border-rose-500/30">
+                    {viewingUser.matchmakingRemaining ?? 0} Left
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Add instant credits if seeker purchased a Top-Up (₹60 for 2, ₹99 for 5) or faced any technical glitch.
+                </p>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => handleAddMatchmaking(viewingUser.phone, 1)}
+                    className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[11px] font-medium transition-all"
+                  >
+                    +1 Credit (Glitch Fix)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAddMatchmaking(viewingUser.phone, 2)}
+                    className="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold transition-all"
+                  >
+                    +2 Credits (₹60 Top-up)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAddMatchmaking(viewingUser.phone, 5)}
+                    className="px-2.5 py-1 rounded-lg bg-gold-500/20 hover:bg-gold-500/30 text-gold-300 border border-gold-500/30 text-[11px] font-bold transition-all"
+                  >
+                    +5 Credits (₹99 Top-up)
+                  </button>
+                </div>
               </div>
             </div>
 

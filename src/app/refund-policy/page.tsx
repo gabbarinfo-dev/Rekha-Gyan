@@ -168,9 +168,12 @@ export default function RefundPolicyPage() {
             <div className="p-3.5 rounded-xl bg-cosmic-900/60 border border-gold-500/30 space-y-1">
               <div className="font-bold text-amber-300 text-xs">₹499 / ₹999 Multi-Query Packs</div>
               <p className="text-[11px] text-slate-400">
-                Pro Vedic &amp; Ultimate Samudrika access, partner synastry, and priority processing.
+                Pro Vedic &amp; Ultimate Samudrika access, 3 or 5 partner matchmakings, and priority processing.
               </p>
             </div>
+          </div>
+          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-200 mt-2">
+            <strong>Matchmaking Top-Up Packs:</strong> ₹60 for 2 extra scans, ₹99 for 5 extra scans. Fully covered under digital credit restoration policies.
           </div>
         </section>
 

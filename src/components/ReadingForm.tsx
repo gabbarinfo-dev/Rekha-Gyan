@@ -58,6 +58,8 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
   const [showLockWarningModal, setShowLockWarningModal] = useState(false);
   const [showPaywallModal, setShowPaywallModal] = useState(false);
   const [paywallTargetPlan, setPaywallTargetPlan] = useState<SubscriptionTierType>("trial_99");
+  const [paywallTab, setPaywallTab] = useState<"plans" | "topup">("plans");
+  const [paywallReason, setPaywallReason] = useState<string | undefined>();
 
   // Palm Photos
   const [leftPalmBase64, setLeftPalmBase64] = useState<string>(user?.savedLeftPalm || "");
@@ -586,12 +588,16 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
                     type="button"
                     onClick={() => {
                       if (!user?.isSubscribed) {
+                        setPaywallTab("plans");
+                        setPaywallReason(undefined);
                         setPaywallTargetPlan("trial_99");
                         setShowPaywallModal(true);
                         return;
                       }
                       if (!canDoMatchmaking()) {
-                        setPaywallTargetPlan("duo_599");
+                        setPaywallTab("topup");
+                        setPaywallReason("You have exhausted all matchmaking analyses included in your active plan. Top-up for 2 or 5 more matches below, or switch to a higher plan.");
+                        setPaywallTargetPlan(user?.subscriptionPlan === "trial_99" ? "duo_599" : "unlimited_1009");
                         setShowPaywallModal(true);
                       } else {
                         setShowSecondaryModal(true);
@@ -627,14 +633,18 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
                     if (!user?.isSubscribed) {
                       setStep1Error("Your question concerns a partner/relationship. You can unlock partner matchmaking with our ₹99 Starter or ₹499 Duo Pass.");
                       setTimeout(() => step1ErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
+                      setPaywallTab("plans");
+                      setPaywallReason(undefined);
                       setPaywallTargetPlan("trial_99");
                       setShowPaywallModal(true);
                       return;
                     }
                     if (!canDoMatchmaking()) {
-                      setStep1Error("You have used your complimentary matchmaking analysis. To add a partner for synastry, upgrade to the ₹499 Duo Plan or ₹999 Pro Plan.");
+                      setStep1Error("You have used all matchmakings in your plan. Top-up anytime: ₹60 for 2 scans or ₹99 for 5 scans.");
                       setTimeout(() => step1ErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
-                      setPaywallTargetPlan("duo_599");
+                      setPaywallTab("topup");
+                      setPaywallReason("You have used all matchmakings included in your plan. Get instant top-up credits (₹60 for 2, ₹99 for 5) or upgrade below.");
+                      setPaywallTargetPlan(user?.subscriptionPlan === "trial_99" ? "duo_599" : "unlimited_1009");
                       setShowPaywallModal(true);
                       return;
                     }
@@ -1132,11 +1142,13 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
         }}
       />
 
-      {/* Paywall Modal for 3 Tiers */}
+      {/* Paywall Modal for 3 Tiers & Top-Ups */}
       <PaywallModal
         isOpen={showPaywallModal}
         onClose={() => setShowPaywallModal(false)}
         defaultPlan={paywallTargetPlan}
+        defaultTab={paywallTab}
+        exhaustedReason={paywallReason}
         userName={name}
         userDob={dob}
         onSuccess={() => {

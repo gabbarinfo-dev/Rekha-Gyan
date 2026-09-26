@@ -339,6 +339,8 @@ export interface WordPressStoredUser {
   subscriptionStartDate?: string;
   subscriptionExpiryDate?: string;
   isAdmin?: boolean;
+  matchmakingRemaining?: number;
+  deepQuestionsRemaining?: number;
 }
 
 /**

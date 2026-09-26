@@ -240,7 +240,7 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
-    const { phone, isSubscribed, plan, durationDays } = body;
+    const { phone, isSubscribed, plan, durationDays, addMatchmaking, matchmakingRemaining } = body;
 
     const cleanPhone = (phone || "").replace(/\D/g, "");
     if (!cleanPhone) {
@@ -264,13 +264,26 @@ export async function PUT(req: NextRequest) {
       expiryDate = exp.toISOString();
     }
 
+    const targetPlan = isSubscribed ? (plan || "trial_99") : null;
+    const defaultMatches = targetPlan === "unlimited_1009" ? 5 : targetPlan === "duo_599" ? 3 : 1;
+
+    let updatedMatches = users[userIndex].matchmakingRemaining;
+    if (matchmakingRemaining !== undefined) {
+      updatedMatches = Math.max(0, Number(matchmakingRemaining));
+    } else if (addMatchmaking !== undefined) {
+      updatedMatches = Math.max(0, (users[userIndex].matchmakingRemaining ?? 0) + Number(addMatchmaking));
+    } else if (isSubscribed && (updatedMatches === undefined || updatedMatches === 0)) {
+      updatedMatches = defaultMatches;
+    }
+
     users[userIndex] = {
       ...users[userIndex],
-      isSubscribed: Boolean(isSubscribed),
-      subscriptionPlan: isSubscribed ? (plan || "trial_99") : null,
-      subscriptionDurationDays: isSubscribed ? days : 0,
-      subscriptionStartDate: isSubscribed ? now.toISOString() : undefined,
-      subscriptionExpiryDate: isSubscribed ? expiryDate : undefined,
+      isSubscribed: isSubscribed !== undefined ? Boolean(isSubscribed) : users[userIndex].isSubscribed,
+      subscriptionPlan: targetPlan !== undefined ? targetPlan : users[userIndex].subscriptionPlan,
+      subscriptionDurationDays: isSubscribed ? days : (users[userIndex].subscriptionDurationDays || 0),
+      subscriptionStartDate: isSubscribed ? now.toISOString() : users[userIndex].subscriptionStartDate,
+      subscriptionExpiryDate: isSubscribed ? expiryDate : users[userIndex].subscriptionExpiryDate,
+      matchmakingRemaining: updatedMatches,
     };
 
     writeUsersToDisk(users);
@@ -287,11 +300,20 @@ export async function PUT(req: NextRequest) {
       unlimited_1009: "₹999 Pro Pass",
     }[plan as "trial_99" | "duo_599" | "unlimited_1009"] || "Custom Plan";
 
+    let successMsg = `Updated account for ${users[userIndex].name}.`;
+    if (addMatchmaking !== undefined) {
+      successMsg = `Added +${addMatchmaking} Matchmaking credits for ${users[userIndex].name} (Total: ${updatedMatches})!`;
+    } else if (matchmakingRemaining !== undefined) {
+      successMsg = `Set Matchmaking credits to ${updatedMatches} for ${users[userIndex].name}!`;
+    } else if (isSubscribed) {
+      successMsg = `Successfully activated ${planLabel} for ${users[userIndex].name} (${days} days, ${updatedMatches} matchmakings)!`;
+    } else if (isSubscribed === false) {
+      successMsg = `Deactivated subscription for ${users[userIndex].name}.`;
+    }
+
     return NextResponse.json({
       success: true,
-      message: isSubscribed
-        ? `Successfully activated ${planLabel} for ${users[userIndex].name} (${days} days)!`
-        : `Deactivated subscription for ${users[userIndex].name}.`,
+      message: successMsg,
       user: users[userIndex],
     });
   } catch (e: any) {

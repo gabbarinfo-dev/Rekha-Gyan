@@ -106,9 +106,12 @@ export default function TermsPage() {
             <div className="p-3.5 rounded-xl bg-cosmic-900/60 border border-gold-500/20 space-y-1">
               <div className="font-bold text-amber-300 text-sm">₹499 / ₹999 Duo &amp; Pro Packs</div>
               <p className="text-[11px] text-slate-400">
-                Multi-profile support, divisional chart analysis (D9 Navamsha, D10 Dashamsha), multi-query synastry, and priority GPU processing.
+                Multi-profile support, divisional chart analysis (D9 Navamsha, D10 Dashamsha), 3 total matchmakings (Duo) or 5 total matchmakings (Pro), and priority GPU processing.
               </p>
             </div>
+          </div>
+          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-200 mt-2">
+            <strong>Matchmaking Top-Up Add-Ons:</strong> Active subscribers can top-up additional matchmaking credits anytime at <strong>₹60 for 2 extra scans</strong> or <strong>₹99 for 5 extra scans</strong>.
           </div>
           <ul className="list-disc list-inside space-y-1.5 text-slate-300 pt-2 pl-1">
             <li><strong className="text-white">Payment Methods:</strong> Payments are processed via UPI, Debit/Credit Cards, Net Banking, and digital wallets through licensed RBI-compliant payment gateway partners.</li>

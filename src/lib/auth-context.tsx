@@ -51,6 +51,7 @@ interface AuthContextType {
   consumeQuota: (type: "deepQuestion" | "partnerQuestion" | "matchmaking") => boolean;
   canAskPartnerQuestion: () => boolean;
   canDoMatchmaking: () => boolean;
+  addMatchmakingCredits: (count: number) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -104,6 +105,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                   isSubscribed: isSuperAdmin ? true : Boolean(serverUser.isSubscribed),
                   subscriptionPlan: isSuperAdmin ? "unlimited_1009" : serverUser.subscriptionPlan || null,
                   subscriptionExpiryDate: serverUser.subscriptionExpiryDate,
+                  matchmakingRemaining: serverUser.matchmakingRemaining !== undefined ? serverUser.matchmakingRemaining : prev.matchmakingRemaining,
+                  deepQuestionsRemaining: serverUser.deepQuestionsRemaining !== undefined ? serverUser.deepQuestionsRemaining : prev.deepQuestionsRemaining,
                 };
                 // update local storage
                 try {
@@ -286,8 +289,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
     const initialQuotas = {
       trial_99: { deep: 2, partner: 0, match: 1 },
-      duo_599: { deep: 6, partner: 2, match: 2 },
-      unlimited_1009: { deep: 18, partner: 6, match: 4 },
+      duo_599: { deep: 6, partner: 2, match: 3 },
+      unlimited_1009: { deep: 18, partner: 6, match: 5 },
     }[plan];
 
     updateProfile({
@@ -319,6 +322,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (user?.isAdmin) return true;
     if (!user?.isSubscribed) return false;
     return (user.matchmakingRemaining ?? 0) > 0;
+  };
+
+  const addMatchmakingCredits = (count: number) => {
+    if (!user) return;
+    const current = user.matchmakingRemaining ?? 0;
+    updateProfile({
+      matchmakingRemaining: current + count,
+    });
   };
 
   const consumeQuota = (type: "deepQuestion" | "partnerQuestion" | "matchmaking"): boolean => {
@@ -365,6 +376,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         consumeQuota,
         canAskPartnerQuestion,
         canDoMatchmaking,
+        addMatchmakingCredits,
       }}
     >
       {children}

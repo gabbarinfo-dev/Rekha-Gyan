@@ -153,7 +153,7 @@ export default function SubscriptionPage() {
                 </li>
                 <li className="flex items-start gap-2 text-xs text-slate-300">
                   <Check className="w-3.5 h-3.5 shrink-0 mt-0.5 text-gold-400" />
-                  <span>2 Full Matchmakings (Both profiles)</span>
+                  <span>3 Total Matchmaking Analyses (Any profile combination)</span>
                 </li>
               </ul>
             </div>
@@ -189,7 +189,7 @@ export default function SubscriptionPage() {
                 </li>
                 <li className="flex items-start gap-2 text-xs text-slate-300">
                   <Check className="w-3.5 h-3.5 shrink-0 mt-0.5 text-purple-400" />
-                  <span>4 Full Match-Making Analyses across pairings</span>
+                  <span>5 Total Matchmaking Analyses (Any profile combination)</span>
                 </li>
                 <li className="flex items-start gap-2 text-xs text-slate-300">
                   <Check className="w-3.5 h-3.5 shrink-0 mt-0.5 text-purple-400" />
@@ -211,6 +211,30 @@ export default function SubscriptionPage() {
             </button>
           </div>
 
+        </div>
+
+        {/* Matchmaking Top-up Banner */}
+        <div className="mb-10 p-5 rounded-3xl bg-rose-500/10 border border-rose-500/25 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-300 shrink-0">
+              <HeartHandshake className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-white uppercase tracking-wider">
+                Exhausted your matchmaking quota?
+              </div>
+              <p className="text-xs text-slate-300 mt-0.5">
+                Top-up anytime: <strong>₹60 for 2 extra matches</strong> or <strong>₹99 for 5 extra matches</strong>.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => handlePay("trial_99")}
+            className="px-5 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs shrink-0 shadow-lg shadow-rose-500/20 transition-all"
+          >
+            Get Matchmaking Top-Up
+          </button>
         </div>
 
         {/* Bottom note */}
