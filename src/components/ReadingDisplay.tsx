@@ -615,73 +615,130 @@ export default function ReadingDisplay({
         </div>
 
         {/* Section C: 4 Core Character Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
-          {/* Card 1: Social Paradox - Baatuni vs Introvert */}
-          <div className="p-3.5 sm:p-5 rounded-2xl bg-gradient-to-br from-amber-500/10 to-transparent border border-amber-500/20 space-y-2">
-            <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
-                <MessageSquare className="w-4 h-4 text-amber-400 shrink-0" />
-                <span>{t.card1Title}</span>
-              </span>
-              <span className="self-start xs:self-auto text-[9px] sm:text-[10px] uppercase font-bold px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                {t.card1Badge}
-              </span>
-            </div>
-            <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-              {currentTeaser?.introvertExtrovertTrait || t.card1Fallback}
-            </p>
-          </div>
+        {(() => {
+          const isHindi = activeLang === "hindi";
+          const isEng = activeLang === "english";
+          const lord = vedicChart?.nakshatraLord;
+          const dasha = vedicChart?.currentMahadasha;
+          const dominant = insights?.dominantMount;
 
-          {/* Card 2: Past Scars & Betrayal */}
-          <div className="p-3.5 sm:p-5 rounded-2xl bg-gradient-to-br from-rose-500/10 to-transparent border border-rose-500/20 space-y-2">
-            <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5">
-              <span className="text-xs font-bold uppercase tracking-wider text-rose-300 flex items-center gap-1.5">
-                <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0" />
-                <span>{t.card2Title}</span>
-              </span>
-              <span className="self-start xs:self-auto text-[9px] sm:text-[10px] uppercase font-bold px-2 py-0.5 rounded-md bg-rose-500/15 text-rose-300 border border-rose-500/30">
-                {t.card2Badge}
-              </span>
-            </div>
-            <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-              {currentTeaser?.pastGhatnaAndDhokha || t.card2Fallback}
-            </p>
-          </div>
+          let b1 = t.card1Badge;
+          if (lord === "Sun" || lord === "Mars") {
+            b1 = isHindi ? "तेजस्वी नेतृत्व" : isEng ? "Dynamic Leader" : "Tejasvi Leader";
+          } else if (lord === "Saturn" || lord === "Ketu") {
+            b1 = isHindi ? "शांत विश्लेषक" : isEng ? "Deep Observer" : "Grave Observer";
+          } else if (lord === "Mercury" || lord === "Venus") {
+            b1 = isHindi ? "चयनात्मक स्पष्टवादी" : isEng ? "Selective Expressive" : "Selective Expressive";
+          } else if (lord === "Moon" || lord === "Jupiter") {
+            b1 = isHindi ? "सहज अंतर्ज्ञानी" : isEng ? "Intuitive Empath" : "Intuitive Empath";
+          }
 
-          {/* Card 3: Heart vs Mind & Night Overthinking */}
-          <div className="p-3.5 sm:p-5 rounded-2xl bg-gradient-to-br from-purple-500/10 to-transparent border border-purple-500/20 space-y-2">
-            <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5">
-              <span className="text-xs font-bold uppercase tracking-wider text-purple-300 flex items-center gap-1.5">
-                <Heart className="w-4 h-4 text-purple-400 shrink-0" />
-                <span>{t.card3Title}</span>
-              </span>
-              <span className="self-start xs:self-auto text-[9px] sm:text-[10px] uppercase font-bold px-2 py-0.5 rounded-md bg-purple-500/15 text-purple-300 border border-purple-500/30">
-                {t.card3Badge}
-              </span>
-            </div>
-            <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-              {currentTeaser?.heartMindConflict || t.card3Fallback}{" "}
-              {currentTeaser?.nightOverthinkingTrait || ""}
-            </p>
-          </div>
+          let b2 = t.card2Badge;
+          if (dasha === "Rahu") {
+            b2 = isHindi ? "अकस्मात कर्म संधि" : isEng ? "Karmic Pivot Scar" : "Past Karmic Crucible";
+          } else if (dasha === "Budha" || dasha === "Mercury") {
+            b2 = isHindi ? "कैरियर एवं विद्या संधि" : isEng ? "Career & Mind Crucible" : "Intellectual Crossroads";
+          } else if (dasha === "Shani" || dasha === "Saturn") {
+            b2 = isHindi ? "तपस्या एवं धैर्य काल" : isEng ? "Trial of Endurance" : "Saturnian Trial";
+          } else if (dasha === "Guru" || dasha === "Jupiter") {
+            b2 = isHindi ? "नैतिक चेतना संधि" : isEng ? "Values & Dharma Pivot" : "Ideals & Awakening";
+          } else if (dasha === "Shukra" || dasha === "Venus") {
+            b2 = isHindi ? "भावनात्मक परीक्षा" : isEng ? "Emotional Fidelity Test" : "Emotional Crucible";
+          } else if (dasha === "Mangal" || dasha === "Mars") {
+            b2 = isHindi ? "साहस एवं संघर्ष" : isEng ? "Courage in Conflict" : "Fiery Crucible";
+          } else if (dasha === "Surya" || dasha === "Sun") {
+            b2 = isHindi ? "स्वाभिमान का संघर्ष" : isEng ? "Sovereignty Trial" : "Ego & Self-Worth Trial";
+          } else if (dasha === "Chandra" || dasha === "Moon") {
+            b2 = isHindi ? "मानसिक संवेदनशीलता" : isEng ? "Psychic Awakening" : "Inner Vulnerability Scar";
+          } else if (dasha === "Ketu") {
+            b2 = isHindi ? "वैराग्य एवं चेतना" : isEng ? "Spiritual Detachment" : "Spiritual Awakening";
+          }
 
-          {/* Card 4: Palmistry Marks & 6th Sense */}
-          <div className="p-3.5 sm:p-5 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/20 space-y-2">
-            <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5">
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
-                <Eye className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>{t.card4Title}</span>
-              </span>
-              <span className="self-start xs:self-auto text-[9px] sm:text-[10px] uppercase font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                {t.card4Badge}
-              </span>
+          let b4 = t.card4Badge;
+          if (dominant?.includes("Jupiter")) {
+            b4 = isHindi ? "दैवीय विवेक" : isEng ? "Guru Wisdom Seal" : "Divine Discernment";
+          } else if (dominant?.includes("Sun")) {
+            b4 = isHindi ? "शाही सूर्य तेज" : isEng ? "Royal Solar Mark" : "Solar Radiance";
+          } else if (dominant?.includes("Mercury")) {
+            b4 = isHindi ? "कुशाग्र बुद्धि" : isEng ? "Commercial Acumen" : "Mercury Acumen";
+          } else if (dominant?.includes("Venus")) {
+            b4 = isHindi ? "आकर्षक आभा" : isEng ? "Magnetic Aura" : "Magnetic Charm";
+          } else if (dominant?.includes("Saturn")) {
+            b4 = isHindi ? "गहन कर्म दृष्टि" : isEng ? "Karmic Vision" : "Deep Perception";
+          } else {
+            b4 = isHindi ? "प्रचंड अंतर्ज्ञान" : isEng ? "High Intuition" : "High Intuition";
+          }
+
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
+              {/* Card 1: Social Paradox - Baatuni vs Introvert */}
+              <div className="p-3.5 sm:p-5 rounded-2xl bg-gradient-to-br from-amber-500/10 to-transparent border border-amber-500/20 space-y-2">
+                <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5">
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+                    <MessageSquare className="w-4 h-4 text-amber-400 shrink-0" />
+                    <span>{t.card1Title}</span>
+                  </span>
+                  <span className="self-start xs:self-auto text-[9px] sm:text-[10px] uppercase font-bold px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                    {b1}
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                  {currentTeaser?.introvertExtrovertTrait || t.card1Fallback}
+                </p>
+              </div>
+
+              {/* Card 2: Past Scars & Transition */}
+              <div className="p-3.5 sm:p-5 rounded-2xl bg-gradient-to-br from-rose-500/10 to-transparent border border-rose-500/20 space-y-2">
+                <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5">
+                  <span className="text-xs font-bold uppercase tracking-wider text-rose-300 flex items-center gap-1.5">
+                    <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>{t.card2Title}</span>
+                  </span>
+                  <span className="self-start xs:self-auto text-[9px] sm:text-[10px] uppercase font-bold px-2 py-0.5 rounded-md bg-rose-500/15 text-rose-300 border border-rose-500/30">
+                    {b2}
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                  {currentTeaser?.pastGhatnaAndDhokha || t.card2Fallback}
+                </p>
+              </div>
+
+              {/* Card 3: Heart vs Mind & Night Overthinking */}
+              <div className="p-3.5 sm:p-5 rounded-2xl bg-gradient-to-br from-purple-500/10 to-transparent border border-purple-500/20 space-y-2">
+                <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5">
+                  <span className="text-xs font-bold uppercase tracking-wider text-purple-300 flex items-center gap-1.5">
+                    <Heart className="w-4 h-4 text-purple-400 shrink-0" />
+                    <span>{t.card3Title}</span>
+                  </span>
+                  <span className="self-start xs:self-auto text-[9px] sm:text-[10px] uppercase font-bold px-2 py-0.5 rounded-md bg-purple-500/15 text-purple-300 border border-purple-500/30">
+                    {t.card3Badge}
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                  {currentTeaser?.heartMindConflict || t.card3Fallback}{" "}
+                  {currentTeaser?.nightOverthinkingTrait || ""}
+                </p>
+              </div>
+
+              {/* Card 4: Palmistry Marks & 6th Sense */}
+              <div className="p-3.5 sm:p-5 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/20 space-y-2">
+                <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5">
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
+                    <Eye className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>{t.card4Title}</span>
+                  </span>
+                  <span className="self-start xs:self-auto text-[9px] sm:text-[10px] uppercase font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                    {b4}
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                  {currentTeaser?.palmSignsWitness || t.card4Fallback}{" "}
+                  {currentTeaser?.secretIntuition || ""}
+                </p>
+              </div>
             </div>
-            <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-              {currentTeaser?.palmSignsWitness || t.card4Fallback}{" "}
-              {currentTeaser?.secretIntuition || ""}
-            </p>
-          </div>
-        </div>
+          );
+        })()}
 
         {/* Section D: Important Note Banner */}
         <div className="p-3.5 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-gold-500/10 to-amber-500/15 border border-amber-500/35 text-xs sm:text-sm text-amber-200 leading-relaxed space-y-2.5">

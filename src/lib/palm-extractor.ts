@@ -310,12 +310,71 @@ export function deducePalmFeaturesFromSamudrika(vedicChart?: VedicChartResult): 
     Ketu: "Mount of Ketu & Lower Palm Base",
   };
 
-  const specialMarksList = [
-    nakshatraLord === "Jupiter" || nakshatraLord === "Sun" ? "Trishul (Trident) on Mount of Jupiter" : "Auspicious Star on Jupiter",
-    "Mystic Cross (Croix Mystique) between Heart and Head lines",
-    "Dhana Triangle (Wealth Vessel formed by Head, Life & Fate lines)",
-    nakshatraLord === "Moon" || nakshatraLord === "Venus" ? "Matsya (Fish mark) near wrist/Ketu" : "Solomon Ring of Discernment",
-  ];
+  const marksPoolByLord: Record<string, string[]> = {
+    Sun: [
+      "Simha Rekha (Royal Seal on Mount of Sun)",
+      "Padma Chinha (Sacred Lotus mark on Apollo)",
+      "Dhana Triangle (Wealth Vessel formed by Head, Life & Fate lines)",
+      "Surya Mudrika (Ring of Public Authority)",
+    ],
+    Moon: [
+      "Chandrabindu (Lunar Intuition Crescent on Mount of Luna)",
+      "Matsya Chinha (Sacred Fish mark near wrist/Ketu)",
+      "Via Lasciva (Deep psychic resonance arc)",
+      "Solomon Ring of Intuitive Discernment",
+    ],
+    Mars: [
+      "Dhwaja Chinha (Banner of Victory on Upper Mars)",
+      "Angaraka Raksha Rekha (Sister Line / Mars Line of Protection)",
+      "Khadga Rekha (Sword mark of Fearless Decisiveness)",
+      "Dhana Triangle (Wealth Vessel formed by Head & Fate lines)",
+    ],
+    Mercury: [
+      "Vidya Rekha (Medical Stigmata / Healer's & Consultant Lines on Mercury)",
+      "Vanijya Triangle (Mercantile Apex on Upper Palm)",
+      "Budha Bindu (Mercurial Acumen Spark)",
+      "Solomon Ring of Analytical Discernment",
+    ],
+    Jupiter: [
+      "Trishul (Trident) on Mount of Jupiter",
+      "Guru Mudrika (Ring of Solomon / Sage Discernment)",
+      "Mystic Cross (Croix Mystique) between Heart and Head lines",
+      "Dhana Yava (Sacred Barley grain of prosperity on thumb)",
+    ],
+    Venus: [
+      "Shukra Valaya (Girdle of Venus / Artistic & Magnetic Charm)",
+      "Dhana Yava (Barley grain mark of abundance on thumb joint)",
+      "Padma Paduka (Grace contour on Mount of Venus)",
+      "Matsya (Sacred Fish mark near wrist)",
+    ],
+    Saturn: [
+      "Urdhva Rekha (Ascending Line of Karmic Mastery to Saturn)",
+      "Ketu Shankha (Conch shell curve at palm base)",
+      "Mystic Cross (Croix Mystique) between Heart and Head lines",
+      "Dhana Triangle (Accumulated Wealth Vessel)",
+    ],
+    Rahu: [
+      "Naga Kundala (Coiled Serpent contour near Rahu plane)",
+      "Dhumra Star of Sudden Breakthrough",
+      "Solomon Ring of Discernment & Piercing Intuition",
+      "Dhana Triangle (Sudden Inflow Vessel)",
+    ],
+    Ketu: [
+      "Matsya Chinha (Sacred Fish mark at palm base / Ketu)",
+      "Moksha Rekha (Ascending line of spiritual detachment & awakening)",
+      "Mystic Cross (Croix Mystique) between Heart and Head lines",
+      "Chandrabindu (Deep occult sensitivity arc)",
+    ],
+  };
+
+  const specialMarksList = marksPoolByLord[nakshatraLord] || marksPoolByLord.Jupiter;
+
+  // Real age calculation for palm line timing
+  const birthYear = vedicChart?.birthYear || 1995;
+  const shiftYear = vedicChart?.dashaShiftYear || (new Date().getFullYear() - 4);
+  const transitionAge = Math.max(14, Math.min(68, shiftYear - birthYear));
+  const startAge = Math.max(12, transitionAge - 2);
+  const endAge = transitionAge + 2;
 
   return {
     isFromDirectScan: false,
@@ -325,7 +384,7 @@ export function deducePalmFeaturesFromSamudrika(vedicChart?: VedicChartResult): 
     headLine: headLineProfiles[handType] || headLineProfiles.Fire,
     lifeLine: {
       vitality: "Wide, protective arc enveloping the Mount of Venus, confirming constitutional endurance.",
-      stressMarks: `Past dasha transition stress bars visible between ages 22-26, dissolving into a clear, fortified line.`,
+      stressMarks: `Past dasha transition stress bars visible between ages ${startAge}-${endAge} (around year ${shiftYear}), marking a karmic turning point before dissolving into a clear, fortified line.`,
       physicalMeaning: "High resilience, overcomes physical and emotional crucibles with renewed vigor.",
     },
     fateLine: {

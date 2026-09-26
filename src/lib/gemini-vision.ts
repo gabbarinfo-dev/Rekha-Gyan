@@ -214,6 +214,17 @@ Target Language: HINGLISH (Hindi written using English/Latin alphabet).
 - You MUST write ALL text, including every field inside the \`\`\`json-teaser block and every section of the full markdown reading, in natural, soulful, conversational HINGLISH.
 - Do NOT write in Devanagari script; write Hindi in English alphabet letters.`;
 
+  const birthYear =
+    vedicChart.birthYear ||
+    (dob ? parseInt(dob.match(/\b(19\d\d|20\d\d)\b/)?.[1] || "1995", 10) : 1995);
+  const currentAge =
+    vedicChart.currentAge || Math.max(16, new Date().getFullYear() - birthYear);
+  const shiftYear =
+    vedicChart.dashaShiftYear || new Date().getFullYear() - 4;
+  const shiftAge = Math.max(14, Math.min(68, shiftYear - birthYear));
+  const shiftStartAge = Math.max(12, shiftAge - 2);
+  const shiftEndAge = shiftAge + 2;
+
   return `
 You are REKHA — The World's Foremost AI Palmist & Vedic Astrologer (from rekhagyan.online).
 You speak in a warm, authoritative, mystical yet rigorously factual first-person voice ("I am REKHA...").
@@ -225,13 +236,15 @@ STAGE 1: VERIFIED ASTRONOMICAL & VEDIC CALCULATIONS
 =======================================================
 - Native's Name: ${name}
 - Gender: ${gender}
-- Date of Birth: ${dob} | Time: ${tob || "Not specified (solar midday alignment applied)"} | Place: ${pob}
+- Date of Birth: ${dob} (Birth Year: ${birthYear}, Current Age: ${currentAge} years old)
+- Time of Birth: ${tob || "Not specified (solar midday alignment applied)"} | Place: ${pob}
 - Vedic Lagna (Ascendant): ${vedicChart.ascendant} (Lagna Lord: ${vedicChart.lagnaLord})
 - Janma Rashi (Moon Sign): ${vedicChart.moonSign}
 - Birth Nakshatra: ${vedicChart.nakshatra} (Pada ${vedicChart.pada}, Lord: ${vedicChart.nakshatraLord})
 - Current Mahadasha: ${vedicChart.currentMahadasha} | Current Antardasha: ${vedicChart.currentAntardasha}
 - Previous Mahadasha: ${vedicChart.previousMahadasha}
-- Crucial Dasha Shift / Transition Year: Around ${vedicChart.dashaShiftYear} (Karmic crucible, emotional trial, or life redirection occurred here)
+- Crucial Dasha Shift / Transition Year: Around ${shiftYear} (Transitioned from ${vedicChart.previousMahadasha} to ${vedicChart.currentMahadasha})
+- Native's Exact Age During That Dasha Shift: Age ${shiftAge} (strictly between ages ${shiftStartAge} and ${shiftEndAge} years old)
 - Dasha Cycle Concluding: ${vedicChart.dashaEndYear}
 - Core Elemental Nature: ${vedicChart.element}
 - Key Astrological Yogas Calculated: ${vedicChart.calculatedYogas?.join(", ") || "Dhana-Labha Yoga"}
@@ -266,12 +279,23 @@ CRITICAL ZERO-GENERIC-TEMPLATE DIRECTIVE:
 2. Every single observation MUST be mathematically and visually matched to ${name}'s exact data:
    - "swabhavHeadline": Must be derived from ${name}'s ${vedicChart.ascendant} and ${features.handType} hand traits.
    - "introvertExtrovertTrait": Must be calculated from ${vedicChart.nakshatra} (${vedicChart.nakshatraLord}) and their Head line trajectory (${features.headLine.trajectory}).
-   - "pastGhatnaAndDhokha": MUST explicitly mention the calculated transition around ${vedicChart.dashaShiftYear} (transitioning from ${vedicChart.previousMahadasha} Mahadasha) and the stress marks on their palm (${features.lifeLine.stressMarks}). Explain the exact nature of the emotional hurt/betrayal and the resilience it forged.
+   - "pastGhatnaAndDhokha": MUST explicitly mention the calculated transition around ${shiftYear} (transitioning from ${vedicChart.previousMahadasha} to ${vedicChart.currentMahadasha} Mahadasha) when ${name} was strictly between ages ${shiftStartAge} and ${shiftEndAge} (${shiftStartAge} se ${shiftEndAge} saal ki umar).
+     * ABSOLUTELY FORBIDDEN: NEVER write "22-26 saal" for every native! Use this person's calculated age: ${shiftStartAge}-${shiftEndAge} saal!
+     * Align the theme strictly with the planetary transition (${vedicChart.previousMahadasha} -> ${vedicChart.currentMahadasha}):
+       - Rahu: sudden turbulence, betrayal/man-bhed, relocation or shattered illusions.
+       - Mercury (Budha): career/education crossroads, commercial transition, contract or communication trial.
+       - Saturn (Shani): heavy responsibilities, patience, unappreciated labor or isolation.
+       - Jupiter (Guru): moral disillusionment with mentors, restructuring of life ideals.
+       - Venus (Shukra): relationship heartbreak, aesthetic realignment, emotional loyalty tested.
+       - Mars (Mangal): sharp conflict, aggressive competition or property strain.
+       - Sun (Surya): struggle for self-worth, conflict with authority or paternal figures.
+       - Moon (Chandra): emotional vulnerability, deep insecurity and mood upheavals.
+       - Ketu: unexpected detachment, severance of superficial relationships, spiritual isolation.
    - "heartMindConflict": Must contrast their Heart line (${features.heartLine.origin}) against their Head line (${features.headLine.trajectory}).
    - "nightOverthinkingTrait": Must describe their nocturnal thoughts based on ${vedicChart.moonSign} and their Head line slope towards the Mount of Moon.
-   - "secretIntuition": Must evaluate their 6th sense based on detected markings: ${features.specialMarks.join(", ")}.
+   - "secretIntuition": Must evaluate their 6th sense based on their specific detected markings: ${features.specialMarks.join(", ")}.
    - "palmSignsWitness": MUST cite the real physical evidence: ${features.mounts.dominant} and ${features.heartLine.curvature}.
-   - "summaryNarrative": A bespoke 2-3 sentence emotional synthesis of ${name}'s soul core.
+   - "summaryNarrative": A bespoke 2-3 sentence poetic emotional synthesis of ${name}'s soul core based on their ${vedicChart.ascendant} Lagna and ${vedicChart.currentMahadasha}. NO generic clichés!
 
 STRICT BOUNDARY FOR FREE TEASER:
 The free teaser MUST ONLY analyze personality, psychological duality, and past life trials.
@@ -447,9 +471,18 @@ function synthesizeDynamicTeaser(
   const lord = vedicChart.nakshatraLord;
   const currentDasha = vedicChart.currentMahadasha;
   const prevDasha = vedicChart.previousMahadasha || "Ketu";
-  const shiftYear = vedicChart.dashaShiftYear || (new Date().getFullYear() - 3);
   const element = vedicChart.element;
   const features = input.palmFeatures || deducePalmFeaturesFromSamudrika(vedicChart);
+
+  // Exact age calculation
+  const birthYear =
+    vedicChart.birthYear ||
+    (input.dob ? parseInt(input.dob.match(/\b(19\d\d|20\d\d)\b/)?.[1] || "1995", 10) : 1995);
+  const shiftYear =
+    vedicChart.dashaShiftYear || new Date().getFullYear() - 4;
+  const shiftAge = Math.max(14, Math.min(68, shiftYear - birthYear));
+  const shiftStartAge = Math.max(12, shiftAge - 2);
+  const shiftEndAge = shiftAge + 2;
 
   if (lang === "hindi") {
     const titlesByAscHindi: Record<string, string> = {
@@ -475,7 +508,19 @@ function synthesizeDynamicTeaser(
         ? `आपका ${asc} लग्न और ${nakshatra} का संयोजन आपको अपरिचितों के बीच अत्यंत आरक्षित और मौन बनाता है। लोग इसे अभिमान समझ लेते हैं, परंतु यह आपका आत्मिक सुरक्षा-कवच है। आप बोलने से पहले शब्दों को तौलते हैं और किसी के छिपे उद्देश्य को शीघ्र भांप लेते हैं।`
         : `आपका ${asc} लग्न और ${nakshatra} नक्षत्र आपको जन्मजात नेतृत्व और आत्म-नियंत्रण प्रदान करता है। आप आवश्यकता पड़ने पर मुखर हैं, परंतु अपने हृदय की पीड़ा और व्यक्तिगत संघर्षों को पूर्णतः एकांत में ही रखते हैं।`;
 
-    const pastGhatna = `हस्त की जीवन रेखा पर स्थित सूक्ष्म रेखाएं और ${shiftYear} के आसपास आपकी ${prevDasha} से ${currentDasha} महादशा का संधि-काल स्पष्ट प्रमाणित करता है कि उस समय आपने एक अत्यंत संवेदनशील भावनात्मक विश्वासघात या जीवन-परिवर्तन झेला है। जिस व्यक्ति पर आपने बिना किसी संकोच के विश्वास किया, उसने कठिन समय में अपनी निष्ठा बदल ली। इस आघात ने आपको तोड़ा नहीं, बल्कि आपकी आत्मा को अधिक सतर्क और आत्मनिर्भर बना दिया।`;
+    const pastGhatnaByDashaHindi: Record<string, string> = {
+      Rahu: `हस्त की जीवन रेखा पर स्थित सूक्ष्म तनाव रेखाएं और वर्ष ${shiftYear} के आसपास (जब आप लगभग ${shiftStartAge} से ${shiftEndAge} वर्ष के थे), ${prevDasha} से राहु महादशा का संधि-काल प्रमाणित करता है कि उस समय आपने एक आकस्मिक जीवन-परिवर्तन, किसी निकटतम व्यक्ति से गहरा विश्वासघात या भ्रम का टूटना झेला है। जिसने आपको भीतर से अति-सतर्क और आत्मनिर्भर बनाया।`,
+      Mercury: `हस्त की जीवन रेखा पर स्थित सूक्ष्म रेखाएं दर्शाती हैं कि वर्ष ${shiftYear} के आसपास (${shiftStartAge} से ${shiftEndAge} वर्ष की आयु में), ${prevDasha} से बुध महादशा के आगमन पर आपकी शिक्षा, कार्यक्षेत्र अथवा वाणिज्यिक निर्णयों में एक बड़ा निर्णायक मोड़ आया। किसी पर अत्यधिक विश्वास करने से आपको सीख मिली, जिसने आपके विवेक को प्रखर किया।`,
+      Saturn: `हस्त रेखाएं संकेत देती हैं कि वर्ष ${shiftYear} के आसपास (${shiftStartAge} से ${shiftEndAge} वर्ष की आयु में), ${prevDasha} से शनि महादशा का प्रारंभ आपके लिए घोर तपस्या और भारी उत्तरदायित्व का समय था। अकेलेपन और अप्रत्याशित विलंबों ने आपके धैर्य की परीक्षा ली, जिससे आप स्वर्ण के समान तप कर निकले।`,
+      Jupiter: `हस्त रेखाएं दर्शाती हैं कि वर्ष ${shiftYear} के आसपास (${shiftStartAge}-${shiftEndAge} वर्ष की आयु में), ${prevDasha} से गुरु महादशा में प्रवेश के समय आपके नैतिक आदर्शों एवं मार्गदर्शन पर एक आघात लगा था, जिसने आपको अपनी आंतरिक शक्ति पर आश्रित होना सिखाया।`,
+      Venus: `हस्त रेखाएं दर्शाती हैं कि वर्ष ${shiftYear} के आसपास (${shiftStartAge}-${shiftEndAge} वर्ष की आयु में), ${prevDasha} से शुक्र महादशा के संक्रमण ने आपके संबंधों एवं आत्मीय जीवन में एक गहरा भावनात्मक मोड़ लाया, जिससे आपका आत्म-सम्मान और अधिक दृढ़ हुआ।`,
+      Mars: `हस्त रेखाएं दर्शाती हैं कि वर्ष ${shiftYear} के आसपास (${shiftStartAge}-${shiftEndAge} वर्ष की आयु में), ${prevDasha} से मंगल महादशा के प्रभाव से अचानक विवाद, संघर्ष अथवा दिशा-परिवर्तन आया था, जिसे आपने अदम्य साहस से पार किया।`,
+      Sun: `हस्त रेखाएं दर्शाती हैं कि वर्ष ${shiftYear} के आसपास (${shiftStartAge}-${shiftEndAge} वर्ष की आयु में), ${prevDasha} से सूर्य महादशा के आगमन ने आत्म-प्रतिष्ठा एवं स्वतंत्रता के लिए एक संघर्ष उत्पन्न किया, जिससे आपने अपना स्वतंत्र मार्ग चुना।`,
+      Moon: `हस्त रेखाएं दर्शाती हैं कि वर्ष ${shiftYear} के आसपास (${shiftStartAge}-${shiftEndAge} वर्ष की आयु में), ${prevDasha} से चंद्र महादशा के प्रभाव से तीव्र मानसिक उथल-पुथल एवं भावनात्मक संवेदनशीलता का दौर आया था।`,
+      Ketu: `हस्त रेखाएं दर्शाती हैं कि वर्ष ${shiftYear} के आसपास (${shiftStartAge}-${shiftEndAge} वर्ष की आयु में), ${prevDasha} से केतु महादशा के प्रभाव ने आपको भौतिक दिखावे से दूर कर एक गंभीर आंतरिक एकांत एवं आध्यात्मिक चेतना की ओर मोड़ा।`,
+    };
+
+    const pastGhatna = pastGhatnaByDashaHindi[currentDasha] || pastGhatnaByDashaHindi.Rahu;
 
     const heartMind =
       element === "Water" || element === "Earth"
@@ -484,11 +529,26 @@ function synthesizeDynamicTeaser(
 
     const nightThinking = `रात्रि में जब संसार शांत होता है, ${nakshatra} का मानसिक प्रभाव सक्रिय हो उठता है — दिन के अनकहे संवाद, अनादर के सूक्ष्म प्रसंग और भावी योजनाओं का चिंतन देर रात तक निद्रा को बाधित करता है। आप किसी अपमान को विस्मृत नहीं करते; बाह्य रूप से सहज रहते हैं परंतु अंतर्मन में सब सुरक्षित रहता है।`;
 
-    const intuition = `हस्त में ${features.specialMarks[0] || "गूढ़ क्रॉस"} और ${lord} का आध्यात्मिक प्रभाव आपको असाधारण पूर्वाभास प्रदान करता है। जब आप किसी से प्रथम बार मिलते हैं, आपकी अंतरात्मा उसके चरित्र का सत्य पहले ही बता देती है।`;
+    const intuition = `हस्त में ${features.specialMarks[0] || "गूढ़ लक्षण"} और ${lord} का आध्यात्मिक प्रभाव आपको असाधारण पूर्वाभास प्रदान करता है। जब आप किसी से प्रथम बार मिलते हैं, आपकी अंतरात्मा उसके चरित्र का सत्य पहले ही बता देती है।`;
 
     const palmWitness = `आपकी हथेली पर ${dominantMount} का स्पष्ट उभार और ${features.handType} हस्त संरचना इस सत्य का भौतिक साक्षी है।`;
 
-    const summary = `${name}, आप एक ऐसा व्यक्तित्व हैं जो संसार के आँसू पोंछने में सदैव तत्पर रहता है, परंतु अपनी निजी पीड़ा को मौन रहकर दिव्य साधना में बदल देता है।`;
+    const summariesByAscHindi: Record<string, string> = {
+      "Mesha (Aries)": `${name}, आप एक ऐसी अग्नि हैं जो कठिनाइयों के आगे झुकती नहीं, वरन प्रत्येक संघर्ष से नवीन शौर्य के साथ प्रज्वलित होती है।`,
+      "Vrishabha (Taurus)": `${name}, आपका अचल धैर्य और आंतरिक गरिमा वह शक्ति है, जो तीव्र आंधियों में भी आपको अडिग रखती है।`,
+      "Mithuna (Gemini)": `${name}, आपकी तीव्र मेधा और बहुआयामी दृष्टि आपको साधारण भीड़ से सदैव एक पग आगे रखती है।`,
+      "Karka (Cancer)": `${name}, आपका पवित्र हृदय और वात्सल्यमयी निष्ठा उन सभी के लिए ढाल है जिनसे आप सच्चा स्नेह करते हैं।`,
+      "Simha (Leo)": `${name}, आपका सिंह-समान स्वाभिमान और उदार आत्मा कभी किसी अपमान या अनुचित समझौते को स्वीकार नहीं करती।`,
+      "Kanya (Virgo)": `${name}, आपकी सूक्ष्म विश्लेषक दृष्टि और परिशुद्ध कर्म-निष्ठा जीवन की जटिल से जटिल गुत्थी को सुलझाने में सक्षम है।`,
+      "Tula (Libra)": `${name}, आप न्याय और सौंदर्य के वह उपासक हैं जो विषम से विषम परिस्थितियों में भी गरिमापूर्ण संतुलन स्थापित करते हैं।`,
+      "Vrischika (Scorpio)": `${name}, आपकी अगाध इच्छाशक्ति और रहस्यमयी अंतर्ज्ञान को कोई आघात कभी परास्त नहीं कर सकता।`,
+      "Dhanu (Sagittarius)": `${name}, आपका सत्य-निष्ठ दृष्टिकोण और उच्च आदर्श आपको जीवन के प्रत्येक चौराहे पर धर्मसंगत पथ दिखाते हैं।`,
+      "Makara (Capricorn)": `${name}, आपकी निष्काम कर्म-तपस्या और अखंड अनुशासन वह आधारशिला है जो चिरस्थाई सफलता का निर्माण करती है।`,
+      "Kumbha (Aquarius)": `${name}, आपकी स्वतंत्र चेतना और युगांतरकारी दृष्टि समाज की संकीर्ण सीमाओं से परे एक नए युग का मार्ग प्रशस्त करती है।`,
+      "Meena (Pisces)": `${name}, आपकी आध्यात्मिक संवेदनशीलता और महाकरुणा आपकी आत्मा को अत्यंत पावन और ईश्वरीय कृपा का पात्र बनाती है।`,
+    };
+
+    const summary = summariesByAscHindi[asc] || `${name}, आपका उच्च आत्म-सम्मान और अटूट आत्म-बल ही आपकी सबसे बड़ी दैवीय शक्ति है।`;
 
     return {
       swabhavHeadline: headline,
@@ -526,7 +586,19 @@ function synthesizeDynamicTeaser(
         ? `Your ${asc} ascendant and ${nakshatra} placement bestow a disciplined, observational reserve around strangers. People occasionally misjudge this as aloofness, but it is an innate psychic shield. You evaluate the integrity of every room before offering a single uncalculated word.`
         : `Your ${asc} ascendant infuses natural executive presence and self-command. You step forward when action is demanded, yet you compartmentalize personal sorrow, refusing to show distress to an undeserving crowd.`;
 
-    const pastGhatna = `The fine stress markings intersecting your Life line and the dasha transition around ${shiftYear} (crossover from your ${prevDasha} cycle into ${currentDasha}) verify an intense karmic crucible. During this period, an unselfish loyalty you extended to someone close was repaid with unexpected betrayal or sudden abandonment. This trial permanently altered how and to whom you grant trust.`;
+    const pastGhatnaByDashaEng: Record<string, string> = {
+      Rahu: `The stress bars traversing your Life line around year ${shiftYear} (when you were approximately ${shiftStartAge} to ${shiftEndAge} years old) confirm a sudden dasha crossover into Rahu. This marked a turbulent karmic crucible involving unexpected betrayal, broken illusions, or sudden displacement that forced you into acute self-reliance.`,
+      Mercury: `The fine stress intersections on your palm around year ${shiftYear} (between ages ${shiftStartAge} and ${shiftEndAge}) correlate with your transition into Mercury Mahadasha. This was a critical crossroads concerning career, education, or financial partnerships where misplaced trust yielded crucial discernment.`,
+      Saturn: `Palm markings around year ${shiftYear} (at age ${shiftStartAge}-${shiftEndAge}) verify your initiation into Saturn's crucible. Heavy obligations, isolation, or prolonged delays tested your stamina to the absolute limit, forging unbreakable resilience.`,
+      Jupiter: `Palm evidence around year ${shiftYear} (between ages ${shiftStartAge} and ${shiftEndAge}) marks your transition into Jupiter. A profound disillusionment regarding ethics or trusted mentors compelled you to rebuild your life on authentic principles.`,
+      Venus: `Palm indications around year ${shiftYear} (between ages ${shiftStartAge} and ${shiftEndAge}) record your shift into Venus, bringing an emotional crossroad in love or loyalty where personal dignity had to supersede romantic sacrifice.`,
+      Mars: `Palm stress markings around year ${shiftYear} (ages ${shiftStartAge}-${shiftEndAge}) mark a fierce Mars transition characterized by abrupt confrontation, territorial friction, or a daring decision that demanded raw courage.`,
+      Sun: `Palm markings around year ${shiftYear} (ages ${shiftStartAge}-${shiftEndAge}) denote a pivotal Sun transition where you had to break away from overbearing authority or family constraints to claim your sovereignty.`,
+      Moon: `Palm markings around year ${shiftYear} (ages ${shiftStartAge}-${shiftEndAge}) record a deeply sensitive Moon transition marked by intense emotional vulnerability and inner sea-changes.`,
+      Ketu: `Palm markings around year ${shiftYear} (ages ${shiftStartAge}-${shiftEndAge}) witness a profound Ketu transition where you cut ties with superficial acquaintances and turned toward solitary spiritual fortitude.`,
+    };
+
+    const pastGhatna = pastGhatnaByDashaEng[currentDasha] || pastGhatnaByDashaEng.Rahu;
 
     const heartMind =
       element === "Water" || element === "Earth"
@@ -535,11 +607,26 @@ function synthesizeDynamicTeaser(
 
     const nightThinking = `As silence falls each night, the mental frequency of ${nakshatra} stirs. Past conversations, boundary breaches, and unfinished equations replay with vivid precision. You rarely forget an insult; you may smile with courteous grace, but your memory records every detail.`;
 
-    const intuition = `The presence of ${features.specialMarks[0] || "a Mystic Cross"} and the subtle elevation of your spiritual mounts grant you an uncanny sixth sense. Within minutes of a first meeting, your gut registers the concealed motives of others with startling accuracy.`;
+    const intuition = `The presence of ${features.specialMarks[0] || "auspicious sacred marks"} and the subtle elevation of your spiritual mounts grant you an uncanny sixth sense. Within minutes of a first meeting, your gut registers the concealed motives of others with startling accuracy.`;
 
     const palmWitness = `The elevation of ${dominantMount} and the physical contours of your ${features.handType} hand physically witness these soul truths.`;
 
-    const summary = `${name}, you are that rare soul who steps forward first to ease the burdens of others, while quietly carrying your own tribulations with unbroken dignity.`;
+    const summariesByAscEng: Record<string, string> = {
+      "Mesha (Aries)": `${name}, you are an unbroken flame that never yields before hardship, rising from every trial with renewed valor.`,
+      "Vrishabha (Taurus)": `${name}, your rooted patience and quiet sovereignty are your impenetrable armor, keeping you anchored through the fiercest gales.`,
+      "Mithuna (Gemini)": `${name}, your agile intellect and multi-layered perspective place you permanently a step ahead of ordinary convention.`,
+      "Karka (Cancer)": `${name}, your tender heart and fierce protective loyalty are a sacred sanctuary for the few souls you truly love.`,
+      "Simha (Leo)": `${name}, your regal self-respect and magnanimous nature refuse to tolerate disrespect, keeping your ideals uncompromised.`,
+      "Kanya (Virgo)": `${name}, your incisive clarity and dedication to excellence possess the rare ability to restore order to chaos.`,
+      "Tula (Libra)": `${name}, you are a guardian of justice and refined grace, bringing equilibrium to even the most polarized realms.`,
+      "Vrischika (Scorpio)": `${name}, your depth of will and penetrating intuition are an indomitable fortress; no tempest can extinguish your essence.`,
+      "Dhanu (Sagittarius)": `${name}, your philosophical vision and dedication to universal truth illuminate the right path at every crossroad.`,
+      "Makara (Capricorn)": `${name}, your quiet mastery and disciplined perseverance steadily ascend to peaks that others deem unreachable.`,
+      "Kumbha (Aquarius)": `${name}, your independent spirit and visionary foresight dismantle obsolete dogmas to pave the way for a brighter horizon.`,
+      "Meena (Pisces)": `${name}, your mystical sensitivity and boundless empathy make your soul a sacred vessel of divine grace and healing.`,
+    };
+
+    const summary = summariesByAscEng[asc] || `${name}, your unwavering self-respect and luminous perseverance are your greatest divine assets.`;
 
     return {
       swabhavHeadline: headline,
@@ -577,7 +664,19 @@ function synthesizeDynamicTeaser(
       ? `Aapka ${asc} lagna aur ${nakshatra} nakshatra aapko anjaan logon ke beech shaant, gambhir aur observant banata hai. Log aksar ise ghamand samajh lete hain, par yeh aapka suraksha-kavach hai. Jab koi aapka dil jeet leta hai, toh aap poori nishtha se nibhate hain.`
       : `Aapka ${asc} lagna aur ${nakshatra} aapko swabhavik netritva aur aatma-niyantran deta hai. Zaroorat padne par aap sabse aage aate hain, par apne niji dukh aur sangharsh ko kisi par zaahir nahi hone dete.`;
 
-  const pastGhatna = `Aapke haath par jeevan rekha ke stress bars aur lagbhag saal ${shiftYear} ke dauran ${prevDasha} se ${currentDasha} dasha ka parivartan saaf darshata hai ki us samay aapne kisi bohot kareebi se vishwasghaat ya gehra aaghaat jhela hai. Aapne bina lalach unka saath diya tha, par unhone aapki niyat par sawal uthaya ya akela chhod diya. Is ghatna ne aapko tode bina, aatm-nirbhar aur satark bana diya.`;
+  const pastGhatnaByDashaHinglish: Record<string, string> = {
+    Rahu: `Aapke haath par jeevan rekha ke stress bars aur lagbhag saal ${shiftYear} ke dauran (jab aap ${shiftStartAge} se ${shiftEndAge} saal ke the), ${prevDasha} se Rahu dasha ka parivartan saaf darshata hai ki us samay aapne kisi bohot kareebi vyakti se vishwasghaat ya gehra man-bhed jhela hai. Aapne bina lalach saath diya tha, par unhone mushkil waqt par akela chhod diya. Is ghatna ne aapko andar se satark aur aatm-nirbhar bana diya.`,
+    Mercury: `Meri calculations aur aapke haath ke stress bars batate hain ki saal ${shiftYear} ke aas-paas (jab aap ${shiftStartAge} se ${shiftEndAge} saal ke the), ${prevDasha} se Budha (Mercury) dasha ka transition aapke liye career, padhai ya vyavsayik disha mein ek bada karmic mod laya tha. Is dauran galat logon par bharosa karne ya financial/decision-making chunautiyon ne aapko bohot gehra anubhav aur dimaagi paripakvata di.`,
+    Saturn: `Aapke haath par saal ${shiftYear} ke dauran (lagbhag ${shiftStartAge}-${shiftEndAge} saal ki umar mein), ${prevDasha} se Shani (Saturn) Mahadasha mein pravesh ek kathin pariksha ka samay tha. Bhari zimmedariyon, parivarik dharohar ya akelepan ke daur ne aapke dhairya ki aakhiri hadd tak pariksha li, jisse nikal kar aap 'loha tap kar kundan' bane hain.`,
+    Jupiter: `Aapke haath aur kundali darshati hai ki saal ${shiftYear} ke dauran (${shiftStartAge}-${shiftEndAge} saal ki aayu mein), ${prevDasha} se Guru dasha mein aate waqt aapke jeevan ke moolyon, adarshon aur vishwas par ek gehra aaghaat laga tha. Jinhe aap margdarshak samajhte the, unki asliyat saamne aayi aur aapne apne aatm-vishwas ko naye sire se punar-sthapit kiya.`,
+    Venus: `Aapke haath par lagbhag saal ${shiftYear} (${shiftStartAge}-${shiftEndAge} saal ki umar) mein ${prevDasha} se Shukra dasha ka transition rishton aur bhavnaon mein ek ahem mod laya tha. Prem ya gehri dosti mein expectations tootne ka dukh mila, par usne aapke aatm-samman ko sarvochch bana diya.`,
+    Mars: `Aapke haath par saal ${shiftYear} ke aas-paas (${shiftStartAge}-${shiftEndAge} saal ki aayu mein) Mangal dasha ke prabhav se achanak vivad, parivarik tanav ya shant jeevan mein teevra uthal-puthal aayi thi. Aapne ladkar apni sthiti sambhali aur apna sthan banaya.`,
+    Sun: `Aapke haath par saal ${shiftYear} ke dauran (${shiftStartAge}-${shiftEndAge} saal ki umar mein) Surya dasha ke aagman ne aatm-samman aur swatantrata ke liye ek bada sangharsh khada kiya. Kisi ke dabav mein jeene ke bajaye aapne apna alag rasta chuna.`,
+    Moon: `Aapke haath par saal ${shiftYear} (${shiftStartAge}-${shiftEndAge} saal ki umar) mein Chandra dasha ka aagman ek atyant bhavuk aur asurakshit samay laya tha, jahan mann mein bhari uthal-puthal aur apno ke badalte rawaiye ne aapko andar tak hila diya tha.`,
+    Ketu: `Aapke haath par saal ${shiftYear} (${shiftStartAge}-${shiftEndAge} saal ki umar) mein Ketu dasha ka prabhav batata hai ki aapne achanak bheed-bhad aur matlabi doston se doori bana li aur ek gehri aantarik khoj shuru ki.`,
+  };
+
+  const pastGhatna = pastGhatnaByDashaHinglish[currentDasha] || pastGhatnaByDashaHinglish.Rahu;
 
   const heartMind =
     element === "Water" || element === "Earth"
@@ -586,11 +685,26 @@ function synthesizeDynamicTeaser(
 
   const nightThinking = `Raat ko bistar par jaate hi ${nakshatra} ka manasik prabhav sakriya ho jata hai — purani baatein, kisne kab kya apmaan kiya, aur bhavishya ki chinta der raat tak jagaye rakhti hai. Aap apmaan ko aasani se nahi bhoolte; bahar se muskura dein par man mein sab darj rehta hai.`;
 
-  const intuition = `Aapke haath mein ${features.specialMarks[0] || "Mystic Cross"} aur ${lord} ka prabhav aapko asadharan Sixth Sense deta hai. Kisi se pehli baar milte hi aapko uski asli niyat ka aabhaas ho jata hai, jo 100% sach nikalta hai.`;
+  const intuition = `Aapke haath mein ${features.specialMarks[0] || "pavitra nishaan"} aur ${lord} ka prabhav aapko asadharan Sixth Sense deta hai. Kisi se pehli baar milte hi aapko uski asli niyat ka aabhaas ho jata hai, jo 100% sach nikalta hai.`;
 
   const palmWitness = `Aapke haath par ${dominantMount} ka ubhaar aur ${features.handType} haath ki banawat is satya ka pratyaksh pramaan hai.`;
 
-  const summary = `${name}, aap ek aisi shakhsiyat hain jo doosron ke aansu pochne mein sabse aage rehti hai, lekin apne dard ko duniya se chupane mein maahir hai.`;
+  const summariesByAscHinglish: Record<string, string> = {
+    "Mesha (Aries)": `${name}, aap ek aisi aag hain jo chunautiyon ke aage jhukti nahi, balki har sangharsh se naye shaurya ke saath ubharti hai.`,
+    "Vrishabha (Taurus)": `${name}, aapka aantarik sthirata aur dhairya aapki sabse badi dhaal hai, jo aandhiyon mein bhi aapko dig-ne nahi deti.`,
+    "Mithuna (Gemini)": `${name}, aapki tevra buddhi aur har sthiti ko samajhne ki shamata aapko bheed se alag aur hamesha ek kadam aage rakhti hai.`,
+    "Karka (Cancer)": `${name}, aapka komal hriday aur surakshatmak shakti un sabhi ke liye chhaya hai jinse aap sachcha prem karte hain.`,
+    "Simha (Leo)": `${name}, aapka aatm-samman aur rajasi nishtha aisi hai ki aap apmaan kabhi bardasht nahi karte aur hamesha aadarshon par jeete hain.`,
+    "Kanya (Virgo)": `${name}, aapki sukshma drashti aur sab kuch theek karne ka jazba aapko mushkil se mushkil sthiti ka sabse bosa-mand hal banata hai.`,
+    "Tula (Libra)": `${name}, aap nyay aur sauhard ki aisi murat hain jo kitni bhi asantulit sthiti ko shanti aur garima se sambhal leti hai.`,
+    "Vrischika (Scorpio)": `${name}, aap ek aisi gahan shakti hain jiski ichhashakti ko koi tod nahi sakta; har chunauti aapko aur prachand banati hai.`,
+    "Dhanu (Sagittarius)": `${name}, aapka vishal drashtikon aur satya ke prati samarpan aapko jeevan ke har mod par sahi rasta dikhata hai.`,
+    "Makara (Capricorn)": `${name}, aapki nishchhal mehnat aur dridh sankalp woh shakti hai jo dheere-dheere par nishchit roop se choti par pahunchti hai.`,
+    "Kumbha (Aquarius)": `${name}, aapki swatantra soch aur yugantarkari drashti logon ke purane bandhano ko tod kar naya rasta banati hai.`,
+    "Meena (Pisces)": `${name}, aapki aantarik karuna aur divya antargyan aapki rooh ko pavitra aur doosron ke dukh door karne ka aashirwad deta hai.`,
+  };
+
+  const summary = summariesByAscHinglish[asc] || `${name}, aapka aatm-samman aur sachchai hi aapki sabse badi shakti hai.`;
 
   return {
     swabhavHeadline: headline,

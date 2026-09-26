@@ -11,6 +11,8 @@ export interface VedicChartResult {
   dashaShiftYear: number;
   currentAntardasha: string;
   dashaEndYear: number;
+  birthYear: number;
+  currentAge: number;
   lifePathNumber: number;
   element: "Fire" | "Earth" | "Air" | "Water";
   favorableGemstone: string;
@@ -310,6 +312,8 @@ export function calculateVedicChart(
     dashaShiftYear,
     currentAntardasha,
     dashaEndYear,
+    birthYear,
+    currentAge,
     lifePathNumber: sum,
     element,
     favorableGemstone: dashaInfo.gem,
