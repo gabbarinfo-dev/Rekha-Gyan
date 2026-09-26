@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Sparkles,
   Check,
@@ -13,21 +13,28 @@ import {
   Flame,
   Lock,
   Star,
+  X,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import AuthModal from "@/components/AuthModal";
 import PaywallModal from "@/components/PaywallModal";
-import type { SubscriptionTierType } from "@/components/PaywallModal";
+import type { SubscriptionTierType, PurchaseOptionType } from "@/components/PaywallModal";
 
 export default function SubscriptionPage() {
-  const { isLoggedIn, isAdmin } = useAuth();
+  const { user, isLoggedIn, isAdmin } = useAuth();
+  const isSubscribed = Boolean(user?.isSubscribed);
 
   const [pendingPlan, setPendingPlan] = useState<SubscriptionTierType | null>(null);
+  const [paywallTab, setPaywallTab] = useState<"plans" | "topup">("plans");
+  const [pendingOption, setPendingOption] = useState<PurchaseOptionType | undefined>(undefined);
   const [authOpen, setAuthOpen] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
+  const [topupNotice, setTopupNotice] = useState<"login_required" | "subscription_required" | null>(null);
 
   const handlePay = (plan: SubscriptionTierType) => {
     setPendingPlan(plan);
+    setPaywallTab("plans");
+    setPendingOption(plan);
     if (isLoggedIn || isAdmin) {
       setPaywallOpen(true);
     } else {
@@ -35,9 +42,52 @@ export default function SubscriptionPage() {
     }
   };
 
+  const handleTopupClick = () => {
+    if (!isLoggedIn && !isAdmin) {
+      setTopupNotice("login_required");
+      return;
+    }
+    if (!isSubscribed && !isAdmin) {
+      setTopupNotice("subscription_required");
+      return;
+    }
+    // Active subscriber or Admin: directly launch top-up checkout
+    setPendingPlan("trial_99");
+    setPaywallTab("topup");
+    setPendingOption("topup_60");
+    setPaywallOpen(true);
+  };
+
+  // Check URL query params for ?tab=topup
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("tab") === "topup") {
+        handleTopupClick();
+      }
+    }
+  }, [isLoggedIn, isSubscribed, isAdmin]);
+
   const handleAuthSuccess = () => {
     setAuthOpen(false);
-    setTimeout(() => setPaywallOpen(true), 200);
+    if (topupNotice === "login_required") {
+      setTopupNotice(null);
+      setTimeout(() => {
+        const activePhone = localStorage.getItem("rekha_active_session");
+        const usersMap = JSON.parse(localStorage.getItem("rekha_users_db") || "{}");
+        const profile = activePhone ? usersMap[activePhone] : null;
+        if (profile?.isSubscribed || profile?.isAdmin || activePhone === "8511739865") {
+          setPendingPlan("trial_99");
+          setPaywallTab("topup");
+          setPendingOption("topup_60");
+          setPaywallOpen(true);
+        } else {
+          setTopupNotice("subscription_required");
+        }
+      }, 250);
+    } else {
+      setTimeout(() => setPaywallOpen(true), 200);
+    }
   };
 
   return (
@@ -230,10 +280,10 @@ export default function SubscriptionPage() {
           </div>
           <button
             type="button"
-            onClick={() => handlePay("trial_99")}
-            className="px-5 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs shrink-0 shadow-lg shadow-rose-500/20 transition-all"
+            onClick={handleTopupClick}
+            className="px-5 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs shrink-0 shadow-lg shadow-rose-500/20 transition-all flex items-center gap-1.5"
           >
-            Get Matchmaking Top-Up
+            <span>Get Matchmaking Top-Up</span>
           </button>
         </div>
 
@@ -251,6 +301,112 @@ export default function SubscriptionPage() {
         </div>
       </div>
 
+      {/* Top-Up Requirement Guidance Modal */}
+      {topupNotice && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+          <div className="relative w-full max-w-md p-6 sm:p-7 rounded-3xl bg-cosmic-900 border border-gold-500/40 shadow-2xl shadow-purple-950/80 text-center space-y-5 animate-scaleUp">
+            <button
+              onClick={() => setTopupNotice(null)}
+              className="absolute top-4 right-4 p-2 rounded-full text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {topupNotice === "login_required" ? (
+              <>
+                <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
+                  <Lock className="w-7 h-7" />
+                </div>
+                <div className="space-y-2">
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-amber-300">
+                    Seeker Authentication Required
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-bold font-serif text-white">
+                    Please Log In First
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-sm mx-auto">
+                    Matchmaking Top-Up packs (₹60 for 2 scans / ₹99 for 5 scans) are allocated to a registered profile. Please log in or create your account to proceed.
+                  </p>
+                </div>
+                <div className="pt-2 flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTopupNotice(null);
+                      setAuthOpen(true);
+                    }}
+                    className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-gold-300 via-gold-400 to-amber-300 text-cosmic-950 font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-gold-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  >
+                    Log In / Register Now &rarr;
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTopupNotice(null)}
+                    className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 text-xs"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="w-14 h-14 mx-auto rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400">
+                  <HeartHandshake className="w-7 h-7" />
+                </div>
+                <div className="space-y-2">
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-rose-300">
+                    Active Subscription Required
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-bold font-serif text-white">
+                    Subscribe To Unlock Matchmaking
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-sm mx-auto">
+                    Matchmaking Top-Ups are exclusive add-on packs for active subscribers who need extra scans beyond their plan limit.
+                  </p>
+                </div>
+                <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 text-left text-xs text-slate-300 space-y-1.5">
+                  <div className="font-semibold text-white text-xs mb-1">
+                    Available Access Plans with Matchmaking:
+                  </div>
+                  <div className="flex items-center gap-2 text-gold-300">
+                    <Check className="w-3.5 h-3.5 shrink-0" />
+                    <span><strong>₹99 Starter</strong> — 1 Matchmaking Analysis included</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gold-300">
+                    <Check className="w-3.5 h-3.5 shrink-0" />
+                    <span><strong>₹499 Duo Pass</strong> — 3 Matchmaking Analyses included</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gold-300">
+                    <Check className="w-3.5 h-3.5 shrink-0" />
+                    <span><strong>₹999 Ultimate</strong> — 5 Matchmaking Analyses included</span>
+                  </div>
+                </div>
+                <div className="pt-2 flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTopupNotice(null);
+                      handlePay("trial_99");
+                    }}
+                    className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-gold-300 via-gold-400 to-amber-300 text-cosmic-950 font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-gold-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  >
+                    Choose a Subscription Plan &rarr;
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTopupNotice(null)}
+                    className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 text-xs"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Auth Gate Modal — opens when unauthenticated user clicks Pay */}
       <AuthModal
         isOpen={authOpen}
@@ -266,8 +422,11 @@ export default function SubscriptionPage() {
           onClose={() => {
             setPaywallOpen(false);
             setPendingPlan(null);
+            setPendingOption(undefined);
           }}
           defaultPlan={pendingPlan}
+          defaultTab={paywallTab}
+          defaultOption={pendingOption}
         />
       )}
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X, Sparkles, Check, Flame, ShieldCheck, MessageCircle, Clock, Users, HeartHandshake, User, PlusCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 
@@ -13,6 +13,7 @@ interface PaywallModalProps {
   onSuccess?: (plan: SubscriptionTierType) => void;
   defaultPlan?: SubscriptionTierType;
   defaultTab?: "plans" | "topup";
+  defaultOption?: PurchaseOptionType;
   userName?: string;
   userDob?: string;
   exhaustedReason?: string;
@@ -24,27 +25,28 @@ export default function PaywallModal({
   onSuccess,
   defaultPlan = "trial_99",
   defaultTab = "plans",
+  defaultOption,
   userName,
   userDob,
   exhaustedReason,
 }: PaywallModalProps) {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, unlockSubscription, addMatchmakingCredits } = useAuth();
   const [activeTab, setActiveTab] = useState<"plans" | "topup">(defaultTab);
   const [selectedOption, setSelectedOption] = useState<PurchaseOptionType>(
-    defaultTab === "topup" ? "topup_60" : defaultPlan
+    defaultOption || (defaultTab === "topup" ? "topup_60" : defaultPlan)
   );
   const [showAdminNotice, setShowAdminNotice] = useState(false);
 
-  if (!isOpen) return null;
-
-  // Super Admin Nishant Dantare bypasses paywall completely
-  if (isAdmin) {
-    if (onSuccess && (selectedOption === "trial_99" || selectedOption === "duo_599" || selectedOption === "unlimited_1009")) {
-      onSuccess(selectedOption);
+  // Sync state whenever modal is opened or props change
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab(defaultTab);
+      setSelectedOption(defaultOption || (defaultTab === "topup" ? "topup_60" : defaultPlan));
+      setShowAdminNotice(false);
     }
-    onClose();
-    return null;
-  }
+  }, [isOpen, defaultTab, defaultPlan, defaultOption]);
+
+  if (!isOpen) return null;
 
   const handlePay = () => {
     setShowAdminNotice(true);
@@ -85,6 +87,22 @@ export default function PaywallModal({
           <X className="w-5 h-5" />
         </button>
 
+        {/* Super Admin Notice Banner */}
+        {isAdmin && (
+          <div className="mb-4 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between text-xs text-amber-200">
+            <div className="flex items-center gap-2">
+              <span className="text-base">👑</span>
+              <div>
+                <strong className="text-amber-300">Super Admin Preview Mode:</strong>
+                <span className="text-slate-300 ml-1">You have full authority. You can test plans, top-ups, and preview what seekers experience.</span>
+              </div>
+            </div>
+            <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-[10px] font-bold text-amber-300 uppercase shrink-0">
+              Live Preview
+            </span>
+          </div>
+        )}
+
         {showAdminNotice ? (
           <div className="text-center py-8 space-y-5 animate-scaleUp">
             <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
@@ -110,7 +128,7 @@ export default function PaywallModal({
               </div>
             </div>
 
-            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto">
               <a
                 href={waLink}
                 target="_blank"
@@ -120,6 +138,29 @@ export default function PaywallModal({
                 <MessageCircle className="w-4 h-4" />
                 <span>WhatsApp Rekha For Activation</span>
               </a>
+
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (selectedOption === "topup_60") {
+                      addMatchmakingCredits(2);
+                      alert("👑 Admin Action: +2 Matchmaking Credits added to your account.");
+                    } else if (selectedOption === "topup_99") {
+                      addMatchmakingCredits(5);
+                      alert("👑 Admin Action: +5 Matchmaking Credits added to your account.");
+                    } else {
+                      unlockSubscription(selectedOption as SubscriptionTierType);
+                      if (onSuccess) onSuccess(selectedOption as SubscriptionTierType);
+                      alert(`👑 Admin Action: Plan activated successfully!`);
+                    }
+                    onClose();
+                  }}
+                  className="w-full sm:w-auto py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-600 text-cosmic-950 text-xs font-black uppercase tracking-wider shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-1.5"
+                >
+                  <span>⚡ Apply Now (Admin Test)</span>
+                </button>
+              )}
 
               <button
                 type="button"
