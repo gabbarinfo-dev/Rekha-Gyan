@@ -40,18 +40,18 @@ export async function searchAstroConsensus(
 ): Promise<ResearchConsensus> {
   const apiKey = process.env.TAVILY_API_KEY;
 
-  const queryAstro = `${userQuestion} ${dashaLord} mahadasha ${sign} rashi brihat samhita saravali vedic astrology`;
-  const queryPalm = `${topic} ${palmEvidenceNotes || "palmistry mounts lines"} hastasanjivani samudrika shastra`;
+  const queryAstro = `${userQuestion} ${dashaLord} mahadasha ${sign} rashi brihat parashara phaladeepika saravali vedic astrology`;
+  const queryPalm = `${userQuestion} ${topic} ${palmEvidenceNotes || "palmistry lines mounts"} hastasanjivani samudrika shastra`;
 
   if (!apiKey) {
     return generateFallbackConsensus(queryAstro, userQuestion, dashaLord, sign);
   }
 
   try {
-    // Run dual queries in parallel with a strict 4.5s timeout
+    // Run dual queries in parallel with a strict 5.5s timeout
     const fetchQuery = async (query: string) => {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4500);
+      const timeoutId = setTimeout(() => controller.abort(), 5500);
 
       try {
         const res = await fetch("https://api.tavily.com/search", {
@@ -61,9 +61,9 @@ export async function searchAstroConsensus(
           body: JSON.stringify({
             api_key: apiKey,
             query,
-            search_depth: "basic",
+            search_depth: "advanced",
             include_answer: true,
-            max_results: 4,
+            max_results: 5,
           }),
         });
         clearTimeout(timeoutId);

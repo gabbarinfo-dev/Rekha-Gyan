@@ -2,6 +2,7 @@ import { VedicChartResult, SynastryResult } from "./vedic-engine";
 import { ResearchConsensus } from "./tavily-research";
 import { retrieveClassicalKnowledge } from "./rag-engine";
 import { PalmFeatures, extractPalmFeatures, deducePalmFeaturesFromSamudrika } from "./palm-extractor";
+import { PujaVidhiData } from "./puja-vidhi";
 
 export interface SecondaryPersonInput {
   name: string;
@@ -47,6 +48,13 @@ export interface FreeTeaserProfile {
   summaryNarrative: string;
 }
 
+export interface QuestionDeepResolution {
+  verdict: string;
+  timingWindow: string;
+  astrologicalRationale: string;
+  shastricRemedyKey: string;
+}
+
 export interface RekhaReadingOutput {
   rawMarkdown: string;
   keyInsights: {
@@ -58,6 +66,8 @@ export interface RekhaReadingOutput {
     relationshipHarmony: string;
   };
   freeTeaser: FreeTeaserProfile;
+  pujaVidhi?: PujaVidhiData;
+  questionDeepResolution?: QuestionDeepResolution;
   palmFeatures?: PalmFeatures;
   synastry?: SynastryResult;
 }
@@ -302,17 +312,48 @@ The free teaser MUST ONLY analyze personality, psychological duality, and past l
 DO NOT resolve or give the final predictive answer to "${question}" in the free teaser! That resolution is strictly reserved for Section 5 of the locked reading below.
 
 OUTPUT FORMAT:
-First, output the bespoke JSON teaser block:
-\`\`\`json-teaser
+First, output the bespoke, complete JSON consultation block:
+\`\`\`json-consultation
 {
-  "swabhavHeadline": "Authentic, tailored headline for ${name}",
-  "introvertExtrovertTrait": "Detailed, bespoke observation",
-  "pastGhatnaAndDhokha": "Deeply accurate insight referencing the shift around ${vedicChart.dashaShiftYear} and palm stress markings",
-  "heartMindConflict": "Bespoke heart vs mind analysis",
-  "nightOverthinkingTrait": "Accurate description of late night contemplation",
-  "secretIntuition": "Observation on their sixth sense and discernment",
-  "palmSignsWitness": "Physical confirmation citing their ${features.mounts.dominant} and line structures",
-  "summaryNarrative": "Moving, bespoke 2-3 sentence synthesis"
+  "teaser": {
+    "swabhavHeadline": "Authentic, tailored headline for ${name} (${vedicChart.ascendant})",
+    "introvertExtrovertTrait": "Detailed, bespoke observation derived from ${vedicChart.nakshatra} and Head Line",
+    "pastGhatnaAndDhokha": "Deeply accurate insight referencing the shift around ${shiftYear} (at age ${shiftStartAge}-${shiftEndAge}) and palm stress markings",
+    "heartMindConflict": "Bespoke heart vs mind analysis contrasting Heart and Head line trajectories",
+    "nightOverthinkingTrait": "Accurate description of late night contemplation based on ${vedicChart.moonSign}",
+    "secretIntuition": "Observation on their sixth sense citing detected markings: ${features.specialMarks.join(", ")}",
+    "palmSignsWitness": "Physical confirmation citing ${features.mounts.dominant} and line structures",
+    "summaryNarrative": "Moving, bespoke 2-3 sentence soul synthesis for ${name}"
+  },
+  "questionDeepResolution": {
+    "verdict": "Direct, authoritative, unambiguous astrological prediction addressing '${question}'",
+    "timingWindow": "Exact breakthrough months and year (e.g. October 2026 - March 2027)",
+    "astrologicalRationale": "Exact house, planetary lords, Dasha (${vedicChart.currentMahadasha}-${vedicChart.currentAntardasha}) and transit dynamics verified from 50+ classical treatises",
+    "shastricRemedyKey": "Specific physical action, mantra or charity that dissolves current blockage"
+  },
+  "pujaVidhi": {
+    "primaryDeity": "Authentic Vedic presiding deity determined specifically from ${name}'s afflicted houses and active dasha",
+    "auspiciousDay": "Exact classical Muhurta, tithi, or planetary hora calculated for this ritual",
+    "samagri": [
+      "Scripturally required item 1 (specific sacred herb/grain/oil)",
+      "Scripturally required item 2",
+      "Scripturally required item 3",
+      "Scripturally required item 4",
+      "Scripturally required item 5",
+      "Scripturally required item 6"
+    ],
+    "sankalp": "Authentic, consecrated Sanskrit Sankalp citing ${name}, birthplace (${pob || 'Native Janmabhoomi'}), active dasha, and specific afflicted house",
+    "steps": [
+      "1. Consecration & Aachaman step...",
+      "2. Light lamp in specific planetary direction...",
+      "3. Sacred deity stotram / invocation...",
+      "4. Sankalp release with water and unbroken grains...",
+      "5. 108 repetitions of specific Beej Mantra...",
+      "6. Concluding aarti & family bhog samarpan..."
+    ],
+    "daana": "Authentic Shastric karmic donation with specific item, recipient, day, and rationale",
+    "scripturalCitation": "Exact classical treatise reference (e.g. Brihat Parashara Ch. 58, Hastasanjivani, or Lal Kitab)"
+  }
 }
 \`\`\`
 
@@ -383,7 +424,7 @@ async function callGeminiVision(
   if (input.secondaryPerson?.leftPalmBase64) addImagePart(input.secondaryPerson.leftPalmBase64);
   if (input.secondaryPerson?.rightPalmBase64) addImagePart(input.secondaryPerson.rightPalmBase64);
 
-  const models = ["gemini-2.5-flash", "gemini-2.5-pro"];
+  const models = ["gemini-2.5-pro", "gemini-1.5-pro", "gemini-2.5-flash"];
 
   for (const model of models) {
     try {
@@ -395,7 +436,7 @@ async function callGeminiVision(
           body: JSON.stringify({
             contents: [{ parts }],
             generationConfig: {
-              temperature: 0.65,
+              temperature: 0.7,
               maxOutputTokens: 8192,
             },
           }),
@@ -747,43 +788,60 @@ function parseReadingResponse(text: string, input: PalmAnalysisRequest): RekhaRe
   if (signs.length === 0) signs.push("Mystic Cross in Quadrangle", "Intuitive Crescent of Moon");
 
   let freeTeaser: FreeTeaserProfile | null = null;
+  let aiPujaVidhi: PujaVidhiData | undefined = undefined;
+  let aiQuestionResolution: QuestionDeepResolution | undefined = undefined;
   let cleanMarkdown = text;
 
-  const fencedMatch = text.match(
-    /```(?:json-teaser|json)?\s*(\{[\s\S]*?(?:"swabhavHeadline"|"introvertExtrovertTrait")[\s\S]*?\})\s*```/i
+  const consultationMatch = text.match(
+    /```(?:json-consultation|json-teaser|json)?\s*(\{[\s\S]*?\})\s*```/i
   );
-  if (fencedMatch) {
+  if (consultationMatch) {
     try {
-      const parsed = JSON.parse(fencedMatch[1]);
-      if (parsed.introvertExtrovertTrait || parsed.swabhavHeadline) {
+      const parsed = JSON.parse(consultationMatch[1]);
+      if (parsed.teaser) {
+        freeTeaser = parsed.teaser;
+      } else if (parsed.swabhavHeadline || parsed.introvertExtrovertTrait) {
         freeTeaser = parsed;
       }
+      if (parsed.pujaVidhi && parsed.pujaVidhi.sankalp && Array.isArray(parsed.pujaVidhi.samagri)) {
+        aiPujaVidhi = parsed.pujaVidhi;
+      }
+      if (parsed.questionDeepResolution && parsed.questionDeepResolution.verdict) {
+        aiQuestionResolution = parsed.questionDeepResolution;
+      }
     } catch (e) {
-      console.warn("Failed to parse fenced json-teaser:", e);
+      console.warn("Failed to parse consultation json:", e);
     }
-    cleanMarkdown = cleanMarkdown.replace(fencedMatch[0], "").trim();
+    cleanMarkdown = cleanMarkdown.replace(consultationMatch[0], "").trim();
   }
 
   if (!freeTeaser) {
     const bareJsonMatch =
-      text.match(/\{[\s\S]*?"swabhavHeadline"[\s\S]*?"introvertExtrovertTrait"[\s\S]*?\}/i) ||
-      text.match(/\{[\s\S]*?"swabhavHeadline"[\s\S]*?\}/i);
+      text.match(/\{[\s\S]*?"(?:teaser|swabhavHeadline)"[\s\S]*?\}/i);
     if (bareJsonMatch) {
       try {
         const parsed = JSON.parse(bareJsonMatch[0]);
-        if (parsed.swabhavHeadline || parsed.introvertExtrovertTrait) {
+        if (parsed.teaser) {
+          freeTeaser = parsed.teaser;
+        } else if (parsed.swabhavHeadline || parsed.introvertExtrovertTrait) {
           freeTeaser = parsed;
         }
+        if (parsed.pujaVidhi && parsed.pujaVidhi.sankalp) {
+          aiPujaVidhi = parsed.pujaVidhi;
+        }
+        if (parsed.questionDeepResolution) {
+          aiQuestionResolution = parsed.questionDeepResolution;
+        }
       } catch (e) {
-        console.warn("Failed to parse bare json teaser:", e);
+        console.warn("Failed to parse bare json consultation:", e);
       }
       cleanMarkdown = cleanMarkdown.replace(bareJsonMatch[0], "").trim();
     }
   }
 
   cleanMarkdown = cleanMarkdown
-    .replace(/^```(?:json-teaser|json)?[\s\S]*?```/i, "")
-    .replace(/^\s*\{[\s\S]*?"swabhavHeadline"[\s\S]*?\}\s*/i, "")
+    .replace(/^```(?:json-consultation|json-teaser|json)?[\s\S]*?```/i, "")
+    .replace(/^\s*\{[\s\S]*?"(?:teaser|swabhavHeadline)"[\s\S]*?\}\s*/i, "")
     .trim();
 
   // Safeguard: Ensure the user's deep question resolution is prominent in the reading.
@@ -824,6 +882,8 @@ Under the divine planetary convergence of your **${input.vedicChart.ascendant}**
       relationshipHarmony: "Karmically Balanced Alignment",
     },
     freeTeaser,
+    pujaVidhi: aiPujaVidhi,
+    questionDeepResolution: aiQuestionResolution,
     palmFeatures: input.palmFeatures,
     synastry: input.synastry,
   };

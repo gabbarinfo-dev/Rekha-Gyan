@@ -170,7 +170,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Step 7: Structured Classical 9-Graha Sacred Pooja Vidhi
-    const pujaVidhi = calculateAuthenticPujaVidhi(vedicChart, name, pob);
+    // Prioritize the AI's deep scriptural synthesis; fallback to calculated classical generator if AI omitted it
+    const pujaVidhi = readingResult.pujaVidhi && readingResult.pujaVidhi.sankalp && Array.isArray(readingResult.pujaVidhi.samagri) && readingResult.pujaVidhi.samagri.length > 0
+      ? readingResult.pujaVidhi
+      : calculateAuthenticPujaVidhi(vedicChart, name, pob);
 
     // Step 8: Log completed reading to WordPress (non-blocking)
     logReadingToWordPress({
@@ -208,6 +211,7 @@ export async function POST(req: NextRequest) {
       pujaVidhi: isUnlocked ? pujaVidhi : null,
       insights: readingResult.keyInsights,
       freeTeaser: readingResult.freeTeaser,
+      questionDeepResolution: readingResult.questionDeepResolution,
       palmFeatures: readingResult.palmFeatures || palmFeatures,
       userQuestion: question,
       userName: name,
