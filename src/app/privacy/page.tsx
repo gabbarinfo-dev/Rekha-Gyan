@@ -1,10 +1,10 @@
 import React from "react";
 import Link from "next/link";
-import { ShieldCheck, Lock, EyeOff, Server, UserCheck, AlertTriangle } from "lucide-react";
+import { ShieldCheck, Lock, EyeOff, Server, UserCheck, AlertTriangle, Mail, Phone, MapPin } from "lucide-react";
 
 export const metadata = {
   title: "Privacy Policy — REKHA GYAN",
-  description: "DPDP Act 2023 & GDPR compliant privacy policy for REKHA GYAN (rekhagyan.online & ai.rekhagyan.online). Strict protection for birth data and palm imagery.",
+  description: "DPDP Act 2023 & GDPR compliant privacy policy for REKHA GYAN (ai.rekhagyan.online & rekhagyan.online), a unit of GABBARINFO DIGITAL SOLUTIONS.",
 };
 
 export default function PrivacyPage() {
@@ -26,6 +26,17 @@ export default function PrivacyPage() {
         </div>
       </div>
 
+      {/* Legal Entity Ownership Clause Banner */}
+      <div className="p-5 rounded-3xl bg-gold-500/10 border border-gold-500/25 text-gold-200 text-xs sm:text-sm leading-relaxed space-y-2">
+        <div className="flex items-center gap-2 font-bold text-gold-300 uppercase tracking-wider text-xs font-serif">
+          <ShieldCheck className="w-5 h-5 flex-shrink-0 text-gold-400" />
+          <span>Legal Entity &amp; Ownership Statement</span>
+        </div>
+        <p className="text-slate-200">
+          This website (<strong className="text-white">ai.rekhagyan.online</strong> / <strong className="text-white">rekhagyan.online</strong>) and brand (&lsquo;<strong className="text-white">REKHA GYAN</strong>&rsquo;) are owned and operated by <strong className="text-white">GABBARINFO DIGITAL SOLUTIONS</strong>, a registered enterprise under Udyam Registration No. <span className="font-mono text-gold-300 font-semibold">UDYAM-GJ-01-0683309</span>. REKHA GYAN is a unit of GABBARINFO DIGITAL SOLUTIONS.
+        </p>
+      </div>
+
       {/* Main Content */}
       <div className="cosmic-card rounded-3xl p-6 sm:p-10 border border-white/10 space-y-8 text-xs sm:text-sm text-slate-300 leading-relaxed">
         
@@ -33,7 +44,7 @@ export default function PrivacyPage() {
         <section className="space-y-3 border-b border-white/5 pb-6">
           <h2 className="text-lg font-bold text-gold-300 font-serif">1. Introduction &amp; Scope</h2>
           <p>
-            Welcome to <strong className="text-white">REKHA GYAN</strong> (accessible via our primary website <a href="https://rekhagyan.online" className="text-gold-400 hover:underline">rekhagyan.online</a> and web application <a href="https://ai.rekhagyan.online" className="text-gold-400 hover:underline">ai.rekhagyan.online</a>, hereinafter referred to as &ldquo;Platform&rdquo;, &ldquo;We&rdquo;, &ldquo;Our&rdquo;, or &ldquo;Us&rdquo;). We are operated from <strong className="text-white">Ahmedabad, Gujarat, India</strong>.
+            Welcome to <strong className="text-white">REKHA GYAN</strong> (accessible via our primary website <a href="https://rekhagyan.online" className="text-gold-400 hover:underline">rekhagyan.online</a> and web application <a href="https://ai.rekhagyan.online" className="text-gold-400 hover:underline">ai.rekhagyan.online</a>, hereinafter referred to as &ldquo;Platform&rdquo;, &ldquo;We&rdquo;, &ldquo;Our&rdquo;, or &ldquo;Us&rdquo;), owned and operated by <strong className="text-white">GABBARINFO DIGITAL SOLUTIONS</strong>, headquartered at <strong className="text-white">503, K Block, Savvy Swaraj, Jagatpur, Ahmedabad, Gujarat - 382470, India</strong>.
           </p>
           <p>
             This Privacy Policy governs the collection, processing, storage, and protection of your personal and sensitive data when you utilize our AI-powered Vedic astrology and Samudrika palmistry analytical services. We respect individual autonomy and hold the safeguarding of your biological imagery and astrological coordinates to the highest privacy standards.
@@ -65,7 +76,7 @@ export default function PrivacyPage() {
           </div>
           <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs space-y-2">
             <p>
-              <strong>Ephemeral Processing &amp; Zero External Storage:</strong> All biometric palm photographs, line vectors, and astrological birth details are processed strictly <em>ephemerally in real-time volatile memory</em> to compute your requested Vedic analysis. Your raw images and astrological coordinates are <strong>never stored on or shared with any external persistent storage or 3rd-party database providers (such as Supabase or third-party cloud data warehouses)</strong>.
+              <strong>Ephemeral Processing &amp; Zero External Storage:</strong> All biometric palm photographs, line vectors, and astrological birth details are processed strictly <em>ephemerally in real-time volatile memory</em> to compute your requested Vedic analysis. Your raw images and astrological coordinates are <strong>never stored on or shared with any external persistent storage or 3rd-party database providers</strong>.
             </p>
             <p>
               <strong>Zero Reselling Pledge:</strong> We do <span className="underline">NOT</span> sell, rent, license, or monetize your palm photographs, personal identities, or birth charts to third-party advertisers, data aggregators, or unauthorized external entities.
@@ -84,7 +95,7 @@ export default function PrivacyPage() {
               <strong className="text-white">Encryption in Transit:</strong> All data transmitted between your browser and our servers is secured via 256-bit TLS 1.3 cryptographic protocols.
             </li>
             <li>
-              <strong className="text-white">Storage Security:</strong> Stored user records and image representations are held behind secure firewall architectures with role-based authenticated access.
+              <strong className="text-white">Storage Security:</strong> Stored user records and account tokens are held behind secure firewall architectures with role-based authenticated access.
             </li>
             <li>
               <strong className="text-white">Payment Data Non-Collection:</strong> We do not store or process sensitive credit/debit card numbers, CVVs, or UPI PINs. All payment transactions are executed securely through RBI-licensed payment gateway partners.
@@ -117,21 +128,28 @@ export default function PrivacyPage() {
         </section>
 
         {/* Grievance Officer */}
-        <section className="space-y-3 bg-cosmic-900/80 p-5 rounded-2xl border border-gold-500/20">
-          <h2 className="text-base font-bold text-gold-300 font-serif">6. Grievance Officer &amp; Redressal Mechanism</h2>
+        <section className="space-y-3 bg-cosmic-900/80 p-6 rounded-2xl border border-gold-500/20">
+          <h2 className="text-base font-bold text-gold-300 font-serif">6. Grievance Officer &amp; Legal Entity Information</h2>
           <p className="text-xs text-slate-300">
-            In compliance with the Information Technology Act 2000, Rules made thereunder, and the DPDP Act 2023, the details of our designated Grievance Officer are as follows:
+            In compliance with the Information Technology Act 2000, Rules made thereunder, and the DPDP Act 2023, the details of our legal entity and designated Grievance Officer are as follows:
           </p>
-          <div className="text-xs space-y-1.5 text-slate-300 font-sans pt-1">
-            <p><strong className="text-white">Grievance Desk:</strong> Grievance Redressal Cell</p>
-            <p><strong className="text-white">Grievance Email:</strong> <a href="mailto:grievance@rekhagyan.online" className="text-gold-400 hover:underline">grievance@rekhagyan.online</a></p>
-            <p><strong className="text-white">Official Support Email:</strong> <a href="mailto:contactus@rekhagyan.online" className="text-gold-400 hover:underline">contactus@rekhagyan.online</a></p>
-            <p><strong className="text-white">Support &amp; Helpline Contact:</strong> <a href="tel:9274090534" className="text-gold-400 hover:underline">+91 9274090534</a></p>
-            <p><strong className="text-white">Business Address &amp; Jurisdiction:</strong> Ahmedabad, Gujarat, India</p>
-            <p className="text-[11px] text-slate-400 pt-1">
-              *Acknowledgment timeline: Within 24 to 48 hours. Redressal timeline: Within 15 calendar days from receipt of grievance.
-            </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-slate-300 pt-1">
+            <div className="space-y-1.5">
+              <p><strong className="text-white">Legal Entity Name:</strong> GABBARINFO DIGITAL SOLUTIONS</p>
+              <p><strong className="text-white">Brand Name:</strong> REKHA GYAN</p>
+              <p><strong className="text-white">Udyam Registration:</strong> UDYAM-GJ-01-0683309</p>
+              <p><strong className="text-white">Registered Office:</strong> 503, K Block, Savvy Swaraj, Jagatpur, Ahmedabad, Gujarat - 382470, India</p>
+            </div>
+            <div className="space-y-1.5">
+              <p><strong className="text-white">Official Support Email:</strong> <a href="mailto:contactus@rekhagyan.online" className="text-gold-400 hover:underline">contactus@rekhagyan.online</a></p>
+              <p><strong className="text-white">Grievance Email:</strong> <a href="mailto:grievance@rekhagyan.online" className="text-gold-400 hover:underline">grievance@rekhagyan.online</a></p>
+              <p><strong className="text-white">Helpline Numbers:</strong> <a href="tel:8511739865" className="text-gold-400 hover:underline">+91 8511739865</a> / <a href="tel:9274090534" className="text-gold-400 hover:underline">+91 9274090534</a></p>
+              <p><strong className="text-white">Response Time:</strong> 24–48 Hours</p>
+            </div>
           </div>
+          <p className="text-[11px] text-slate-400 pt-2 border-t border-white/5">
+            *Formal acknowledgment timeline: Within 24 to 48 hours. Redressal timeline: Within 15 calendar days from receipt of grievance.
+          </p>
         </section>
       </div>
 
@@ -139,11 +157,13 @@ export default function PrivacyPage() {
       <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400">
         <Link href="/" className="text-gold-400 hover:underline">Return to Home</Link>
         <span>&bull;</span>
-        <Link href="/terms" className="text-gold-400 hover:underline">Terms &amp; Conditions</Link>
+        <Link href="/terms-and-conditions" className="text-gold-400 hover:underline">Terms &amp; Conditions</Link>
         <span>&bull;</span>
         <Link href="/refund-policy" className="text-gold-400 hover:underline">Refund Policy</Link>
         <span>&bull;</span>
-        <Link href="/contact" className="text-gold-400 hover:underline">Contact Us</Link>
+        <Link href="/disclaimer" className="text-gold-400 hover:underline">Disclaimer</Link>
+        <span>&bull;</span>
+        <Link href="/contact-us" className="text-gold-400 hover:underline">Contact Us</Link>
       </div>
     </div>
   );

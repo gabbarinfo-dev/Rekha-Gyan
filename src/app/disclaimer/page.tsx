@@ -100,14 +100,21 @@ export default function DisclaimerPage() {
         </section>
 
         {/* Grievance & Office Details */}
-        <section className="space-y-3 bg-cosmic-900/80 p-5 rounded-2xl border border-gold-500/20">
+        <section className="space-y-3 bg-cosmic-900/80 p-6 rounded-2xl border border-gold-500/20">
           <h2 className="text-base font-bold text-gold-300 font-serif">4. Office &amp; Contact Point</h2>
-          <div className="text-xs space-y-1.5 text-slate-300 font-sans">
-            <p><strong className="text-white">Website:</strong> rekhagyan.online &amp; ai.rekhagyan.online</p>
-            <p><strong className="text-white">Official Support Email:</strong> <a href="mailto:contactus@rekhagyan.online" className="text-gold-400 hover:underline">contactus@rekhagyan.online</a></p>
-            <p><strong className="text-white">Grievance Email:</strong> <a href="mailto:grievance@rekhagyan.online" className="text-gold-400 hover:underline">grievance@rekhagyan.online</a></p>
-            <p><strong className="text-white">Support Phone:</strong> <a href="tel:9274090534" className="text-gold-400 hover:underline">+91 9274090534</a></p>
-            <p><strong className="text-white">Business Address &amp; Jurisdiction:</strong> Ahmedabad, Gujarat, India</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-slate-300 pt-1">
+            <div className="space-y-1.5">
+              <p><strong className="text-white">Legal Entity:</strong> GABBARINFO DIGITAL SOLUTIONS</p>
+              <p><strong className="text-white">Brand Name:</strong> REKHA GYAN (A unit of GABBARINFO DIGITAL SOLUTIONS)</p>
+              <p><strong className="text-white">Udyam Registration:</strong> UDYAM-GJ-01-0683309</p>
+              <p><strong className="text-white">Registered Address:</strong> 503, K Block, Savvy Swaraj, Jagatpur, Ahmedabad, Gujarat - 382470, India</p>
+            </div>
+            <div className="space-y-1.5">
+              <p><strong className="text-white">Official Support Email:</strong> <a href="mailto:contactus@rekhagyan.online" className="text-gold-400 hover:underline">contactus@rekhagyan.online</a></p>
+              <p><strong className="text-white">Grievance Email:</strong> <a href="mailto:grievance@rekhagyan.online" className="text-gold-400 hover:underline">grievance@rekhagyan.online</a></p>
+              <p><strong className="text-white">Support Phones:</strong> <a href="tel:8511739865" className="text-gold-400 hover:underline">+91 8511739865</a> / <a href="tel:9274090534" className="text-gold-400 hover:underline">+91 9274090534</a></p>
+              <p><strong className="text-white">Response Time:</strong> 24–48 Hours</p>
+            </div>
           </div>
         </section>
       </div>
@@ -116,13 +123,13 @@ export default function DisclaimerPage() {
       <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400">
         <Link href="/" className="text-gold-400 hover:underline">Return to Home</Link>
         <span>&bull;</span>
-        <Link href="/privacy" className="text-gold-400 hover:underline">Privacy Policy</Link>
+        <Link href="/privacy-policy" className="text-gold-400 hover:underline">Privacy Policy</Link>
         <span>&bull;</span>
-        <Link href="/terms" className="text-gold-400 hover:underline">Terms &amp; Conditions</Link>
+        <Link href="/terms-and-conditions" className="text-gold-400 hover:underline">Terms &amp; Conditions</Link>
         <span>&bull;</span>
         <Link href="/refund-policy" className="text-gold-400 hover:underline">Refund Policy</Link>
         <span>&bull;</span>
-        <Link href="/contact" className="text-gold-400 hover:underline">Contact Us</Link>
+        <Link href="/contact-us" className="text-gold-400 hover:underline">Contact Us</Link>
       </div>
     </div>
   );

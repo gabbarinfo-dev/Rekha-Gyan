@@ -18,9 +18,14 @@ export default function Footer() {
               <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-gold-400 to-amber-500 flex items-center justify-center text-cosmic-950 font-bold text-xl shadow-lg shadow-gold-500/20">
                 र
               </div>
-              <span className="text-2xl font-black text-white tracking-wider font-serif">
-                REKHA GYAN
-              </span>
+              <div className="flex flex-col">
+                <span className="text-2xl font-black text-white tracking-wider font-serif leading-none">
+                  REKHA GYAN
+                </span>
+                <span className="text-[10px] font-semibold text-gold-400/90 tracking-wider uppercase mt-1">
+                  A unit of GABBARINFO DIGITAL SOLUTIONS
+                </span>
+              </div>
             </Link>
             <p className="text-xs text-slate-400 leading-relaxed">
               Duniya ka sabse pehla AI Palmist aur Vedic Astrologer. Authentic classical Samudrika Shastra &amp; Vedic scriptures ko real-time computer vision ke sath synthesize karta hai.
@@ -111,6 +116,15 @@ export default function Footer() {
               Official Contact &amp; Support
             </div>
             <div className="space-y-2 text-xs text-slate-300">
+              <div className="text-[11px] font-semibold text-white">
+                GABBARINFO DIGITAL SOLUTIONS
+              </div>
+              <div className="flex items-start gap-2">
+                <MapPin className="w-3.5 h-3.5 text-gold-400 mt-0.5 flex-shrink-0" />
+                <span className="leading-snug">
+                  503, K Block, Savvy Swaraj, Jagatpur, Ahmedabad, Gujarat - 382470, India
+                </span>
+              </div>
               <div className="flex items-start gap-2">
                 <Mail className="w-3.5 h-3.5 text-gold-400 mt-0.5 flex-shrink-0" />
                 <a href="mailto:contactus@rekhagyan.online" className="hover:text-gold-300 transition-colors break-all">
@@ -119,22 +133,25 @@ export default function Footer() {
               </div>
               <div className="flex items-start gap-2">
                 <Phone className="w-3.5 h-3.5 text-gold-400 mt-0.5 flex-shrink-0" />
-                <a href="tel:9274090534" className="hover:text-gold-300 transition-colors">
-                  +91 9274090534
-                </a>
-              </div>
-              <div className="flex items-start gap-2">
-                <MapPin className="w-3.5 h-3.5 text-gold-400 mt-0.5 flex-shrink-0" />
-                <span>Ahmedabad, Gujarat, India</span>
+                <div className="flex flex-col gap-0.5">
+                  <a href="tel:8511739865" className="hover:text-gold-300 transition-colors">
+                    +91 8511739865
+                  </a>
+                  <a href="tel:9274090534" className="hover:text-gold-300 transition-colors text-slate-400 hover:text-gold-300">
+                    +91 9274090534
+                  </a>
+                </div>
               </div>
               <div className="pt-2 text-[11px] text-slate-400 border-t border-white/5 space-y-0.5">
+                <div>
+                  <strong className="text-slate-300">Response Time:</strong> 24–48 Hours
+                </div>
                 <div>
                   <strong className="text-slate-300">Grievance email:</strong>{" "}
                   <a href="mailto:grievance@rekhagyan.online" className="text-gold-400 hover:text-gold-300 transition-colors">
                     grievance@rekhagyan.online
                   </a>
                 </div>
-                <div><strong className="text-slate-300">Response:</strong> 24-48 Hours</div>
               </div>
             </div>
           </div>
@@ -153,10 +170,18 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar: Copyright & Security */}
-        <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
-          <p>
-            &copy; {new Date().getFullYear()} REKHA GYAN. All rights reserved. Registered in Ahmedabad, Gujarat, India.
-          </p>
+        <div className="pt-4 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-slate-400 border-t border-white/5">
+          <div className="space-y-1 text-center md:text-left">
+            <p className="text-slate-300 font-medium">
+              &copy; 2026 REKHA GYAN. All rights reserved.
+            </p>
+            <p className="text-slate-400">
+              REKHA GYAN is a unit of GABBARINFO DIGITAL SOLUTIONS.
+            </p>
+            <p className="text-[10px] text-slate-500">
+              Savvy Swaraj, Ahmedabad, Gujarat 382470.
+            </p>
+          </div>
           <div className="flex items-center gap-4 text-slate-400">
             <span className="flex items-center gap-1 text-emerald-400/80">
               <Lock className="w-3 h-3" />

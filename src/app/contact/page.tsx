@@ -1,10 +1,10 @@
 import React from "react";
 import Link from "next/link";
-import { Mail, Phone, MapPin, User, Clock, ShieldCheck, MessageSquare } from "lucide-react";
+import { Mail, Phone, MapPin, User, Clock, ShieldCheck, MessageSquare, Building2 } from "lucide-react";
 
 export const metadata = {
-  title: "Contact Us & Grievance Redressal — REKHA GYAN",
-  description: "Official contact details, customer support, and grievance redressal officer for REKHA GYAN (rekhagyan.online & ai.rekhagyan.online).",
+  title: "Contact Us & Grievance Desk — REKHA GYAN",
+  description: "Official contact details, legal entity information, and grievance redressal officer for REKHA GYAN, a unit of GABBARINFO DIGITAL SOLUTIONS.",
 };
 
 export default function ContactPage() {
@@ -16,13 +16,78 @@ export default function ContactPage() {
           <Mail className="w-8 h-8" />
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-white font-serif tracking-wide">
-          Contact Us &amp; Grievance Redressal
+          Contact Us &amp; Grievance Desk
         </h1>
         <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">
-          We are committed to prompt assistance, consumer transparency, and statutory grievance resolution.
+          Official Merchant Information, Consumer Support &amp; Statutory Redressal Details
         </p>
-        <div className="inline-block px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[11px] text-gold-300 font-mono">
+        <div className="inline-block px-4 py-1 bg-white/5 border border-white/10 rounded-full text-[11px] text-gold-300 font-mono">
           Headquartered in Ahmedabad, Gujarat, India
+        </div>
+      </div>
+
+      {/* Legal Entity Ownership Statement Banner */}
+      <div className="p-5 rounded-3xl bg-gold-500/10 border border-gold-500/25 text-gold-200 text-xs sm:text-sm leading-relaxed space-y-2">
+        <div className="flex items-center gap-2 font-bold text-gold-300 uppercase tracking-wider text-xs font-serif">
+          <ShieldCheck className="w-5 h-5 flex-shrink-0 text-gold-400" />
+          <span>Legal Entity &amp; Ownership Statement</span>
+        </div>
+        <p className="text-slate-200">
+          This website (<strong className="text-white">ai.rekhagyan.online</strong> / <strong className="text-white">rekhagyan.online</strong>) and brand (&lsquo;<strong className="text-white">REKHA GYAN</strong>&rsquo;) are owned and operated by <strong className="text-white">GABBARINFO DIGITAL SOLUTIONS</strong>, a registered enterprise under Udyam Registration No. <span className="font-mono text-gold-300 font-semibold">UDYAM-GJ-01-0683309</span>. REKHA GYAN is a unit of GABBARINFO DIGITAL SOLUTIONS.
+        </p>
+      </div>
+
+      {/* Core Entity Card */}
+      <div className="cosmic-card rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6">
+        <div className="flex items-center gap-2.5 text-gold-300 font-serif font-bold text-lg border-b border-white/5 pb-4">
+          <Building2 className="w-5 h-5 text-gold-400" />
+          <span>Official Business &amp; Merchant Particulars</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs sm:text-sm text-slate-300">
+          <div className="space-y-4">
+            <div className="p-4 rounded-2xl bg-cosmic-900/70 border border-white/5 space-y-1">
+              <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Legal Entity Name</div>
+              <div className="text-sm sm:text-base font-bold text-white font-serif">GABBARINFO DIGITAL SOLUTIONS</div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-cosmic-900/70 border border-white/5 space-y-1">
+              <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Brand / Platform Name</div>
+              <div className="text-sm sm:text-base font-bold text-gold-300 font-serif">
+                Rekha Gyan <span className="text-xs font-normal text-slate-400">(A unit of GABBARINFO DIGITAL SOLUTIONS)</span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-cosmic-900/70 border border-white/5 space-y-1">
+              <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Udyam Registration Number</div>
+              <div className="text-sm font-mono text-gold-400 font-bold">UDYAM-GJ-01-0683309</div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="p-4 rounded-2xl bg-cosmic-900/70 border border-white/5 space-y-1">
+              <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-gold-400" />
+                <span>Registered Office Address (Physical Address)</span>
+              </div>
+              <div className="text-xs sm:text-sm text-white font-medium leading-relaxed">
+                503, K Block, Savvy Swaraj, Jagatpur, Ahmedabad, Gujarat - 382470, India
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-cosmic-900/70 border border-white/5 space-y-1">
+              <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-gold-400" />
+                <span>Official Response Time</span>
+              </div>
+              <div className="text-xs sm:text-sm text-emerald-400 font-bold">
+                24–48 Hours
+              </div>
+              <div className="text-[11px] text-slate-400">
+                All inquiries received through email or helpline are formally responded to within 24 to 48 hours.
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -36,7 +101,7 @@ export default function ContactPage() {
             <span>Customer Support Desk</span>
           </div>
           <p className="text-xs text-slate-400 leading-relaxed">
-            Reach out to our customer care team for inquiries regarding consultations, report access, subscription billing, or platform assistance.
+            Reach out to our customer care team for inquiries regarding consultations, report generation, technical issues, subscription billing, or refund claims.
           </p>
 
           <div className="space-y-4 pt-2">
@@ -55,30 +120,30 @@ export default function ContactPage() {
               </div>
             </a>
 
-            <a
-              href="tel:9274090534"
-              className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-cosmic-900/70 border border-white/10 hover:border-gold-500/40 transition-colors group"
-            >
-              <div className="w-9 h-9 rounded-xl bg-gold-500/10 border border-gold-500/20 flex items-center justify-center text-gold-400 group-hover:scale-105 transition-transform flex-shrink-0">
-                <Phone className="w-4 h-4" />
-              </div>
-              <div className="space-y-0.5">
-                <div className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">Official Support Phone</div>
-                <div className="text-xs sm:text-sm font-mono text-white font-medium group-hover:text-gold-300 transition-colors">
-                  +91 9274090534
+            <div className="p-3.5 rounded-2xl bg-cosmic-900/70 border border-white/10 space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-xl bg-gold-500/10 border border-gold-500/20 flex items-center justify-center text-gold-400 flex-shrink-0">
+                  <Phone className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">Official Support Phone Numbers</div>
+                  <div className="text-[11px] text-slate-500">Call / WhatsApp Support</div>
                 </div>
               </div>
-            </a>
-
-            <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-cosmic-900/70 border border-white/10">
-              <div className="w-9 h-9 rounded-xl bg-gold-500/10 border border-gold-500/20 flex items-center justify-center text-gold-400 flex-shrink-0">
-                <MapPin className="w-4 h-4" />
-              </div>
-              <div className="space-y-0.5">
-                <div className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">Operational Headquarters</div>
-                <div className="text-xs text-white font-medium">
-                  Ahmedabad, Gujarat, India
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                <a
+                  href="tel:8511739865"
+                  className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-white/5 hover:bg-gold-500/10 border border-white/5 hover:border-gold-500/30 text-white hover:text-gold-300 font-mono text-xs transition-colors"
+                >
+                  <span>+91 8511739865</span>
+                  <span className="text-[9px] text-gold-400 uppercase font-sans">(Udyam)</span>
+                </a>
+                <a
+                  href="tel:9274090534"
+                  className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-white/5 hover:bg-gold-500/10 border border-white/5 hover:border-gold-500/30 text-white hover:text-gold-300 font-mono text-xs transition-colors"
+                >
+                  <span>+91 9274090534</span>
+                </a>
               </div>
             </div>
 
@@ -108,32 +173,31 @@ export default function ContactPage() {
               In accordance with the <strong className="text-white">Information Technology Act 2000</strong> and the <strong className="text-white">Digital Personal Data Protection Act 2023</strong>, the dedicated officer for all complaints, privacy escalations, and payment disputes is:
             </p>
 
-            <div className="p-4 rounded-2xl bg-cosmic-900/90 border border-gold-500/30 space-y-3 text-xs">
+            <div className="p-4 rounded-2xl bg-cosmic-900/90 border border-gold-500/30 space-y-2.5 text-xs">
               <div className="flex items-center gap-2.5">
                 <User className="w-4 h-4 text-gold-400" />
                 <span className="text-white font-bold text-sm">Grievance Redressal Desk</span>
               </div>
               <div className="space-y-1 text-slate-300">
-                <div className="text-slate-400 text-[11px]">Designation: Statutory Grievance &amp; Compliance Cell</div>
+                <div><strong className="text-slate-400">Designation:</strong> Statutory Grievance &amp; Compliance Cell</div>
+                <div><strong className="text-slate-400">Entity:</strong> GABBARINFO DIGITAL SOLUTIONS</div>
                 <div>
-                  Grievance Email:{" "}
+                  <strong className="text-slate-400">Grievance Email:</strong>{" "}
                   <a href="mailto:grievance@rekhagyan.online" className="text-gold-400 hover:underline font-mono">
                     grievance@rekhagyan.online
                   </a>
                 </div>
                 <div>
-                  Support Email:{" "}
-                  <a href="mailto:contactus@rekhagyan.online" className="text-gold-400 hover:underline font-mono">
-                    contactus@rekhagyan.online
-                  </a>
-                </div>
-                <div>
-                  Phone:{" "}
+                  <strong className="text-slate-400">Helpline:</strong>{" "}
+                  <a href="tel:8511739865" className="text-gold-400 hover:underline font-mono">
+                    +91 8511739865
+                  </a>{" "}
+                  /{" "}
                   <a href="tel:9274090534" className="text-gold-400 hover:underline font-mono">
                     +91 9274090534
                   </a>
                 </div>
-                <div>Operational Headquarters &amp; Jurisdiction: Ahmedabad, Gujarat, India</div>
+                <div><strong className="text-slate-400">Physical Address:</strong> 503, K Block, Savvy Swaraj, Jagatpur, Ahmedabad, Gujarat - 382470, India</div>
               </div>
             </div>
 
@@ -163,9 +227,9 @@ export default function ContactPage() {
       <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400 pt-4">
         <Link href="/" className="text-gold-400 hover:underline">Return to Home</Link>
         <span>&bull;</span>
-        <Link href="/privacy" className="text-gold-400 hover:underline">Privacy Policy</Link>
+        <Link href="/privacy-policy" className="text-gold-400 hover:underline">Privacy Policy</Link>
         <span>&bull;</span>
-        <Link href="/terms" className="text-gold-400 hover:underline">Terms &amp; Conditions</Link>
+        <Link href="/terms-and-conditions" className="text-gold-400 hover:underline">Terms &amp; Conditions</Link>
         <span>&bull;</span>
         <Link href="/refund-policy" className="text-gold-400 hover:underline">Refund Policy</Link>
         <span>&bull;</span>
