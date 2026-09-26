@@ -283,8 +283,8 @@ export async function PUT(req: NextRequest) {
 
     const planLabel = {
       trial_99: "₹99 Starter Pack",
-      duo_599: "₹599 Duo Pass",
-      unlimited_1009: "₹1,099 Pro Pass",
+      duo_599: "₹499 Duo Pass",
+      unlimited_1009: "₹999 Pro Pass",
     }[plan as "trial_99" | "duo_599" | "unlimited_1009"] || "Custom Plan";
 
     return NextResponse.json({

@@ -166,7 +166,7 @@ export default function RefundPolicyPage() {
               </p>
             </div>
             <div className="p-3.5 rounded-xl bg-cosmic-900/60 border border-gold-500/30 space-y-1">
-              <div className="font-bold text-amber-300 text-xs">₹599 / ₹1099 Multi-Query Packs</div>
+              <div className="font-bold text-amber-300 text-xs">₹499 / ₹999 Multi-Query Packs</div>
               <p className="text-[11px] text-slate-400">
                 Pro Vedic &amp; Ultimate Samudrika access, partner synastry, and priority processing.
               </p>

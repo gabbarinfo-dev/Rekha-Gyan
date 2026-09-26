@@ -60,7 +60,7 @@ export default function ProfileLockWarningModal({
           </div>
           <div className="flex items-start gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-            <span>To consult for 2 people with matchmaking &amp; partner synastry, upgrade to ₹599 Duo Plan.</span>
+            <span>Starter includes 1 partner matchmaking. To consult for 2 separate profiles, upgrade to ₹499 Duo Plan.</span>
           </div>
         </div>
 
@@ -79,7 +79,7 @@ export default function ProfileLockWarningModal({
             className="w-full py-2.5 px-4 rounded-full text-xs font-semibold text-gold-300 hover:text-white bg-gold-500/10 hover:bg-gold-500/20 border border-gold-500/30 transition-all flex items-center justify-center gap-1.5"
           >
             <Sparkles className="w-3.5 h-3.5 text-gold-400" />
-            <span>Upgrade to ₹599 Duo Plan (2 Profiles + Partner Synastry)</span>
+            <span>Upgrade to ₹499 Duo Plan (2 Profiles + Dual Synastry)</span>
           </button>
         </div>
       </div>

@@ -285,9 +285,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const unlockSubscription = (plan: "trial_99" | "duo_599" | "unlimited_1009") => {
     if (!user) return;
     const initialQuotas = {
-      trial_99: { deep: 2, partner: 0, match: 0 },
+      trial_99: { deep: 2, partner: 0, match: 1 },
       duo_599: { deep: 6, partner: 2, match: 2 },
-      unlimited_1009: { deep: 99, partner: 99, match: 4 },
+      unlimited_1009: { deep: 18, partner: 6, match: 4 },
     }[plan];
 
     updateProfile({
@@ -318,7 +318,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const canDoMatchmaking = () => {
     if (user?.isAdmin) return true;
     if (!user?.isSubscribed) return false;
-    if (user.subscriptionPlan === "trial_99") return false;
     return (user.matchmakingRemaining ?? 0) > 0;
   };
 

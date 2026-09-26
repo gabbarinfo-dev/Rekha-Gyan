@@ -100,13 +100,13 @@ export default function TermsPage() {
             <div className="p-3.5 rounded-xl bg-cosmic-900/60 border border-white/10 space-y-1">
               <div className="font-bold text-white text-sm">₹99 Starter Pack</div>
               <p className="text-[11px] text-slate-400">
-                Deep palm analysis, mount elevation scoring, and 1 specific life question answer.
+                Deep palm analysis, 2 specific life question answers, and 1 full partner matchmaking / synastry analysis.
               </p>
             </div>
             <div className="p-3.5 rounded-xl bg-cosmic-900/60 border border-gold-500/20 space-y-1">
-              <div className="font-bold text-amber-300 text-sm">₹599 / ₹1099 Pro &amp; Ultimate Packs</div>
+              <div className="font-bold text-amber-300 text-sm">₹499 / ₹999 Duo &amp; Pro Packs</div>
               <p className="text-[11px] text-slate-400">
-                Multi-profile support, divisional chart analysis (D9 Navamsha, D10 Dashamsha), and partner matchmaking.
+                Multi-profile support, divisional chart analysis (D9 Navamsha, D10 Dashamsha), multi-query synastry, and priority GPU processing.
               </p>
             </div>
           </div>

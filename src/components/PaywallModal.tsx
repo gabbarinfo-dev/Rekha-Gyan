@@ -44,9 +44,9 @@ export default function PaywallModal({
   const effectiveDob = userDob || user?.dob || "Not specified";
 
   const planInfo = {
-    trial_99: { price: "99", label: "₹99 Starter Pack (1 Person / 1 Deep Question / No Matchmaking)" },
-    duo_599: { price: "599", label: "₹599 Duo Pack (2 Profiles / 3 Deep Questions / 2 Partner Queries / 1 Match-Making Each)" },
-    unlimited_1009: { price: "1099", label: "₹1099 Pro / Family Pass (Multi-Profile / 4 Match-Making Overall / Full Synastry)" },
+    trial_99: { price: "99", label: "₹99 Starter Pack (1 Profile / 2 Deep Questions / 1 Matchmaking Analysis)" },
+    duo_599: { price: "499", label: "₹499 Duo Pass (2 Profiles / 6 Deep Questions / 2 Partner Queries / 2 Matchmaking Analyses)" },
+    unlimited_1009: { price: "999", label: "₹999 Pro & Family Pass (Multi-Profile / 18 Deep Questions / 4 Matchmaking Analyses)" },
   }[selectedPlan];
 
   const waMessage = `Hi Rekha, I am ${effectiveName}, DOB: ${effectiveDob}, I want to subscribe to the ₹${planInfo.price} plan (${planInfo.label}). Please send me the QR or payment link for instant activation.`;
@@ -153,7 +153,7 @@ export default function PaywallModal({
                     <span className="text-xs text-slate-400">/ single profile</span>
                   </div>
                   <p className="text-xs text-slate-300 mt-1">
-                    Personal self-discovery &amp; deep question answer.
+                    Personal destiny &amp; full partner compatibility.
                   </p>
 
                   <ul className="mt-4 space-y-2 text-xs text-slate-300">
@@ -167,11 +167,11 @@ export default function PaywallModal({
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                      <span><strong>1 Deep Question</strong> Solution + 3-Yr Timeline</span>
+                      <span><strong>2 Deep Questions</strong> + 3-Yr Timeline</span>
                     </li>
-                    <li className="flex items-start gap-2 text-slate-500">
-                      <span className="text-red-400 font-bold">✕</span>
-                      <span>No Partner Synastry / No Matchmaking</span>
+                    <li className="flex items-start gap-2">
+                      <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                      <span><strong>1 Full Matchmaking</strong> (Twin Palm &amp; Kundli Milan)</span>
                     </li>
                   </ul>
                 </div>
@@ -189,7 +189,7 @@ export default function PaywallModal({
                 </div>
               </div>
 
-              {/* TIER 2: ₹599 Duo Plan (POPULAR) */}
+              {/* TIER 2: ₹499 Duo Plan (POPULAR) */}
               <div
                 onClick={() => setSelectedPlan("duo_599")}
                 className={`cursor-pointer rounded-2xl p-4 sm:p-5 border transition-all relative flex flex-col justify-between ${
@@ -212,7 +212,7 @@ export default function PaywallModal({
                     </span>
                   </div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-2xl sm:text-3xl font-black text-white font-serif">₹599</span>
+                    <span className="text-2xl sm:text-3xl font-black text-white font-serif">₹499</span>
                     <span className="text-xs text-slate-400">/ 2 profiles</span>
                   </div>
                   <p className="text-xs text-slate-300 mt-1">
@@ -234,7 +234,7 @@ export default function PaywallModal({
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="w-3.5 h-3.5 text-gold-400 shrink-0 mt-0.5" />
-                      <span><strong>1 Full Match-Making</strong> per person (2 total)</span>
+                      <span><strong>2 Full Matchmakings</strong> (Both profiles)</span>
                     </li>
                   </ul>
                 </div>
@@ -247,12 +247,12 @@ export default function PaywallModal({
                         : "bg-white/10 text-slate-300"
                     }`}
                   >
-                    Select ₹599 Duo Pass
+                    Select ₹499 Duo Pass
                   </div>
                 </div>
               </div>
 
-              {/* TIER 3: ₹1099 Pro / Family */}
+              {/* TIER 3: ₹999 Pro / Family */}
               <div
                 onClick={() => setSelectedPlan("unlimited_1009")}
                 className={`cursor-pointer rounded-2xl p-4 sm:p-5 border transition-all relative flex flex-col justify-between ${
@@ -271,7 +271,7 @@ export default function PaywallModal({
                     </span>
                   </div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-2xl sm:text-3xl font-black text-white font-serif">₹1,099</span>
+                    <span className="text-2xl sm:text-3xl font-black text-white font-serif">₹999</span>
                     <span className="text-xs text-slate-400">/ multi-user access</span>
                   </div>
                   <p className="text-xs text-slate-300 mt-1">
@@ -285,11 +285,11 @@ export default function PaywallModal({
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="w-3.5 h-3.5 text-purple-400 shrink-0 mt-0.5" />
-                      <span><strong>4 Full Match-Making Analyses</strong> across any pairing</span>
+                      <span><strong>4 Full Match-Making Analyses</strong> across pairings</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="w-3.5 h-3.5 text-purple-400 shrink-0 mt-0.5" />
-                      <span><strong>Unlimited Partner &amp; Deep Questions</strong></span>
+                      <span><strong>18 Deep Questions</strong> + Scriptural Analysis</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="w-3.5 h-3.5 text-purple-400 shrink-0 mt-0.5" />
@@ -306,7 +306,7 @@ export default function PaywallModal({
                         : "bg-white/10 text-slate-300"
                     }`}
                   >
-                    Select ₹1,099 Pro Pass
+                    Select ₹999 Pro Pass
                   </div>
                 </div>
               </div>

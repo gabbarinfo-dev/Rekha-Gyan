@@ -37,7 +37,7 @@ interface ReadingFormProps {
 }
 
 export default function ReadingForm({ initialFocus }: ReadingFormProps) {
-  const { user, isLoggedIn, updateProfile, lockPrimaryProfile, consumeQuota, canAskPartnerQuestion } = useAuth();
+  const { user, isLoggedIn, updateProfile, lockPrimaryProfile, consumeQuota, canAskPartnerQuestion, canDoMatchmaking } = useAuth();
   const { language, setLanguage, setIsLanguageModalOpen } = useLanguage();
 
   // Wizard Steps: 1: Basic Details, 2: Dedicated Palm Upload, 3: Review Screen
@@ -251,7 +251,7 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
       });
 
       if (isLoggedIn) {
-        consumeQuota(secondaryPerson ? "partnerQuestion" : "deepQuestion");
+        consumeQuota(secondaryPerson ? "matchmaking" : "deepQuestion");
       }
 
       clearTimeout(timer1);
@@ -585,7 +585,12 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
                   <button
                     type="button"
                     onClick={() => {
-                      if (user?.subscriptionPlan === "trial_99") {
+                      if (!user?.isSubscribed) {
+                        setPaywallTargetPlan("trial_99");
+                        setShowPaywallModal(true);
+                        return;
+                      }
+                      if (!canDoMatchmaking()) {
                         setPaywallTargetPlan("duo_599");
                         setShowPaywallModal(true);
                       } else {
@@ -619,8 +624,15 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
 
                   // 1. Check if question concerns another person and partner hasn't been added yet
                   if (isRelationshipQuery(question) && !secondaryPerson) {
-                    if (user?.subscriptionPlan === "trial_99") {
-                      setStep1Error("Your question concerns a partner/relationship. Partner synastry is available on the ₹599 Duo Plan or ₹1099 Pro Plan.");
+                    if (!user?.isSubscribed) {
+                      setStep1Error("Your question concerns a partner/relationship. You can unlock partner matchmaking with our ₹99 Starter or ₹499 Duo Pass.");
+                      setTimeout(() => step1ErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
+                      setPaywallTargetPlan("trial_99");
+                      setShowPaywallModal(true);
+                      return;
+                    }
+                    if (!canDoMatchmaking()) {
+                      setStep1Error("You have used your complimentary matchmaking analysis. To add a partner for synastry, upgrade to the ₹499 Duo Plan or ₹999 Pro Plan.");
                       setTimeout(() => step1ErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
                       setPaywallTargetPlan("duo_599");
                       setShowPaywallModal(true);

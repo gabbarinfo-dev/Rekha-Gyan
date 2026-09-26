@@ -523,9 +523,9 @@ export default function AdminPanelModal({
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-300 font-semibold border border-emerald-500/30 text-[11px]">
                               <CheckCircle2 className="w-3 h-3 text-emerald-400" />
                               {u.subscriptionPlan === "unlimited_1009"
-                                ? "₹1,099 Pro Pass"
+                                ? "₹999 Pro Pass"
                                 : u.subscriptionPlan === "duo_599"
-                                ? "₹599 Duo Pass"
+                                ? "₹499 Duo Pass"
                                 : "₹99 Starter"}
                             </span>
                             {u.subscriptionExpiryDate && (
@@ -564,9 +564,9 @@ export default function AdminPanelModal({
                                 }
                                 className="bg-cosmic-900 border border-gold-500/30 rounded-lg px-2 py-1 text-white text-[11px] focus:outline-none"
                               >
-                                <option value="trial_99">₹99 Starter</option>
-                                <option value="duo_599">₹599 Duo Pass</option>
-                                <option value="unlimited_1009">₹1,099 Pro Pass</option>
+                                <option value="trial_99">₹99 Starter Pack</option>
+                                <option value="duo_599">₹499 Duo Pass</option>
+                                <option value="unlimited_1009">₹999 Pro Pass</option>
                               </select>
 
                               {/* Duration Dropdown */}
@@ -657,7 +657,7 @@ export default function AdminPanelModal({
           <div className="flex items-center gap-2">
             <Database className="w-4 h-4 text-gold-400 shrink-0" />
             <span>
-              <strong>Full Plan Authority:</strong> You can select any tier (₹99 Starter, ₹599 Duo, ₹1,099 Pro) and duration for any user. Changes take effect on their device instantly.
+              <strong>Full Plan Authority:</strong> You can select any tier (₹99 Starter, ₹499 Duo, ₹999 Pro) and duration for any user. Changes take effect on their device instantly.
             </span>
           </div>
           <button
@@ -764,8 +764,8 @@ export default function AdminPanelModal({
                     className="w-full bg-cosmic-900 border border-gold-500/40 rounded-xl px-3 py-2 text-white focus:outline-none"
                   >
                     <option value="trial_99">₹99 Starter Pack</option>
-                    <option value="duo_599">₹599 Duo Pass</option>
-                    <option value="unlimited_1009">₹1,099 Pro Pass</option>
+                    <option value="duo_599">₹499 Duo Pass</option>
+                    <option value="unlimited_1009">₹999 Pro Pass</option>
                   </select>
                 </div>
                 <div>
@@ -860,9 +860,9 @@ export default function AdminPanelModal({
                   <span className="font-bold text-white text-sm">
                     {viewingUser.isSubscribed
                       ? viewingUser.subscriptionPlan === "unlimited_1009"
-                        ? "₹1,099 Pro Pass"
+                        ? "₹999 Pro Pass"
                         : viewingUser.subscriptionPlan === "duo_599"
-                        ? "₹599 Duo Pass"
+                        ? "₹499 Duo Pass"
                         : "₹99 Starter Pack"
                       : "Free / Unsubscribed"}
                   </span>

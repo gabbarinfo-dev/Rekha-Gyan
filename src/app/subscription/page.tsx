@@ -93,7 +93,7 @@ export default function SubscriptionPage() {
                 <span className="text-3xl sm:text-4xl font-black text-white font-serif">₹99</span>
                 <span className="text-xs text-slate-400">/ single profile</span>
               </div>
-              <p className="text-xs text-slate-300 mb-5 leading-relaxed">Personal self-discovery &amp; deep question answer.</p>
+              <p className="text-xs text-slate-300 mb-5 leading-relaxed">Personal self-discovery &amp; full partner compatibility.</p>
               <ul className="space-y-2.5">
                 <li className="flex items-start gap-2 text-xs text-slate-300">
                   <Check className="w-3.5 h-3.5 shrink-0 mt-0.5 text-emerald-400" />
@@ -105,11 +105,11 @@ export default function SubscriptionPage() {
                 </li>
                 <li className="flex items-start gap-2 text-xs text-slate-300">
                   <Check className="w-3.5 h-3.5 shrink-0 mt-0.5 text-emerald-400" />
-                  <span>1 Deep Question Solution + 3-Yr Timeline</span>
+                  <span>2 Deep Questions + 3-Yr Timeline</span>
                 </li>
-                <li className="flex items-start gap-2 text-xs text-slate-500">
-                  <span className="text-red-400 font-bold shrink-0 mt-0.5">✕</span>
-                  <span>No Partner Synastry / No Matchmaking</span>
+                <li className="flex items-start gap-2 text-xs text-slate-300">
+                  <Check className="w-3.5 h-3.5 shrink-0 mt-0.5 text-emerald-400" />
+                  <span>1 Full Matchmaking (Twin Palm &amp; Kundli Milan)</span>
                 </li>
               </ul>
             </div>
@@ -134,7 +134,7 @@ export default function SubscriptionPage() {
                 Duo Pass
               </div>
               <div className="flex items-baseline gap-1 mb-1">
-                <span className="text-3xl sm:text-4xl font-black text-white font-serif">₹599</span>
+                <span className="text-3xl sm:text-4xl font-black text-white font-serif">₹499</span>
                 <span className="text-xs text-slate-400">/ 2 profiles</span>
               </div>
               <p className="text-xs text-slate-300 mb-5 leading-relaxed">Couples, partners, and high-clarity synastry.</p>
@@ -153,7 +153,7 @@ export default function SubscriptionPage() {
                 </li>
                 <li className="flex items-start gap-2 text-xs text-slate-300">
                   <Check className="w-3.5 h-3.5 shrink-0 mt-0.5 text-gold-400" />
-                  <span>1 Full Match-Making per person (2 total)</span>
+                  <span>2 Full Matchmakings (Both profiles)</span>
                 </li>
               </ul>
             </div>
@@ -163,7 +163,7 @@ export default function SubscriptionPage() {
               className="mt-7 w-full py-3 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all hover:scale-[1.03] active:scale-[0.97] flex items-center justify-center gap-2 bg-gradient-to-r from-gold-300 via-gold-400 to-amber-300 text-cosmic-950 shadow-lg shadow-gold-500/30"
             >
               <Flame className="w-3.5 h-3.5" />
-              Pay ₹599
+              Pay ₹499
             </button>
           </div>
 
@@ -178,7 +178,7 @@ export default function SubscriptionPage() {
                 Family / Pro
               </div>
               <div className="flex items-baseline gap-1 mb-1">
-                <span className="text-3xl sm:text-4xl font-black text-white font-serif">₹1,099</span>
+                <span className="text-3xl sm:text-4xl font-black text-white font-serif">₹999</span>
                 <span className="text-xs text-slate-400">/ multi-user access</span>
               </div>
               <p className="text-xs text-slate-300 mb-5 leading-relaxed">Complete family destiny &amp; multi-partner matchmaking.</p>
@@ -189,11 +189,11 @@ export default function SubscriptionPage() {
                 </li>
                 <li className="flex items-start gap-2 text-xs text-slate-300">
                   <Check className="w-3.5 h-3.5 shrink-0 mt-0.5 text-purple-400" />
-                  <span>4 Full Match-Making Analyses across any pairing</span>
+                  <span>4 Full Match-Making Analyses across pairings</span>
                 </li>
                 <li className="flex items-start gap-2 text-xs text-slate-300">
                   <Check className="w-3.5 h-3.5 shrink-0 mt-0.5 text-purple-400" />
-                  <span>Unlimited Partner &amp; Deep Questions</span>
+                  <span>18 Deep Questions + Scriptural Analysis</span>
                 </li>
                 <li className="flex items-start gap-2 text-xs text-slate-300">
                   <Check className="w-3.5 h-3.5 shrink-0 mt-0.5 text-purple-400" />
@@ -207,7 +207,7 @@ export default function SubscriptionPage() {
               className="mt-7 w-full py-3 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all hover:scale-[1.03] active:scale-[0.97] flex items-center justify-center gap-2 bg-gradient-to-r from-purple-400 to-indigo-400 text-white shadow-lg shadow-purple-500/20"
             >
               <Flame className="w-3.5 h-3.5" />
-              Pay ₹1,099
+              Pay ₹999
             </button>
           </div>
 
