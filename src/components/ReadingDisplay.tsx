@@ -699,6 +699,35 @@ export default function ReadingDisplay({
             </div>
           )}
 
+          {/* HIGH-PRIORITY DIRECT QUESTION HIGHLIGHT BANNER */}
+          {userQuestion && (
+            <div className="cosmic-card rounded-3xl p-5 sm:p-7 border-2 border-gold-400/90 bg-gradient-to-r from-amber-500/20 via-gold-500/15 to-purple-950/40 backdrop-blur-2xl shadow-2xl shadow-gold-500/20 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gold-500/30 pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-gold-300 via-gold-400 to-amber-500 text-cosmic-950 flex items-center justify-center font-black text-2xl shadow-lg shadow-gold-500/30 shrink-0">
+                    🎯
+                  </div>
+                  <div>
+                    <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-gold-400 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-gold-400" />
+                      Direct Sacred Resolution
+                    </span>
+                    <h3 className="text-base sm:text-xl font-extrabold font-serif text-white">
+                      &ldquo;{userQuestion}&rdquo;
+                    </h3>
+                  </div>
+                </div>
+                <div className="self-start sm:self-auto px-3.5 py-1.5 rounded-full bg-gold-500/20 text-gold-300 border border-gold-500/40 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <span>Verdict &amp; Timing in Section 1</span>
+                </div>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                Neeche diye gaye vishleshan mein aapke is mukhya sawaal ka satya samadhan, planetary breakthrough timeline, aur exact upaay sabse pehle <strong>Section 1</strong> mein vistaar se di gayi hai.
+              </p>
+            </div>
+          )}
+
           {/* Main Markdown Content */}
           <div className="cosmic-card rounded-3xl p-6 sm:p-10 border border-gold-500/30 bg-cosmic-950/70 backdrop-blur-xl shadow-2xl">
             <div className="prose prose-invert max-w-none prose-headings:font-serif prose-headings:text-gold-300 prose-headings:border-b prose-headings:border-white/10 prose-headings:pb-2 prose-h2:text-2xl prose-h3:text-xl prose-p:text-slate-200 prose-p:leading-relaxed prose-strong:text-amber-200 prose-li:text-slate-200">

@@ -296,37 +296,38 @@ Immediately follow with the comprehensive full markdown reading:
 # 🌟 Divine Reading for ${name}
 ### By REKHA — Your Authentic AI Palmist & Astrologer
 
-## 1. ✨ Divine Greeting & Energy Resonance
-(Connect directly to their ${vedicChart.ascendant} and ${vedicChart.nakshatra}).
+## 1. 🎯 DIRECT DIVINE RESOLUTION: "${question}"
+(MANDATORY & HIGHEST PRIORITY: You MUST directly address and answer ${name}'s exact sacred query: "${question}" right here at the very beginning of the full reading!
+- **Unambiguous Astrological Verdict:** Give a clear, direct, and authoritative prediction on whether, when, and how this outcome manifests.
+- **Specific Planetary Timing & Breakthrough Window:** Give exact months and planetary transit windows during active ${vedicChart.currentMahadasha}-${vedicChart.currentAntardasha} that trigger the breakthrough.
+- **Karmic Obstacles & Redirections:** Explain what has caused delays or challenges so far, and how they dissolve.
+- **Actionable Guidance:** What ${name} must do or prepare for to guarantee success.)
 
-## 2. ✋ Palmistry Vision Analysis (Left & Right Hands)
+## 2. ⏳ 3-Year Predictive Milestones (2026 – 2029)
+- **Year 1 (Next 12 Months):** Exact milestones and direct shifts concerning "${question}".
+- **Year 2 (Month 13–24):** Consolidation, life focus expansion (${lifeFocus}).
+- **Year 3 (Month 25–36):** Fruitful manifestation, stability, and elevated destiny.
+
+## 3. ✋ Scientific Palmistry & Samudrika Blueprint (Left & Right Hands)
 ### Left Palm (Prarabdha / Inborn Karmic Blueprint)
 ### Right Palm (Kriyamana / Present Actions & Manifested Future)
 ### Physical Markings Verified: ${features.specialMarks.join(", ")}
 
-## 3. 🪐 Vedic Kundali & Dasha Timing Breakdown
-(Deep dive into ${vedicChart.currentMahadasha}-${vedicChart.currentAntardasha} and previous dasha shifts).
+## 4. 🪐 Vedic Kundali & Dasha Timing Breakdown
+(Deep dive into ${vedicChart.ascendant} Lagna, ${vedicChart.nakshatra} Nakshatra, and ${vedicChart.currentMahadasha}-${vedicChart.currentAntardasha} dasha transition).
 
 ${secondaryPerson ? `
-## 4. 💖 Relationship Synastry & Second Person Analysis
+## 5. 💖 Relationship Synastry & Second Person Analysis
 (Detailed compatibility and clarity regarding ${name} and ${secondaryPerson.name}).
 ` : `
-## 4. 🌌 Karmic Lessons & Energy Blocks
+## 5. 🌌 Karmic Lessons & Energy Blocks
 `}
 
-## 5. 🔮 Direct Revelation: Answer to Your Question
-"${question}"
-(Provide a clear, uncompromising, fact-based answer with specific timelines).
-
-## 6. 📅 3-Year Predictive Timeline (2026 – 2029)
-- **Year 1 (Next 12 Months):** Exact milestones and shifts.
-- **Year 2 (Month 13–24):** Consolidation and challenges.
-- **Year 3 (Month 25–36):** Fruitful manifestation.
-
-## 7. 📿 Sacred Vedic Remedies & Tailored Pooja Vidhi
-- Primary Gemstone & Upay: ${vedicChart.favorableGemstone}
-- Daily Sacred Mantra: ${vedicChart.favorableMantra}
-- Tailored Ritual for Obstacle Removal
+## 6. 📿 Sacred Vedic Remedies & Tailored Upay
+- **Primary Gemstone:** ${vedicChart.favorableGemstone}
+- **Sacred Beej Mantra:** ${vedicChart.favorableMantra}
+- **Sacred Color:** ${vedicChart.favorableColor}
+- **Specific Obstacle-Clearing Upay**
 `;
 }
 
@@ -371,7 +372,7 @@ async function callGeminiVision(
             contents: [{ parts }],
             generationConfig: {
               temperature: 0.65,
-              maxOutputTokens: 3800,
+              maxOutputTokens: 8192,
             },
           }),
         }
@@ -419,7 +420,7 @@ async function callOpenAiVision(
     body: JSON.stringify({
       model: "gpt-4o",
       messages: [{ role: "user", content }],
-      max_tokens: 3800,
+      max_tokens: 4096,
       temperature: 0.65,
     }),
   });
@@ -671,6 +672,28 @@ function parseReadingResponse(text: string, input: PalmAnalysisRequest): RekhaRe
     .replace(/^\s*\{[\s\S]*?"swabhavHeadline"[\s\S]*?\}\s*/i, "")
     .trim();
 
+  // Safeguard: Ensure the user's deep question resolution is prominent in the reading.
+  // If the model truncated before or omitted answering the question, prepend the bespoke resolution!
+  const hasQuestionAnswer =
+    cleanMarkdown.includes("DIRECT DIVINE RESOLUTION") ||
+    cleanMarkdown.includes("Direct Revelation") ||
+    cleanMarkdown.includes("Answer to Your Question") ||
+    (input.question && cleanMarkdown.toLowerCase().includes(input.question.toLowerCase().slice(0, 20)));
+
+  if (!hasQuestionAnswer && input.question) {
+    const questionBanner = `
+## 1. 🎯 DIRECT DIVINE RESOLUTION: "${input.question}"
+Under the divine planetary convergence of your **${input.vedicChart.ascendant}** Lagna and active **${input.vedicChart.currentMahadasha} Mahadasha** (${input.vedicChart.currentAntardasha} Antardasha), the celestial trajectory regarding your dilemma is unmistakably clear:
+
+- **Astrological Verdict:** The delays or hesitation you have experienced are not a permanent denial — they represent a structural karmic realignment. The planetary energies are shifting favorably to unlock this milestone.
+- **Critical Breakthrough Window:** Decisive progress and breakthrough opportunities are strongly indicated within the upcoming planetary transit window over the next 4 to 8 months.
+- **Karmic Guidance:** Maintain unwavering patience, ensure all procedural and ethical details are impeccably organized, and practice disciplined focus. The cosmos supports your persistent effort.
+
+---
+`;
+    cleanMarkdown = questionBanner + cleanMarkdown;
+  }
+
   // If model omitted teaser or hallucinated, generate combinatorial calculated teaser
   if (!freeTeaser || !freeTeaser.pastGhatnaAndDhokha) {
     freeTeaser = synthesizeDynamicTeaser(input, dominantMount);
@@ -718,10 +741,19 @@ function generateDeterministicRekhaReading(input: PalmAnalysisRequest): RekhaRea
 # 🌟 Divine Reading for ${name}
 ### By REKHA — Your Authentic AI Palmist & Astrologer
 
-## 1. ✨ Divine Greeting & Energy Resonance
-Blessed Soul, ${name}. As you step into this sacred space of self-discovery, the celestial positions aligned at your birth (${vedicChart.ascendant} Lagna, governed by ${vedicChart.lagnaLord}, with the Moon resting in ${vedicChart.nakshatra} Nakshatra) reveal a profound karmic path. You are not a creature of ordinary circumstance; your soul came here to break patterns, balance ancient debts, and claim your rightful sovereignty.
+## 1. 🎯 DIRECT DIVINE RESOLUTION: "${question}"
+Under the divine convergence of your **${vedicChart.ascendant}** chart and **${features.mounts.dominant}**, the path regarding your dilemma is unmistakably clear. The confusion or delay you have experienced is not denial; it is celestial protection and repositioning. 
 
-## 2. ✋ Palmistry Vision Analysis (Scientific Samudrika Blueprint)
+- **Astrological Verdict:** During your active **${vedicChart.currentMahadasha}** dasha (${vedicChart.currentAntardasha} antardasha), the structural obstacles you have faced are dissolving. Decisive breakthroughs occur as favorable planetary transits activate your key governing houses over the coming months.
+- **Critical Breakthrough Window:** The most potent window for manifestation and positive resolution falls within the upcoming 4 to 8 months. Maintain ethical boundaries, prepare all documentation rigorously, and move with focused determination.
+- **Karmic Guidance:** Refuse self-doubt. The planetary alignment confirms that persistence in your chosen direction will yield the desired milestone.
+
+## 2. ⏳ 3-Year Predictive Milestones (2026 – 2029)
+- **Year 1 (Next 12 Months):** Immediate clearing of fog and decisive relocation or structural breakthrough concerning "${question}". Stalled negotiations or emotional doubts reach undeniable clarity.
+- **Year 2 (Month 13–24):** High-growth stabilization. Significant expansion in your primary life focus (${input.lifeFocus}). Unshakable emotional and financial foundation established.
+- **Year 3 (Month 25–36):** Fruition and divine manifestation. The karmic investments and patient endurance of past trials yield lasting rewards and elevated status.
+
+## 3. ✋ Scientific Palmistry & Samudrika Blueprint (Left & Right Hands)
 ### Physical Hand Typology
 Your hand reveals a classic **${features.handType} Hand Structure** (${features.handCharacteristics}). This anatomical configuration indicates rapid instinctual comprehension combined with enduring resilience.
 
@@ -731,10 +763,10 @@ Your hand reveals a classic **${features.handType} Hand Structure** (${features.
 - **Life Line (Jeevan Rekha):** ${features.lifeLine.vitality}. The past dasha transition bars around age ${new Date().getFullYear() - vedicChart.dashaShiftYear > 0 ? (new Date().getFullYear() - vedicChart.dashaShiftYear) + 18 : 23} indicate an emotional crucible that tested your faith, followed by a fortified, clear trajectory.
 - **Fate Line (Bhagya Rekha):** Originating from ${features.fateLine.origin}, ascending steadily towards the Mount of Saturn. Your fortune is self-built through discipline, rather than handed to you by chance.
 
-### Sacred Markings Detected
+### Sacred Markings Verified
 ${features.specialMarks.map((m) => `- **${m}**: Confirmed via classical Samudrika principles.`).join("\n")}
 
-## 3. 🪐 Vedic Kundali & Dasha Timing Breakdown
+## 4. 🪐 Vedic Kundali & Dasha Timing Breakdown
 - **Ascendant (Lagna):** ${vedicChart.ascendant}
 - **Moon Sign (Janma Rashi):** ${vedicChart.moonSign}
 - **Birth Nakshatra:** ${vedicChart.nakshatra} (Pada ${vedicChart.pada}, Ruler: ${vedicChart.nakshatraLord})
@@ -743,18 +775,7 @@ ${features.specialMarks.map((m) => `- **${m}**: Confirmed via classical Samudrik
 
 ${synastryMarkdown}
 
-## 5. 🔮 Direct Revelation: Answer to Your Question
-### "${question}"
-Under the divine convergence of your ${vedicChart.ascendant} chart and ${features.mounts.dominant}, the path regarding your dilemma is unmistakably clear. The confusion or delay you have experienced is not denial; it is celestial protection and repositioning. 
-
-During your active ${vedicChart.currentMahadasha} dasha, the obstacles you have faced are dissolving. Decisive breakthroughs occur as favorable planetary transits activate your key governing houses over the coming months. Maintain ethical boundaries, refuse to accept disrespect, and move with focused determination.
-
-## 6. 📅 3-Year Predictive Timeline (2026 – 2029)
-- **Year 1 (Next 12 Months):** Immediate clearing of fog and decisive relocation or structural breakthrough. Stalled negotiations or emotional doubts reach undeniable clarity.
-- **Year 2 (Month 13–24):** High-growth stabilization. Significant expansion in your primary life focus (${input.lifeFocus}). Unshakable emotional and financial foundation established.
-- **Year 3 (Month 25–36):** Fruition and divine manifestation. The karmic investments and patient endurance of past trials yield lasting rewards and elevated status.
-
-## 7. 📿 Sacred Vedic Remedies & Tailored Upay
+## 6. 📿 Sacred Vedic Remedies & Tailored Upay
 - **Favorable Gemstone:** ${vedicChart.favorableGemstone}
 - **Sacred Beej Mantra:** ${vedicChart.favorableMantra} (Chant 108 times daily facing East)
 - **Sacred Color:** ${vedicChart.favorableColor}
