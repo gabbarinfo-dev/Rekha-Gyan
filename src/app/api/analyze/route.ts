@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Step 1: Media Storage in WordPress Media Library (if images provided)
+    // Step 1: Media Storage in WordPress Media Library (non-blocking in background)
     let leftPalmUrl: string | undefined;
     let rightPalmUrl: string | undefined;
     const uploadedMediaIds: number[] = [];
@@ -66,38 +66,27 @@ export async function POST(req: NextRequest) {
     const safeName = name.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
     const timestamp = Date.now();
 
-    const uploadPromises: Promise<any>[] = [];
     if (leftPalmBase64) {
-      uploadPromises.push(
-        uploadPalmToWordPress(leftPalmBase64, `rekha_left_${safeName}_${timestamp}.jpg`).then(
-          (result) => {
-            if (result) {
-              leftPalmUrl = result.url;
-              uploadedMediaIds.push(result.id);
-            }
+      uploadPalmToWordPress(leftPalmBase64, `rekha_left_${safeName}_${timestamp}.jpg`)
+        .then((result) => {
+          if (result) {
+            leftPalmUrl = result.url;
+            uploadedMediaIds.push(result.id);
           }
-        )
-      );
+        })
+        .catch(() => {});
     }
 
     if (rightPalmBase64) {
-      uploadPromises.push(
-        uploadPalmToWordPress(rightPalmBase64, `rekha_right_${safeName}_${timestamp}.jpg`).then(
-          (result) => {
-            if (result) {
-              rightPalmUrl = result.url;
-              uploadedMediaIds.push(result.id);
-            }
+      uploadPalmToWordPress(rightPalmBase64, `rekha_right_${safeName}_${timestamp}.jpg`)
+        .then((result) => {
+          if (result) {
+            rightPalmUrl = result.url;
+            uploadedMediaIds.push(result.id);
           }
-        )
-      );
+        })
+        .catch(() => {});
     }
-
-    // Await uploads with a quick 5-second timeout so the reading pipeline is never blocked
-    await Promise.race([
-      Promise.all(uploadPromises),
-      new Promise((resolve) => setTimeout(resolve, 5000)),
-    ]);
 
     // Step 2: Planetary & Vedic Chart Calculations
     const vedicChart = calculateVedicChart(dob, tob, pob);
@@ -120,21 +109,16 @@ export async function POST(req: NextRequest) {
       secondaryPerson.vedicChart = secondaryVedicChart;
     }
 
-    // Step 2c: Dedicated Anatomical Palm Scanning (Vision & Samudrika Science)
-    const palmFeatures = await extractPalmFeatures(
-      leftPalmBase64,
-      rightPalmBase64,
-      vedicChart
-    );
-
-    // Step 3: 50+ Source Web Crawling & Classical Shastra Consensus
-    const consensus = await searchAstroConsensus(
-      lifeFocus,
-      question,
-      vedicChart.currentMahadasha,
-      vedicChart.moonSign,
-      palmFeatures.scripturalEvidenceNotes
-    );
+    // Step 2c & 3: Run anatomical palm scanning and 50+ classical treatises research in PARALLEL
+    const [palmFeatures, consensus] = await Promise.all([
+      extractPalmFeatures(leftPalmBase64, rightPalmBase64, vedicChart),
+      searchAstroConsensus(
+        lifeFocus,
+        question,
+        vedicChart.currentMahadasha,
+        vedicChart.moonSign
+      ),
+    ]);
 
     // Step 4 & 5: Deep Fact-Based Synthesis & Output Generation as REKHA
     const readingResult = await generateRekhaReading({

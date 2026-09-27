@@ -143,7 +143,7 @@ Ensure the response contains ONLY the raw JSON block without markdown formatting
   if (leftPalmBase64) addImage(leftPalmBase64);
   if (rightPalmBase64) addImage(rightPalmBase64);
 
-  const models = ["gemini-2.5-flash", "gemini-2.5-pro"];
+  const models = ["gemini-2.5-flash", "gemini-3.1-pro-preview"];
   for (const model of models) {
     try {
       const res = await fetch(

@@ -130,7 +130,7 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
       reader.onload = (event) => {
         const img = new Image();
         img.onload = () => {
-          const MAX_DIM = 1600;
+          const MAX_DIM = 1200;
           let width = img.width;
           let height = img.height;
 
@@ -154,7 +154,7 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
           }
 
           ctx.drawImage(img, 0, 0, width, height);
-          const compressedB64 = canvas.toDataURL("image/jpeg", 0.86);
+          const compressedB64 = canvas.toDataURL("image/jpeg", 0.80);
           resolve(compressedB64);
         };
         img.onerror = () => {
@@ -260,9 +260,21 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
       clearTimeout(timer2);
       clearTimeout(timer3);
 
-      const data = await res.json();
+      let data: any;
+      try {
+        data = await res.json();
+      } catch (jsonErr) {
+        if (res.status === 504 || res.status === 408) {
+          throw new Error("AI Vision computation took longer than expected due to heavy network traffic. Please click 'Start My Reading' again — it will complete faster on retry.");
+        }
+        if (res.status === 413) {
+          throw new Error("Palm photos are too large. Please take closer, compressed photos and try again.");
+        }
+        throw new Error(`Server returned status ${res.status}. Please try again.`);
+      }
+
       if (!res.ok || !data.success) {
-        throw new Error(data.error || "Failed to generate reading");
+        throw new Error(data.error || "Failed to generate reading. Please verify details and try again.");
       }
 
       setResultData(data);
@@ -1090,6 +1102,14 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
               <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
               <span>Photos are analyzed in real-time and auto-deleted from hosting server after processing.</span>
             </div>
+
+            {/* Prominent Step 3 Error Banner */}
+            {error && (
+              <div className="p-4 rounded-2xl bg-red-950/60 border border-red-500/40 text-red-200 text-xs flex items-center gap-2.5 animate-fadeIn">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+                <span>{error}</span>
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="pt-2 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">

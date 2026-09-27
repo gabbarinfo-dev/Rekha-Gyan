@@ -424,7 +424,7 @@ async function callGeminiVision(
   if (input.secondaryPerson?.leftPalmBase64) addImagePart(input.secondaryPerson.leftPalmBase64);
   if (input.secondaryPerson?.rightPalmBase64) addImagePart(input.secondaryPerson.rightPalmBase64);
 
-  const models = ["gemini-2.5-pro", "gemini-1.5-pro", "gemini-2.5-flash"];
+  const models = ["gemini-2.5-flash", "gemini-3.1-pro-preview"];
 
   for (const model of models) {
     try {
