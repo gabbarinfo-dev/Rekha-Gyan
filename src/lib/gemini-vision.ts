@@ -424,7 +424,7 @@ async function callGeminiVision(
   if (input.secondaryPerson?.leftPalmBase64) addImagePart(input.secondaryPerson.leftPalmBase64);
   if (input.secondaryPerson?.rightPalmBase64) addImagePart(input.secondaryPerson.rightPalmBase64);
 
-  const models = ["gemini-2.5-flash", "gemini-3.1-pro-preview"];
+  const models = ["gemini-3.1-pro-preview", "gemini-2.5-flash"];
 
   for (const model of models) {
     try {
@@ -449,7 +449,8 @@ async function callGeminiVision(
       }
 
       const data = await res.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      const contentParts = data.candidates?.[0]?.content?.parts || [];
+      const text = contentParts.map((p: any) => p.text || "").join("").trim();
       if (text) return text;
     } catch (e) {
       console.warn(`Error calling Gemini ${model}:`, e);

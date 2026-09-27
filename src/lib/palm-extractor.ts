@@ -163,7 +163,8 @@ Ensure the response contains ONLY the raw JSON block without markdown formatting
 
       if (!res.ok) continue;
       const data = await res.json();
-      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      const contentParts = data.candidates?.[0]?.content?.parts || [];
+      const rawText = contentParts.map((p: any) => p.text || "").join("").trim();
       if (!rawText) continue;
 
       const cleanJson = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
