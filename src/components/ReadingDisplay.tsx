@@ -31,6 +31,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useLanguage, LanguageType } from "@/lib/language-context";
 import PaywallModal, { SubscriptionTierType } from "./PaywallModal";
 import LanguageSelectionModal from "./LanguageSelectionModal";
+import RekhaFollowupChat from "./RekhaFollowupChat";
 
 interface PujaVidhiData {
   primaryDeity: string;
@@ -989,6 +990,23 @@ export default function ReadingDisplay({
           })()}
         </div>
       )}
+
+      {/* Live Conversational Chat Sanctuary with REKHA */}
+      <RekhaFollowupChat
+        userName={userName}
+        userDob={userDob}
+        userQuestion={userQuestion}
+        vedicChart={vedicChart}
+        palmFeatures={palmFeatures}
+        pujaVidhi={currentPujaVidhi}
+        synastry={synastry}
+        secondaryPerson={secondaryPerson}
+        isUnlocked={isUnlocked}
+        onUnlockRequest={() => {
+          setPaywallPlan("trial_99");
+          setShowPaywall(true);
+        }}
+      />
 
       {/* Paywall Modal Dialog */}
       <PaywallModal
