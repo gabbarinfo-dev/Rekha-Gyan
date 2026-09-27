@@ -54,6 +54,7 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
 
   // Secondary Person / Partner State
   const [secondaryPerson, setSecondaryPerson] = useState<SecondaryPersonData | null>(null);
+  const [suggestedRelation, setSuggestedRelation] = useState("Partner / Spouse");
   const [showSecondaryModal, setShowSecondaryModal] = useState(false);
   const [showLockWarningModal, setShowLockWarningModal] = useState(false);
   const [showPaywallModal, setShowPaywallModal] = useState(false);
@@ -114,13 +115,62 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
     "What specific gemstone and remedies will remove my present financial blockage?",
   ];
 
-  const isRelationshipQuery = (text: string) => {
-    const patterns = [
-      /\b(boyfriend|bf|girlfriend|gf|husband|wife|spouse|partner|fianc[eé]|lover)\b/i,
-      /\b(cheat|cheating|affair|loyalty|honest|faithful)\b/i,
-      /\b(good match|compatibility|compatible|together forever|marry|marriage|shaadi|prem|relationship)\b/i,
+  const detectSecondPersonContext = (text: string): {
+    isDetected: boolean;
+    suggestedRelation: string;
+  } => {
+    const q = text.toLowerCase();
+
+    // 1. Friendship & Social Connections (Arunima's case)
+    if (/\b(friend|friendship|bestie|best friend|dost|dosti|saheli|yaar|mitra|close friend)\b/i.test(q)) {
+      return { isDetected: true, suggestedRelation: "Friend" };
+    }
+
+    // 2. Spouse & Marital
+    if (/\b(husband|pati|hubby)\b/i.test(q)) {
+      return { isDetected: true, suggestedRelation: "Husband" };
+    }
+    if (/\b(wife|patni|biwi)\b/i.test(q)) {
+      return { isDetected: true, suggestedRelation: "Wife" };
+    }
+
+    // 3. Romantic / Dating / Partner (Ankita & Nilima's cases)
+    if (/\b(boyfriend|bf|fianc[eé]|lover|guy)\b/i.test(q) || (/\b(him)\b/i.test(q) && /\b(love|marry|marriage|future|shaadi|relationship|affair|dating|together)\b/i.test(q))) {
+      return { isDetected: true, suggestedRelation: "Boyfriend" };
+    }
+    if (/\b(girlfriend|gf)\b/i.test(q) || (/\b(her)\b/i.test(q) && /\b(love|marry|marriage|future|shaadi|relationship|affair|dating|together)\b/i.test(q))) {
+      return { isDetected: true, suggestedRelation: "Girlfriend" };
+    }
+    if (/\b(crush|soulmate|partner|lover)\b/i.test(q)) {
+      return { isDetected: true, suggestedRelation: "Partner / Spouse" };
+    }
+
+    // 4. Business & Professional
+    if (/\b(business partner|co-founder|cofounder|colleague|coworker|boss|partnership)\b/i.test(q)) {
+      return { isDetected: true, suggestedRelation: "Business Partner" };
+    }
+
+    // 5. Family & In-Laws
+    if (/\b(mother-in-law|father-in-law|saas|sasur|bhabhi|devar|jeth|nanad|in-laws|sasural)\b/i.test(q)) {
+      return { isDetected: true, suggestedRelation: "Family / In-Laws" };
+    }
+
+    // 6. Broad Relational Dynamics & Named Person Inquiries
+    const broadRelational = [
+      /\b(marry|marriage|shaadi|vivaah|rishta|prem|affair|extra marital)\b/i,
+      /\b(cheat|cheating|loyalty|honest|faithful|divorce|breakup|break up|patchup|patch up)\b/i,
+      /\b(together forever|future together|future with|live with him|live with her)\b/i,
+      /\b(compatibility|compatible|guna milan|synastry|kundli match)\b/i,
+      /\b(we both|both of us|two of us)\b/i,
+      /\b(fights? with|misunderstanding with|avoids? talking to me|avoiding me)\b/i,
+      /\b(i love [a-z]+|future with [a-z]+|marrying [a-z]+|relationship with)\b/i,
     ];
-    return patterns.some((p) => p.test(text));
+
+    if (broadRelational.some((pattern) => pattern.test(q))) {
+      return { isDetected: true, suggestedRelation: "Partner / Spouse" };
+    }
+
+    return { isDetected: false, suggestedRelation: "Partner / Spouse" };
   };
 
   // Image optimization helper (client-side resize for fast uploads & crisp AI vision)
@@ -640,26 +690,10 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
                     return;
                   }
 
-                  // 1. Check if question concerns another person and partner hasn't been added yet
-                  if (isRelationshipQuery(question) && !secondaryPerson) {
-                    if (!user?.isSubscribed) {
-                      setStep1Error("Your question concerns a partner/relationship. You can unlock partner matchmaking with our ₹99 Starter or ₹499 Duo Pass.");
-                      setTimeout(() => step1ErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
-                      setPaywallTab("plans");
-                      setPaywallReason(undefined);
-                      setPaywallTargetPlan("trial_99");
-                      setShowPaywallModal(true);
-                      return;
-                    }
-                    if (!canDoMatchmaking()) {
-                      setStep1Error("You have used all matchmakings in your plan. Top-up anytime: ₹60 for 2 scans or ₹99 for 5 scans.");
-                      setTimeout(() => step1ErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
-                      setPaywallTab("topup");
-                      setPaywallReason("You have used all matchmakings included in your plan. Get instant top-up credits (₹60 for 2, ₹99 for 5) or upgrade below.");
-                      setPaywallTargetPlan(user?.subscriptionPlan === "trial_99" ? "duo_599" : "unlimited_1009");
-                      setShowPaywallModal(true);
-                      return;
-                    }
+                  // 1. Check if question concerns another person (partner/friend/spouse) and details haven't been added yet
+                  const secondPersonCheck = detectSecondPersonContext(question);
+                  if (secondPersonCheck.isDetected && !secondaryPerson) {
+                    setSuggestedRelation(secondPersonCheck.suggestedRelation);
                     setShowSecondaryModal(true);
                     return;
                   }
@@ -1138,10 +1172,20 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
       {/* Secondary Person Details Modal */}
       <SecondaryPersonModal
         isOpen={showSecondaryModal}
+        initialRelation={suggestedRelation}
         onClose={() => setShowSecondaryModal(false)}
+        onSkip={() => {
+          setShowSecondaryModal(false);
+          setStep1Error(null);
+          setError(null);
+          setStep(2);
+        }}
         onConfirm={(data) => {
           setSecondaryPerson(data);
           setError(null);
+          setStep1Error(null);
+          setShowSecondaryModal(false);
+          setStep(2);
         }}
       />
 

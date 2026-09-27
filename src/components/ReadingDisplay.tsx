@@ -290,15 +290,6 @@ export default function ReadingDisplay({
     }
   }, [isUnlocked, currentReading, readingId]);
 
-  // Auto popup on Screen 1 if user hasn't explicitly chosen a language
-  React.useEffect(() => {
-    if (!hasChosenLanguage) {
-      const timer = setTimeout(() => {
-        setShowLanguageModal(true);
-      }, 700);
-      return () => clearTimeout(timer);
-    }
-  }, [hasChosenLanguage]);
 
   // Synchronize on language change
   const handleLanguageSwitch = async (newLang: LanguageType) => {

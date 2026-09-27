@@ -17,6 +17,7 @@ interface SecondaryPersonModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (data: SecondaryPersonData) => void;
+  onSkip?: () => void;
   initialRelation?: string;
 }
 
@@ -24,6 +25,7 @@ export default function SecondaryPersonModal({
   isOpen,
   onClose,
   onConfirm,
+  onSkip,
   initialRelation = "Partner / Spouse",
 }: SecondaryPersonModalProps) {
   const [name, setName] = useState("");
@@ -38,18 +40,27 @@ export default function SecondaryPersonModal({
   const [showMissingPalmWarning, setShowMissingPalmWarning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  React.useEffect(() => {
+    if (initialRelation) {
+      setRelation(initialRelation);
+    }
+  }, [initialRelation, isOpen]);
+
   if (!isOpen) return null;
 
   const relationshipOptions = [
+    "Partner / Spouse",
     "Boyfriend",
     "Girlfriend",
     "Husband",
     "Wife",
-    "Fiancé / Partner",
+    "Friend",
+    "Crush / Lover",
+    "Ex-Partner",
+    "Business Partner",
+    "Family / In-Laws",
     "Mother",
     "Father",
-    "Business Partner",
-    "Friend",
     "Other",
   ];
 
@@ -404,21 +415,32 @@ export default function SecondaryPersonModal({
             </div>
 
             {/* Action Buttons */}
-            <div className="pt-3 flex items-center justify-between border-t border-white/10">
-              <button
-                type="button"
-                onClick={onClose}
-                className="text-xs text-slate-400 hover:text-white"
-              >
-                Cancel
-              </button>
+            <div className="pt-3 flex flex-wrap items-center justify-between gap-3 border-t border-white/10">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="text-xs text-slate-400 hover:text-white"
+                >
+                  Cancel
+                </button>
+                {onSkip && (
+                  <button
+                    type="button"
+                    onClick={onSkip}
+                    className="text-xs text-amber-400/80 hover:text-amber-300 underline underline-offset-2 transition-colors"
+                  >
+                    Skip (Analyze Myself Only)
+                  </button>
+                )}
+              </div>
 
               <button
                 type="submit"
                 className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider text-cosmic-950 bg-gradient-to-r from-gold-300 to-amber-400 hover:shadow-lg hover:shadow-gold-500/30 transition-all"
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Save &amp; Analyze Partner</span>
+                <span>Save &amp; Match Profile</span>
               </button>
             </div>
           </form>
