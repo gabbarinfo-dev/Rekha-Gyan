@@ -65,7 +65,10 @@ Keep the exact same keys:
               contents: [{ parts: [{ text: prompt }] }],
               generationConfig: {
                 temperature: 0.2,
-                maxOutputTokens: 5000,
+                maxOutputTokens: 8192,
+                thinkingConfig: {
+                  thinkingBudget: 0,
+                },
               },
             }),
           }

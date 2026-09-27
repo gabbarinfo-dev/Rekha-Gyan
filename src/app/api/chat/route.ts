@@ -89,7 +89,7 @@ RULES FOR YOUR RESPONSE:
 2. Directly answer the seeker's question without beating around the bush.
 3. Anchor your reasoning explicitly in their personal data (e.g. mention their ${vedicChart?.moonSign || "Moon sign"}, their current ${vedicChart?.currentMahadasha || "Dasha"} Mahadasha, or their palm markings like Heart Line / Jupiter mount).
 4. If they ask about another person (${secondaryPerson ? secondaryPerson.name : "anyone"}), evaluate the connection honestly—highlighting harmony, karmic challenges, and remedies.
-5. Keep response concise and readable (2 to 4 structured paragraphs). Use markdown bolding for key timelines, remedies, or astrological points.
+5. Always deliver a complete, self-contained, and comprehensive answer without abruptly ending. Finish every sentence, list item, and remedy with complete clarity.
 6. Language: ${langInstruction}`;
 
     // Format chat history into Gemini contents
@@ -112,7 +112,7 @@ RULES FOR YOUR RESPONSE:
       });
     }
 
-    const models = ["gemini-3.1-pro-preview", "gemini-2.5-flash"];
+    const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"];
     let replyText = "";
 
     for (const model of models) {
@@ -126,7 +126,10 @@ RULES FOR YOUR RESPONSE:
               contents,
               generationConfig: {
                 temperature: 0.65,
-                maxOutputTokens: 2048,
+                maxOutputTokens: 8192,
+                thinkingConfig: {
+                  thinkingBudget: 0,
+                },
               },
             }),
           }
@@ -138,7 +141,8 @@ RULES FOR YOUR RESPONSE:
         }
 
         const data = await geminiRes.json();
-        const parts = data.candidates?.[0]?.content?.parts || [];
+        const candidate = data.candidates?.[0];
+        const parts = candidate?.content?.parts || [];
         replyText = parts.map((p: any) => p.text || "").join("").trim();
         if (replyText) break;
       } catch (err) {
@@ -163,7 +167,7 @@ RULES FOR YOUR RESPONSE:
               ...messages.map((m) => ({ role: m.role, content: m.content })),
             ],
             temperature: 0.65,
-            max_tokens: 1500,
+            max_tokens: 4000,
           }),
         });
 
