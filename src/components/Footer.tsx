@@ -231,6 +231,9 @@ export default function Footer() {
             <p className="text-slate-400">
               REKHA GYAN is a unit of GABBARINFO DIGITAL SOLUTIONS.
             </p>
+            <p className="text-slate-400">
+              Managed by Nishant Dantare
+            </p>
             <p className="text-[10px] text-slate-500">
               Savvy Swaraj, Ahmedabad, Gujarat 382470.
             </p>
