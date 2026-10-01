@@ -80,9 +80,29 @@ export default function SubscriptionPage() {
 
       if (tabParam === "topup") {
         handleTopupClick();
+      } else if (tabParam === "special") {
+        const specialOption = planParam === "299" || planParam === "kalesh_saas_299"
+          ? "kalesh_saas_299"
+          : planParam === "349" || planParam === "intercaste_349"
+          ? "intercaste_349"
+          : "love_ex_249";
+        handleSpecialPassClick(specialOption);
       } else if (planParam) {
-        let targetPlan: SubscriptionTierType = "trial_99";
         const cleanPlan = planParam.toLowerCase().trim();
+        if (cleanPlan === "249" || cleanPlan === "love_ex_249" || cleanPlan === "love") {
+          handleSpecialPassClick("love_ex_249");
+          return;
+        }
+        if (cleanPlan === "299" || cleanPlan === "kalesh_saas_299" || cleanPlan === "kalesh") {
+          handleSpecialPassClick("kalesh_saas_299");
+          return;
+        }
+        if (cleanPlan === "349" || cleanPlan === "intercaste_349" || cleanPlan === "intercaste") {
+          handleSpecialPassClick("intercaste_349");
+          return;
+        }
+
+        let targetPlan: SubscriptionTierType = "trial_99";
         if (cleanPlan === "499" || cleanPlan === "duo" || cleanPlan === "duo_599") {
           targetPlan = "duo_599";
         } else if (cleanPlan === "999" || cleanPlan === "ultimate" || cleanPlan === "unlimited_1009" || cleanPlan === "pro" || cleanPlan === "family") {
