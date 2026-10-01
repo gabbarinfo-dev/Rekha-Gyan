@@ -85,6 +85,12 @@ export default function PrivacyPage() {
                 IP address, browser type, device identifiers, and system logs recorded for security, spam prevention, and payment fraud verification.
               </p>
             </div>
+            <div className="p-4 rounded-2xl bg-cosmic-900/60 border border-gold-500/20 space-y-2 col-span-1 md:col-span-2">
+              <h3 className="font-bold text-gold-400 text-xs uppercase tracking-wider">E. Life Inquiries &amp; Scriptural Retrieval Purpose</h3>
+              <p className="text-xs text-slate-400">
+                The specific life questions, relationship focus, and palm line imagery you provide are processed exclusively by Rekha AI to act as your digital research assistant. Rekha AI evaluates these details against classical Vedic literature indexed by antiquity, citations, and scholarly readership. Rekha AI does not invent answers or remedies at random; it retrieves and synthesizes the majority consensus of authentic classical scriptures matching your exact data. This information is used strictly to fulfill your requested reading and is never sold or used for public AI model training.
+              </p>
+            </div>
           </div>
         </section>
 

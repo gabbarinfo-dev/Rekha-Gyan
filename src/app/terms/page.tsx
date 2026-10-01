@@ -59,12 +59,31 @@ export default function TermsPage() {
           </p>
         </section>
 
-        {/* Clause 2: Service Description & User Responsibilities */}
-        <section className="space-y-3 border-b border-white/5 pb-6">
-          <h2 className="text-lg font-bold text-gold-300 font-serif">2. Service Scope &amp; User Responsibilities</h2>
+        {/* Clause 2: Service Description & Nature of Rekha AI */}
+        <section className="space-y-4 border-b border-white/5 pb-6">
+          <h2 className="text-lg font-bold text-gold-300 font-serif">2. Service Scope, Nature of Rekha AI &amp; User Responsibilities</h2>
           <p>
-            REKHA GYAN offers an automated software platform synthesizing Sanskrit texts with multimodal computer vision to analyze palm lines and Vedic planetary charts.
+            <strong className="text-white">Rekha AI acts as a digital research assistant and computational helper, not as a human astrologer, certified Vedic practitioner, psychic, or clairvoyant.</strong>
           </p>
+          <div className="p-4 sm:p-5 rounded-2xl bg-cosmic-900/60 border border-gold-500/25 space-y-3 text-xs sm:text-sm">
+            <div className="font-bold text-gold-300 uppercase tracking-wider text-xs">
+              How Rekha AI Formulates Answers &amp; Scriptural Indexing:
+            </div>
+            <p className="text-slate-300">
+              When you submit your queries, birth coordinates (date, time, and location), and palm images, Rekha AI analyzes your specific inputs against anatomical line contours, mount elevations, and planetary chart positions. It then systematically crawls and cross-references authoritative classical Vedic scriptures.
+            </p>
+            <ul className="list-disc list-inside space-y-1.5 text-slate-300 pl-1">
+              <li>
+                <strong className="text-white">Authenticity &amp; Ranking Criteria:</strong> Authenticity of scriptures is evaluated strictly based on their historical antiquity (e.g., <em>Brihat Parashara Hora Shastra</em>, <em>Brihat Samhita</em>, <em>Hastasanjivani</em>, <em>Saravali</em>, <em>Jataka Parijata</em>, <em>Phaladeepika</em>, <em>Lal Kitab</em>) and how extensively they are studied, cited, ranked, and preferred by practicing astrologers and classical scholars over generations.
+              </li>
+              <li>
+                <strong className="text-white">Consensus-Based Synthesis (No Random Calculations):</strong> Be it life timing, specific solutions, pooja vidhis, mantras, or gemstone recommendations, <strong className="text-gold-200">nothing is provided at random or through arbitrary algorithmic imagination</strong>. Rekha AI identifies what the majority consensus of authentic classical scriptures states for your exact astrological and palm parameters, and synthesizes that scriptural consensus for you.
+              </li>
+              <li>
+                <strong className="text-white">No Guaranteed Solutions or Life Outcomes:</strong> Because ancient scriptures and astrological traditions represent spiritual wisdom, tendencies, and metaphysical guidance, Rekha AI&apos;s answers do not guarantee any specific real-world outcome, event, reconciliation, or solution.
+              </li>
+            </ul>
+          </div>
           <div className="p-4 rounded-2xl bg-cosmic-900/60 border border-white/10 space-y-2">
             <div className="font-bold text-white text-xs uppercase tracking-wider text-gold-400">User Responsibilities:</div>
             <ul className="list-disc list-inside space-y-1.5 text-slate-300">

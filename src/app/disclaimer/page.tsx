@@ -40,17 +40,32 @@ export default function DisclaimerPage() {
       {/* Main Content */}
       <div className="cosmic-card rounded-3xl p-6 sm:p-10 border border-white/10 space-y-8 text-xs sm:text-sm text-slate-300 leading-relaxed">
         
-        {/* Core Methodology */}
-        <section className="space-y-3 border-b border-white/5 pb-6">
+        {/* Core Methodology & AI Helper Nature */}
+        <section className="space-y-4 border-b border-white/5 pb-6">
           <div className="flex items-center gap-2">
             <Compass className="w-5 h-5 text-gold-400" />
-            <h2 className="text-lg font-bold text-gold-300 font-serif">1. Traditional Scripture Synthesis &amp; AI Nature</h2>
+            <h2 className="text-lg font-bold text-gold-300 font-serif">1. Rekha AI Acts as an Assistant, Not an Astrologer</h2>
           </div>
           <p>
-            REKHA GYAN (<a href="https://rekhagyan.online" className="text-gold-400 hover:underline">rekhagyan.online</a> and <a href="https://ai.rekhagyan.online" className="text-gold-400 hover:underline">ai.rekhagyan.online</a>) provides automated, AI-driven computational insights by synthesizing traditional Sanskrit texts (including Brihat Samhita, Hastasamudrika Shastra, and Vedic Jyotish fundamentals) with computer vision and deep learning models.
+            <strong className="text-white">Rekha AI functions strictly as a digital research assistant and computational helper, not as a human astrologer, certified guru, psychic, or clairvoyant.</strong> When you submit your questions, birth coordinates (date, time, and place of birth), and palm photographs, Rekha AI analyzes your queries, maps your astronomical chart coordinates, and evaluates the anatomical line structures and mount elevations of your palms.
           </p>
-          <p>
-            All generated outputs are automated AI-driven insights designed solely for informational, guidance, and educational purposes. Artificial intelligence can make mistakes, and its algorithmic inferences must never be construed as definitive predictions, empirical guarantees, or fatalistic facts.
+          <div className="p-4 sm:p-5 rounded-2xl bg-cosmic-900/80 border border-gold-500/20 space-y-3 text-xs sm:text-sm">
+            <div className="font-bold text-gold-300 text-xs uppercase tracking-wider">
+              Scriptural Indexing &amp; Authenticity Ranking Algorithm:
+            </div>
+            <p className="text-slate-300">
+              Rekha AI queries and indexes authentic classical Vedic literature and Samudrika Shastra treatises. Scriptural authenticity and relevance are prioritized based on:
+            </p>
+            <ul className="list-disc list-inside space-y-1.5 text-slate-300 pl-1">
+              <li><strong className="text-white">Historical Antiquity:</strong> The chronological canonical age of the text (e.g., <em>Brihat Parashara Hora Shastra</em>, <em>Brihat Samhita</em>, <em>Hastasanjivani</em>, <em>Saravali</em>, <em>Jataka Parijata</em>, <em>Phaladeepika</em>, and classical <em>Lal Kitab</em> traditions).</li>
+              <li><strong className="text-white">Scholarly Readership &amp; Consensus:</strong> How extensively the treatise is studied, ranked, cited, and preferred by practicing classical astrologers, traditional lineages, and scholars across generations.</li>
+            </ul>
+            <div className="pt-2 border-t border-white/10 text-slate-200">
+              <strong className="text-gold-200">Consensus-Driven Answers (Zero Random Generation):</strong> Be it life timing, specific answers, pooja vidhis, mantras, or gemstone recommendations, <strong className="text-white">nothing is provided at random or from arbitrary AI guesswork</strong>. Every response reflects what the majority consensus of authentic classical scriptures states for your specific combinations. Rekha AI is simply your digital helper to locate the most relevant scriptural answers matching your details.
+            </div>
+          </div>
+          <p className="text-slate-400 text-xs">
+            Because ancient scriptures and astrology deal with metaphysical guidance, tendencies, and spiritual remedies, <strong className="text-white">Rekha AI&apos;s answers do not and cannot guarantee any specific life outcome, resolution, relationship reconciliation, or event</strong>. Artificial intelligence can make mistakes, and its scriptural synthesis must never be treated as fatalistic certainty.
           </p>
         </section>
 

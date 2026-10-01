@@ -88,16 +88,30 @@ export default function RefundPolicyPage() {
           </div>
         </section>
 
-        {/* Section 2: Non-Refundable / Non-Cancellable Digital Services */}
-        <section className="space-y-3 border-b border-white/5 pb-6">
+        {/* Section 2: Non-Refundable / Non-Cancellable Digital Services & Nature of Rekha AI */}
+        <section className="space-y-4 border-b border-white/5 pb-6">
           <div className="flex items-center gap-2 text-rose-300 font-serif font-bold text-base">
             <AlertOctagon className="w-5 h-5 text-rose-400" />
-            <span>2. Non-Refundable &amp; Non-Cancellable Digital Deliverables</span>
+            <span>2. Non-Refundable Nature: Rekha AI as an Assistant, Not a Guaranteed Solution</span>
           </div>
           <p>
-            Unlike physical manufactured products, REKHA GYAN provides instant, intangible, irrevocable digital analysis and server GPU computations:
+            Unlike physical manufactured goods, REKHA GYAN provides immediate, irrevocable digital research, GPU vision processing, and classical scriptural indexing:
           </p>
-          <ul className="list-disc list-inside space-y-2 text-slate-300 pl-1">
+          <div className="p-4 rounded-2xl bg-cosmic-900/60 border border-gold-500/20 text-xs sm:text-sm text-slate-300 space-y-2.5">
+            <strong className="text-gold-300 block text-xs uppercase tracking-wider">
+              Understanding Rekha AI&apos;s Service Scope &amp; Refund Non-Applicability:
+            </strong>
+            <p>
+              Rekha AI acts as an intelligent assistant and computational helper, not as an infallible human astrologer or psychic. When you ask your questions and upload your palm imagery and birth details, Rekha AI analyzes your questions, details, and palm line structures. It then systematically crawls through internet and classical repositories looking for authentic scriptures—where authenticity is ranked by historical antiquity (how ancient the text is) and how extensively it has been studied, cited, and preferred by practicing astrologers over centuries.
+            </p>
+            <p>
+              Rekha AI synthesizes the answers by identifying what the <strong>majority consensus of authoritative scriptures</strong> points out. Be it answers, timings, pooja vidhis, or gemstone suggestions, <strong>nothing is provided at random or on arbitrary AI calculation</strong>—everything reflects what classical treatises declare.
+            </p>
+            <p className="text-amber-200">
+              Because Rekha AI operates as your research assistant to retrieve the most relevant scripture-backed insights matching your details, <strong>its answers do not and cannot guarantee any specific life outcome, resolution, or solution</strong>. Consequently, <strong>refunds are strictly NOT provided because a seeker dislikes a prediction, disagrees with the classical scriptures, or experiences unmet personal expectations</strong>. Once the scriptural analysis is processed and rendered, the service is fully delivered and irrevocable.
+            </p>
+          </div>
+          <ul className="list-disc list-inside space-y-2 text-slate-300 pl-1 text-xs sm:text-sm">
             <li>
               <strong className="text-white">Instant GPU Computation:</strong> Upon submitting your palm photos or birth details, cloud servers instantly execute complex planetary matrices and computer vision palmistry models.
             </li>
