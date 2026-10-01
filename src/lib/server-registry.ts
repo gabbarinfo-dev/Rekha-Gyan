@@ -260,6 +260,9 @@ export async function activateUserPlanServer(params: {
         trial_99: { days: 30, deep: 2, partner: 0, match: 1 },
         duo_599: { days: 60, deep: 6, partner: 2, match: 3 },
         unlimited_1009: { days: 365, deep: 18, partner: 6, match: 5 },
+        love_ex_249: { days: 45, deep: 4, partner: 2, match: 2 },
+        kalesh_saas_299: { days: 45, deep: 5, partner: 2, match: 3 },
+        intercaste_349: { days: 60, deep: 6, partner: 3, match: 4 },
       };
 
       const config = planConfigs[planId] || planConfigs.trial_99;

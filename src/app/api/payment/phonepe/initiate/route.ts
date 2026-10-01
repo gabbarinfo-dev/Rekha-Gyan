@@ -10,6 +10,9 @@ const PLAN_CATALOG: Record<string, { price: number; label: string }> = {
   unlimited_1009: { price: 999, label: "₹999 Pro & Family Pass" },
   topup_60: { price: 60, label: "₹60 Matchmaking Top-Up (2 Credits)" },
   topup_99: { price: 99, label: "₹99 Matchmaking Top-Up (5 Credits)" },
+  love_ex_249: { price: 249, label: "₹249 Khoya Pyar & Get Your Ex Back Pass" },
+  kalesh_saas_299: { price: 299, label: "₹299 Ghar Kalesh & Sasural Shanti Pass" },
+  intercaste_349: { price: 349, label: "₹349 Intercaste Vivah & Parivaar Manana Pass" },
 };
 
 function getOrdersFilePath(): string {

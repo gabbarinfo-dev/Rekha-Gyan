@@ -59,6 +59,36 @@ const PLAN_META: Record<
       "Complete Guna Milan & Dosha Breakdown",
     ],
   },
+  love_ex_249: {
+    name: "₹249 Khoya Pyar & Get Your Ex Back Pass",
+    tag: "Dual Synastry & Sacred Shukra Shanti",
+    features: [
+      "Dual Palm & Heart Line Karmic Analysis",
+      "Separation Root Cause via Brihat Parashara",
+      "Sacred Kamadeva-Shukra Shanti Vidhi & Mantras",
+      "2 Dedicated Relationship Reconnection Queries",
+    ],
+  },
+  kalesh_saas_299: {
+    name: "₹299 Ghar Kalesh & Sasural Shanti Pass",
+    tag: "Family Harmony & Vastu Shanti Access",
+    features: [
+      "Up to 3 Saved Profiles (Self, Spouse & Family)",
+      "4th House Griha Bhava & Matru-Pitri Discord Scan",
+      "Lal Kitab & Annapurna Shanti Remedies",
+      "3 Dedicated Parivarik Shanti Queries",
+    ],
+  },
+  intercaste_349: {
+    name: "₹349 Intercaste Vivah & Parivaar Manana Pass",
+    tag: "Dharma & Vivah Badha Nivaran Access",
+    features: [
+      "Multi-Profile Evaluation (Couple + Parents)",
+      "9th & 7th House Guru-Chandal/Rahu Badha Analysis",
+      "Shiva Purana Parvati Vivah Sankalp & Katyayani Vidhi",
+      "4 Dedicated Vivah Consultation Queries",
+    ],
+  },
 };
 
 function PaymentSuccessContent() {

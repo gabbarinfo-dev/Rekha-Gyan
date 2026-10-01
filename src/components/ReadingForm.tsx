@@ -23,6 +23,7 @@ import {
   Lock,
   HeartHandshake,
   Globe,
+  Heart,
 } from "lucide-react";
 import ReadingDisplay from "./ReadingDisplay";
 import AuthModal from "./AuthModal";
@@ -489,6 +490,72 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
         {/* STEP 1: Basic Details & Life Focus */}
         {step === 1 && (
           <div className="space-y-6 animate-fadeIn">
+            {/* Quick Vedic Samadhan Inquiries Strip */}
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-rose-950/40 via-purple-950/40 to-emerald-950/40 border border-gold-500/25 shadow-lg shadow-purple-950/20">
+              <div className="flex items-center justify-between mb-2.5">
+                <span className="text-[11px] font-black uppercase tracking-wider text-gold-300 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-gold-400" />
+                  Specialized Shastriya Samadhan Inquiries
+                </span>
+                <span className="text-[10px] text-slate-400 font-medium">1-Click Auto Fill</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLifeFocus("Love, Marriage & Relationship Destiny");
+                    setQuestion("Mera khoya pyar / ex partner kab wapas aayega aur hamare beech algaav ka shastriya nivaran kya hai?");
+                    setShowSecondaryModal(true);
+                  }}
+                  className="p-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-left transition-all group"
+                >
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-rose-300 group-hover:text-rose-200">
+                    <Heart className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                    <span>Khoya Pyar / Ex Back</span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">
+                    Shukra-Chandra synastry &amp; dual palm sync
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLifeFocus("Love, Marriage & Relationship Destiny");
+                    setQuestion("Ghar main kalesh aur saas se vivad se mukti kaise milegi? Parivaar me izzat aur shanti ka shastriya upaay batayein.");
+                    setShowSecondaryModal(true);
+                  }}
+                  className="p-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-left transition-all group"
+                >
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-300 group-hover:text-emerald-200">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>Ghar Kalesh &amp; Saas Vivad</span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">
+                    4th &amp; 10th house peace &amp; Vastu
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLifeFocus("Love, Marriage & Relationship Destiny");
+                    setQuestion("Intercaste vivah ke liye dono parivaaron ko manane ka shastriya muhurat aur graha samadhan kya hai?");
+                    setShowSecondaryModal(true);
+                  }}
+                  className="p-2.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-left transition-all group"
+                >
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-purple-300 group-hover:text-purple-200">
+                    <Sparkles className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                    <span>Intercaste Vivah &amp; Parivaar</span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">
+                    Parents consent &amp; Brihaspati bal vidhi
+                  </p>
+                </button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               {/* Full Name */}
               <div className="space-y-2">

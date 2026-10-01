@@ -713,7 +713,7 @@ export default function ReadingDisplay({
               </div>
 
               {/* Card 4: Palmistry Marks & 6th Sense */}
-              <div className="p-3.5 sm:p-5 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/20 space-y-2">
+              <div className="p-3.5 sm:p-5 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/20 space-y-2 relative overflow-hidden">
                 <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5">
                   <span className="text-xs font-bold uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
                     <Eye className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -723,10 +723,34 @@ export default function ReadingDisplay({
                     {b4}
                   </span>
                 </div>
-                <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-                  {currentTeaser?.palmSignsWitness || t.card4Fallback}{" "}
-                  {currentTeaser?.secretIntuition || ""}
-                </p>
+
+                {isUnlocked ? (
+                  <p className="text-xs sm:text-sm text-slate-200 leading-relaxed animate-fadeIn">
+                    {currentTeaser?.palmSignsWitness || t.card4Fallback}{" "}
+                    {currentTeaser?.secretIntuition || ""}
+                  </p>
+                ) : (
+                  <div className="relative rounded-xl overflow-hidden p-3 bg-black/40 border border-emerald-500/20 select-none min-h-[110px] flex items-center justify-center">
+                    {/* Scrambled redacted DOM filler - inspection reveals ZERO confidential reading data */}
+                    <p className="filter blur-[6px] select-none text-slate-400 text-xs sm:text-sm leading-relaxed pointer-events-none opacity-40">
+                      Aapke haath mein maujood vishesh Guru Parvat Trishul aur Hastasanjivani ke niyam anusar karmic sandhi ka gopan rahasya... Dhana Yava evam Ring of Solomon ke prabhav se aapki chhatthi indri...
+                    </p>
+                    <div className="absolute inset-0 bg-cosmic-950/85 backdrop-blur-[3px] flex flex-col items-center justify-center p-2 text-center space-y-2">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold-500/15 border border-gold-400/40 text-gold-300 text-[10px] font-bold uppercase tracking-wider shadow-sm">
+                        <Lock className="w-3 h-3 text-gold-400" />
+                        <span>Palm Signs &amp; 6th Sense Locked</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => openPaywall("trial_99")}
+                        className="text-[11px] font-extrabold text-cosmic-950 bg-gradient-to-r from-gold-300 via-gold-400 to-amber-300 px-4 py-1.5 rounded-full shadow-lg shadow-gold-500/25 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
+                      >
+                        <span>Unlock Revelation</span>
+                        <Sparkles className="w-3 h-3 text-cosmic-950" />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           );

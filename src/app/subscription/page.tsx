@@ -14,18 +14,19 @@ import {
   Lock,
   Star,
   X,
+  Heart,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import AuthModal from "@/components/AuthModal";
 import PaywallModal from "@/components/PaywallModal";
-import type { SubscriptionTierType, PurchaseOptionType } from "@/components/PaywallModal";
+import type { SubscriptionTierType, PurchaseOptionType, SpecialPassType } from "@/components/PaywallModal";
 
 export default function SubscriptionPage() {
   const { user, isLoggedIn, isAdmin } = useAuth();
   const isSubscribed = Boolean(user?.isSubscribed);
 
   const [pendingPlan, setPendingPlan] = useState<SubscriptionTierType | null>(null);
-  const [paywallTab, setPaywallTab] = useState<"plans" | "topup">("plans");
+  const [paywallTab, setPaywallTab] = useState<"plans" | "special" | "topup">("plans");
   const [pendingOption, setPendingOption] = useState<PurchaseOptionType | undefined>(undefined);
   const [authOpen, setAuthOpen] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
@@ -35,6 +36,17 @@ export default function SubscriptionPage() {
     setPendingPlan(plan);
     setPaywallTab("plans");
     setPendingOption(plan);
+    if (!isLoggedIn && !isAdmin) {
+      setAuthOpen(true);
+      return;
+    }
+    setPaywallOpen(true);
+  };
+
+  const handleSpecialPassClick = (pass: SpecialPassType) => {
+    setPendingOption(pass);
+    setPaywallTab("special");
+    setPendingPlan("duo_599");
     if (!isLoggedIn && !isAdmin) {
       setAuthOpen(true);
       return;
@@ -283,6 +295,294 @@ export default function SubscriptionPage() {
             </button>
           </div>
 
+        </div>
+
+        {/* VEDIC SAMADHAN PASSES (Distinct Visuals & Targeted Solutions) */}
+        <div className="mb-14 space-y-6">
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-gradient-to-r from-rose-500/15 via-amber-500/15 to-purple-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold uppercase tracking-wider">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              Targeted Shastriya Solutions
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold font-serif text-white">
+              Vedic Samadhan Passes
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto">
+              Prem algaav, parivarik kalesh, aur intercaste vivah badha ke liye 50+ classical scriptures se tailored shastriya upaay.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* PASS 1: Khoya Pyar Wapas Paayen & Get Your Ex Back (₹249) */}
+            <div className="relative rounded-3xl p-6 border border-rose-500/40 bg-gradient-to-b from-rose-950/80 via-cosmic-950/95 to-pink-950/40 shadow-xl shadow-rose-950/50 hover:border-rose-400/70 transition-all flex flex-col justify-between overflow-hidden">
+              {/* Glowing Top Pill */}
+              <div className="flex items-center justify-between mb-3">
+                <span className="px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 text-[10px] font-black uppercase tracking-wider border border-rose-500/40 flex items-center gap-1.5">
+                  <Heart className="w-3 h-3 text-rose-400 fill-rose-400/40" />
+                  Prem Punarmilan &amp; Ex Wapsi
+                </span>
+                <span className="text-[10px] font-bold text-slate-400 bg-black/40 px-2.5 py-0.5 rounded-full">
+                  2 Palms Sync
+                </span>
+              </div>
+
+              <div>
+                {/* Price Section with Traditional Comparison */}
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-3xl sm:text-4xl font-black text-rose-200 font-serif">₹249</span>
+                  <span className="text-xs text-slate-400 line-through">₹2,100 Pandit Dakshina</span>
+                </div>
+                <h3 className="text-base font-extrabold text-white mb-1">
+                  Khoya Pyar Wapas Paayen &amp; Get Your Ex Back
+                </h3>
+                <p className="text-xs text-rose-200/80 mb-3 leading-relaxed">
+                  Shukra-Chandra synastry aur algaav dosh shanti dwara dil ki dooriyan khatam karne ka shastriya path.
+                </p>
+
+                {/* Distinct Structure: Dual-Palm Synastry Conduit */}
+                <div className="my-3.5 p-3 rounded-2xl bg-black/40 border border-rose-500/25">
+                  <div className="flex items-center justify-between text-xs font-semibold text-rose-200">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-base">🫱</span>
+                      <span>Aapka Palm</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-[10px] text-rose-300 font-bold px-2.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/30">
+                      <Heart className="w-2.5 h-2.5 text-rose-400 fill-rose-400" />
+                      <span>Prem Yog Synastry</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span>Ex / Partner</span>
+                      <span className="text-base">🫲</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Distinct Structure: 3-Phase Milestone Journey */}
+                <div className="space-y-2 mt-3">
+                  <div className="p-2.5 rounded-xl bg-rose-500/5 border border-rose-500/15 flex items-start gap-2.5 text-xs">
+                    <span className="w-5 h-5 rounded-full bg-rose-500/20 text-rose-300 font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                      01
+                    </span>
+                    <div>
+                      <strong className="text-white text-xs block">Algaav Dosh Diagnosis</strong>
+                      <span className="text-[11px] text-slate-300">7th House, Ketu Peeda &amp; Rahu Chaya deep scan</span>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-rose-500/5 border border-rose-500/15 flex items-start gap-2.5 text-xs">
+                    <span className="w-5 h-5 rounded-full bg-rose-500/20 text-rose-300 font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                      02
+                    </span>
+                    <div>
+                      <strong className="text-white text-xs block">Wapsi Ka Shubh Samay</strong>
+                      <span className="text-[11px] text-slate-300">Exact astrological window for communication reopening</span>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-rose-500/5 border border-rose-500/15 flex items-start gap-2.5 text-xs">
+                    <span className="w-5 h-5 rounded-full bg-rose-500/20 text-rose-300 font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                      03
+                    </span>
+                    <div>
+                      <strong className="text-white text-xs block">Kamadeva-Rati Vedic Vidhi</strong>
+                      <span className="text-[11px] text-slate-300">100% Sattvik &amp; Sacred Pooja for softening heart</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-5">
+                <div className="text-[11px] text-center text-rose-300/80 mb-2.5 font-medium">
+                  ✓ 2 Dedicated Questions • 2 Palms Analyzed
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleSpecialPassClick("love_ex_249")}
+                  className="w-full py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all hover:scale-[1.03] active:scale-[0.97] flex items-center justify-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-lg shadow-rose-500/30"
+                >
+                  <Heart className="w-3.5 h-3.5 fill-current" />
+                  Select ₹249 Prem Pass
+                </button>
+              </div>
+            </div>
+
+            {/* PASS 2: Ghar Kalesh & Saas Se Banti Nahi Hai? (₹299) */}
+            <div className="relative rounded-3xl p-6 border border-emerald-500/40 bg-gradient-to-b from-emerald-950/80 via-cosmic-950/95 to-teal-950/40 shadow-xl shadow-emerald-950/50 hover:border-emerald-400/70 transition-all flex flex-col justify-between overflow-hidden">
+              {/* Glowing Top Pill */}
+              <div className="flex items-center justify-between mb-3">
+                <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase tracking-wider border border-emerald-500/40 flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  Griha Shanti &amp; Parivarik Izzat
+                </span>
+                <span className="text-[10px] font-bold text-slate-400 bg-black/40 px-2.5 py-0.5 rounded-full">
+                  3 Profiles Sync
+                </span>
+              </div>
+
+              <div>
+                {/* Price Section with Traditional Comparison */}
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-3xl sm:text-4xl font-black text-emerald-200 font-serif">₹299</span>
+                  <span className="text-xs text-slate-400 line-through">₹3,500 Havan Kharch</span>
+                </div>
+                <h3 className="text-base font-extrabold text-white mb-1">
+                  Ghar Main Kalesh Se Mukti &amp; Saas Se Banti Nahi?
+                </h3>
+                <p className="text-xs text-emerald-200/80 mb-3 leading-relaxed">
+                  Griha Bhava aur Matru-Pitri graha krodh ko shaant karke ghar me aadar aur aman ka vaas.
+                </p>
+
+                {/* Distinct Structure: 3-Pillar Parivarik Suraksha Chakra */}
+                <div className="my-3.5 p-2.5 rounded-2xl bg-black/40 border border-emerald-500/25">
+                  <div className="text-[10px] uppercase font-bold text-emerald-300/80 mb-1.5 text-center tracking-wider">
+                    3-Way Domestic Peace Alignment
+                  </div>
+                  <div className="grid grid-cols-3 gap-1.5 text-xs font-bold text-center">
+                    <div className="py-1.5 px-1 rounded-lg bg-emerald-500/15 text-emerald-200 border border-emerald-500/20">
+                      Bahu / Aap
+                    </div>
+                    <div className="py-1.5 px-1 rounded-lg bg-amber-500/20 text-amber-200 border border-amber-500/30">
+                      🤝 Saas / In-Laws
+                    </div>
+                    <div className="py-1.5 px-1 rounded-lg bg-emerald-500/15 text-emerald-200 border border-emerald-500/20">
+                      Pati &amp; Ghar
+                    </div>
+                  </div>
+                </div>
+
+                {/* Distinct Structure: 2x2 Feature Quadrant Grid */}
+                <div className="grid grid-cols-2 gap-2 mt-3">
+                  <div className="p-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15">
+                    <span className="text-xs font-bold text-emerald-300 block mb-0.5">🏛️ Saas-Bahu Maitri</span>
+                    <span className="text-[11px] text-slate-300 block leading-tight">4th &amp; 10th House peace pacification</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15">
+                    <span className="text-xs font-bold text-emerald-300 block mb-0.5">🛡️ Krodh Nivaran</span>
+                    <span className="text-[11px] text-slate-300 block leading-tight">Remedies to stop harsh words &amp; taunts</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15">
+                    <span className="text-xs font-bold text-emerald-300 block mb-0.5">🪔 Vastu Kalesh Dosh</span>
+                    <span className="text-[11px] text-slate-300 block leading-tight">Lal Kitab domestic energy cleansing</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15">
+                    <span className="text-xs font-bold text-emerald-300 block mb-0.5">🌸 Shanti &amp; Izzat Path</span>
+                    <span className="text-[11px] text-slate-300 block leading-tight">Daily Sattvik Vidhi for long-term respect</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-5">
+                <div className="text-[11px] text-center text-emerald-300/80 mb-2.5 font-medium">
+                  ✓ 3 Profiles Supported • Full Vastu Guide
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleSpecialPassClick("kalesh_saas_299")}
+                  className="w-full py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all hover:scale-[1.03] active:scale-[0.97] flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-400 to-teal-400 text-cosmic-950 font-black shadow-lg shadow-emerald-500/30"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  Select ₹299 Shanti Pass
+                </button>
+              </div>
+            </div>
+
+            {/* PASS 3: Intercaste Vivah & Parivaar Manana (₹349) */}
+            <div className="relative rounded-3xl p-6 border border-purple-500/40 bg-gradient-to-b from-purple-950/80 via-cosmic-950/95 to-indigo-950/40 shadow-xl shadow-purple-950/50 hover:border-purple-400/70 transition-all flex flex-col justify-between overflow-hidden">
+              {/* Glowing Top Pill */}
+              <div className="flex items-center justify-between mb-3">
+                <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-black uppercase tracking-wider border border-purple-500/40 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                  Vivah Svikriti &amp; Parivaar Sahmati
+                </span>
+                <span className="text-[10px] font-bold text-slate-400 bg-black/40 px-2.5 py-0.5 rounded-full">
+                  4 Profiles Sync
+                </span>
+              </div>
+
+              <div>
+                {/* Price Section with Traditional Comparison */}
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-3xl sm:text-4xl font-black text-purple-200 font-serif">₹349</span>
+                  <span className="text-xs text-slate-400 line-through">₹5,100 Astrologer Fee</span>
+                </div>
+                <h3 className="text-base font-extrabold text-white mb-1">
+                  Intercaste Marriage &amp; Parivaar Manana
+                </h3>
+                <p className="text-xs text-purple-200/80 mb-3 leading-relaxed">
+                  Guru-Chandal &amp; 9th House Pitra dosh nivaran aur parents consent praapti anushthan.
+                </p>
+
+                {/* Distinct Structure: 3-Stage Destiny Bridge Roadmap */}
+                <div className="my-3.5 p-2.5 rounded-2xl bg-black/40 border border-purple-500/25">
+                  <div className="text-[10px] uppercase font-bold text-purple-300/80 mb-1.5 text-center tracking-wider">
+                    Vivah Badha Nivaran Roadmap
+                  </div>
+                  <div className="flex items-center justify-between text-xs font-bold text-purple-200 px-1">
+                    <span className="px-2 py-0.5 rounded bg-purple-500/20">1. Palm Match</span>
+                    <span className="text-purple-400 text-xs">➔</span>
+                    <span className="px-2 py-0.5 rounded bg-purple-500/20">2. Elder Neeti</span>
+                    <span className="text-purple-400 text-xs">➔</span>
+                    <span className="px-2 py-0.5 rounded bg-amber-400/20 text-amber-200">3. Vivah Yog</span>
+                  </div>
+                </div>
+
+                {/* Distinct Structure: Strategy Blueprint Stack */}
+                <div className="space-y-2 mt-3">
+                  <div className="p-2.5 rounded-xl bg-purple-500/5 border border-purple-500/15 text-left">
+                    <span className="text-xs font-bold text-purple-300 block">👑 Parivaar Manane Ki Shastriya Neeti</span>
+                    <span className="text-[11px] text-slate-300 block leading-tight mt-0.5">Which elder to approach first based on Moon &amp; Jupiter</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-purple-500/5 border border-purple-500/15 text-left">
+                    <span className="text-xs font-bold text-purple-300 block">🕊️ Brihaspati &amp; Shukra Bal Vidhi</span>
+                    <span className="text-[11px] text-slate-300 block leading-tight mt-0.5">Strengthening marriage approval &amp; societal respect</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-purple-500/5 border border-purple-500/15 text-left">
+                    <span className="text-xs font-bold text-purple-300 block">🔮 Nadi &amp; Gotra Samvaad Logic</span>
+                    <span className="text-[11px] text-slate-300 block leading-tight mt-0.5">Sacred arguments to resolve orthodox family hesitation</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-5">
+                <div className="text-[11px] text-center text-purple-300/80 mb-2.5 font-medium">
+                  ✓ 4 Multi-Family Profiles • 4 Detailed Queries
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleSpecialPassClick("intercaste_349")}
+                  className="w-full py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all hover:scale-[1.03] active:scale-[0.97] flex items-center justify-center gap-2 bg-gradient-to-r from-purple-400 to-indigo-400 text-white font-black shadow-lg shadow-purple-500/30"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Select ₹349 Vivah Pass
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* VIP WhatsApp Desk Banner */}
+          <div className="p-5 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5 text-left">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 text-2xl">
+                💬
+              </div>
+              <div>
+                <div className="text-sm font-extrabold text-white">
+                  Koi special issue to Rekha ko WhatsApp karen!
+                </div>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  Rekha poore scriptures (50+ texts) ko khangal kar aapko iska custom shastriya jawab degi.
+                </p>
+              </div>
+            </div>
+            <a
+              href="https://wa.me/919274090534?text=Hi%20Rekha%2C%20I%20have%20a%20special%20issue%20and%20want%20a%20full%20scripture%20and%20kundali%20review."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs shrink-0 shadow-lg shadow-emerald-500/25 transition-all flex items-center gap-2 whitespace-nowrap"
+            >
+              <span>WhatsApp: +91 92740 90534</span>
+            </a>
+          </div>
         </div>
 
         {/* Matchmaking Top-up Banner */}
