@@ -32,6 +32,7 @@ import { useLanguage, LanguageType } from "@/lib/language-context";
 import PaywallModal, { SubscriptionTierType } from "./PaywallModal";
 import LanguageSelectionModal from "./LanguageSelectionModal";
 import RekhaFollowupChat from "./RekhaFollowupChat";
+import FullVedicKundliSection from "./FullVedicKundliSection";
 
 interface PujaVidhiData {
   primaryDeity: string;
@@ -182,6 +183,8 @@ interface ReadingDisplayProps {
   userQuestion?: string;
   userName?: string;
   userDob?: string;
+  userTob?: string;
+  userPob?: string;
   vedicChart: {
     sunSign: string;
     moonSign: string;
@@ -219,6 +222,8 @@ export default function ReadingDisplay({
   userQuestion,
   userName,
   userDob,
+  userTob,
+  userPob,
   vedicChart,
   consensus,
   pujaVidhi,
@@ -1024,6 +1029,18 @@ export default function ReadingDisplay({
           })()}
         </div>
       )}
+
+      {/* Authentic Full-Fledged Vedic Kundli & Navamsha (D1 & D9) Section */}
+      <FullVedicKundliSection
+        userName={userName || user?.name}
+        userDob={userDob || user?.dob}
+        userTob={userTob || user?.tob}
+        userPob={userPob || user?.pob}
+        onUnlockPlan={() => {
+          setPaywallPlan("trial_99");
+          setShowPaywall(true);
+        }}
+      />
 
       {/* Live Conversational Chat Sanctuary with REKHA */}
       <RekhaFollowupChat

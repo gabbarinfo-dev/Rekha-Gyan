@@ -291,6 +291,10 @@ export default function PaywallModal({
                     <ul className="mt-4 space-y-2 text-xs text-slate-300">
                       <li className="flex items-start gap-2">
                         <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                        <span><strong>Download Your Kundali</strong> (Full D1 &amp; D9 Chart)</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
                         <span><strong>1 Primary Profile</strong> (Permanently locked)</span>
                       </li>
                       <li className="flex items-start gap-2">
@@ -354,6 +358,10 @@ export default function PaywallModal({
                     <ul className="mt-4 space-y-2 text-xs text-slate-300">
                       <li className="flex items-start gap-2">
                         <Check className="w-3.5 h-3.5 text-gold-400 shrink-0 mt-0.5" />
+                        <span><strong>Download Your Kundali</strong> (Full D1 &amp; D9 Chart)</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-3.5 h-3.5 text-gold-400 shrink-0 mt-0.5" />
                         <span><strong>2 Saved Profiles</strong> (Switch between 2 people)</span>
                       </li>
                       <li className="flex items-start gap-2">
@@ -411,6 +419,10 @@ export default function PaywallModal({
                     </p>
 
                     <ul className="mt-4 space-y-2 text-xs text-slate-300">
+                      <li className="flex items-start gap-2">
+                        <Check className="w-3.5 h-3.5 text-purple-400 shrink-0 mt-0.5" />
+                        <span><strong>Download Your Kundali</strong> (Full D1 &amp; D9 Chart)</span>
+                      </li>
                       <li className="flex items-start gap-2">
                         <Check className="w-3.5 h-3.5 text-purple-400 shrink-0 mt-0.5" />
                         <span><strong>Multi-Profile Access</strong> for full family</span>

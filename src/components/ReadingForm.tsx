@@ -440,6 +440,8 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
         userQuestion={resultData.userQuestion || question}
         userName={resultData.userName || name}
         userDob={resultData.userDob || dob}
+        userTob={resultData.userTob || tob}
+        userPob={resultData.userPob || pob}
         vedicChart={resultData.vedicChart}
         consensus={resultData.consensus}
         pujaVidhi={resultData.pujaVidhi}

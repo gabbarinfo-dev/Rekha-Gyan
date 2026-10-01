@@ -46,6 +46,8 @@ export interface UserProfile {
   deepQuestionsRemaining?: number;
   partnerQuestionsRemaining?: number;
   matchmakingRemaining?: number;
+  kundliDownloadsUsed?: number;
+  kundliDownloadedProfiles?: string[];
 }
 
 interface AuthContextType {
@@ -73,6 +75,9 @@ interface AuthContextType {
   canAskPartnerQuestion: () => boolean;
   canDoMatchmaking: () => boolean;
   addMatchmakingCredits: (count: number) => void;
+  isEligibleForKundli: () => boolean;
+  canDownloadKundli: (profileName?: string) => boolean;
+  recordKundliDownload: (profileName?: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -492,6 +497,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return true;
   };
 
+  const isEligibleForKundli = (): boolean => {
+    if (user?.isAdmin) return true;
+    if (!user || !user.isSubscribed) return false;
+    const plan = user.subscriptionPlan;
+    // Strictly the 3 core plans: 99 / 499 / 999
+    return plan === "trial_99" || plan === "duo_599" || plan === "unlimited_1009";
+  };
+
+  const getMaxAllowedKundliDownloads = (): number => {
+    if (user?.isAdmin) return 999;
+    if (!user?.isSubscribed) return 0;
+    if (user.subscriptionPlan === "trial_99") return 1; // 1 user allowed -> 1 download
+    if (user.subscriptionPlan === "duo_599") return 2; // 2 users allowed -> 2 downloads (1 per user)
+    if (user.subscriptionPlan === "unlimited_1009") return Math.max(5, (user.profiles?.length || 1)); // family allowed
+    return 0;
+  };
+
+  const canDownloadKundli = (profileName?: string): boolean => {
+    if (user?.isAdmin) return true;
+    if (!isEligibleForKundli()) return false;
+    const maxAllowed = getMaxAllowedKundliDownloads();
+    const used = user?.kundliDownloadsUsed || 0;
+    if (used >= maxAllowed) return false;
+
+    // Check if this specific profile name has already downloaded their 1-time kundli
+    const pName = (profileName || user?.primaryProfileName || user?.name || "primary").trim().toLowerCase();
+    const downloadedList = (user?.kundliDownloadedProfiles || []).map((p) => p.trim().toLowerCase());
+    if (downloadedList.includes(pName)) return false;
+
+    return true;
+  };
+
+  const recordKundliDownload = (profileName?: string): boolean => {
+    if (user?.isAdmin) return true;
+    if (!canDownloadKundli(profileName)) return false;
+
+    const pName = (profileName || user?.primaryProfileName || user?.name || "primary").trim().toLowerCase();
+    const downloadedList = user?.kundliDownloadedProfiles || [];
+    const updatedList = downloadedList.includes(pName) ? downloadedList : [...downloadedList, pName];
+    const currentUsed = user?.kundliDownloadsUsed || 0;
+
+    updateProfile({
+      kundliDownloadsUsed: currentUsed + 1,
+      kundliDownloadedProfiles: updatedList,
+    });
+    return true;
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -510,6 +563,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         canAskPartnerQuestion,
         canDoMatchmaking,
         addMatchmakingCredits,
+        isEligibleForKundli,
+        canDownloadKundli,
+        recordKundliDownload,
       }}
     >
       {children}

@@ -205,6 +205,9 @@ export async function POST(req: NextRequest) {
       palmFeatures: readingResult.palmFeatures || palmFeatures,
       userQuestion: question,
       userName: name,
+      userDob: dob,
+      userTob: tob,
+      userPob: pob,
       vedicChart,
       consensus: {
         sourcesCount: consensus.sourcesCount,
