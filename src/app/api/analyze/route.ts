@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     if (!rateLimit.allowed) {
       return NextResponse.json(
         {
-          error: "Free consultation limit reached for this session. Please sign in or contact Rekha on WhatsApp to unlock unlimited access.",
+          error: "Free consultation limit reached for this session. Please sign in or subscribe to a plan to unlock unlimited access.",
           rateLimited: true,
         },
         { status: 429 }

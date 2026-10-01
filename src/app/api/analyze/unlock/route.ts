@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: "Active subscription required. Please unlock via WhatsApp or sign in.",
+          error: "Active subscription required. Please subscribe or sign in.",
           requiresSubscription: true,
         },
         { status: 403 }

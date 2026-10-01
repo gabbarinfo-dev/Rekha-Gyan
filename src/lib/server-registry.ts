@@ -221,3 +221,86 @@ export function cacheServerReading(id: string, data: CachedReading) {
 export function getServerReading(id: string): CachedReading | undefined {
   return readingCache.get(id);
 }
+
+/**
+ * Server-side subscription and credit unlock upon successful payment
+ */
+export async function activateUserPlanServer(params: {
+  phone: string;
+  planId: string;
+  orderId: string;
+  amount?: number;
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { phone, planId, orderId } = params;
+    if (!phone) return { success: false, error: "Missing phone number" };
+
+    const clean = phone.replace(/\D/g, "");
+    const users = await getLatestUsers();
+    let userIndex = users.findIndex((u) => u.phone === clean);
+
+    const now = new Date();
+    const startDate = now.toISOString();
+
+    if (planId.startsWith("topup")) {
+      const topupCredits = planId === "topup_99" ? 5 : 2;
+      if (userIndex >= 0) {
+        users[userIndex].matchmakingRemaining = (users[userIndex].matchmakingRemaining || 0) + topupCredits;
+      } else {
+        users.push({
+          phone: clean,
+          name: "Seeker",
+          createdAt: startDate,
+          isSubscribed: false,
+          matchmakingRemaining: topupCredits,
+        });
+      }
+    } else {
+      const planConfigs: Record<string, { days: number; deep: number; partner: number; match: number }> = {
+        trial_99: { days: 30, deep: 2, partner: 0, match: 1 },
+        duo_599: { days: 60, deep: 6, partner: 2, match: 3 },
+        unlimited_1009: { days: 365, deep: 18, partner: 6, match: 5 },
+      };
+
+      const config = planConfigs[planId] || planConfigs.trial_99;
+      const expiry = new Date(now.getTime() + config.days * 24 * 60 * 60 * 1000).toISOString();
+
+      if (userIndex >= 0) {
+        users[userIndex].isSubscribed = true;
+        users[userIndex].subscriptionPlan = planId as any;
+        users[userIndex].subscriptionStartDate = startDate;
+        users[userIndex].subscriptionExpiryDate = expiry;
+        users[userIndex].subscriptionDurationDays = config.days;
+        users[userIndex].deepQuestionsRemaining = (users[userIndex].deepQuestionsRemaining || 0) + config.deep;
+        users[userIndex].partnerQuestionsRemaining = (users[userIndex].partnerQuestionsRemaining || 0) + config.partner;
+        users[userIndex].matchmakingRemaining = (users[userIndex].matchmakingRemaining || 0) + config.match;
+      } else {
+        users.push({
+          phone: clean,
+          name: "Seeker",
+          createdAt: startDate,
+          isSubscribed: true,
+          subscriptionPlan: planId as any,
+          subscriptionStartDate: startDate,
+          subscriptionExpiryDate: expiry,
+          subscriptionDurationDays: config.days,
+          deepQuestionsRemaining: config.deep,
+          partnerQuestionsRemaining: config.partner,
+          matchmakingRemaining: config.match,
+        });
+      }
+    }
+
+    // Persist to disk and sync with WordPress
+    writeUsersToDisk(users);
+    saveUsersRegistryToWordPress(users).catch((err) =>
+      console.warn("WP sync notice after payment activation:", err)
+    );
+
+    return { success: true };
+  } catch (err: any) {
+    console.error("activateUserPlanServer failed:", err);
+    return { success: false, error: err.message };
+  }
+}
+

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Sparkles, Check, Flame, ShieldCheck, MessageCircle, Clock, Users, HeartHandshake, User, PlusCircle } from "lucide-react";
+import { X, Sparkles, Check, Flame, ShieldCheck, MessageCircle, Clock, Users, HeartHandshake, User, PlusCircle, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 
 export type SubscriptionTierType = "trial_99" | "duo_599" | "unlimited_1009";
@@ -35,26 +35,54 @@ export default function PaywallModal({
   const [selectedOption, setSelectedOption] = useState<PurchaseOptionType>(
     defaultOption || (defaultTab === "topup" ? "topup_60" : defaultPlan)
   );
-  const [showAdminNotice, setShowAdminNotice] = useState(false);
+  const [isInitiatingPayment, setIsInitiatingPayment] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   // Sync state whenever modal is opened or props change
   useEffect(() => {
     if (isOpen) {
       setActiveTab(defaultTab);
       setSelectedOption(defaultOption || (defaultTab === "topup" ? "topup_60" : defaultPlan));
-      setShowAdminNotice(false);
+      setIsInitiatingPayment(false);
+      setPaymentError(null);
     }
   }, [isOpen, defaultTab, defaultPlan, defaultOption]);
 
   if (!isOpen) return null;
 
-  const handlePay = () => {
-    setShowAdminNotice(true);
-  };
-
   const effectiveName = userName || user?.name || "Seeker";
   const effectiveDob = userDob || user?.dob || "Not specified";
   const effectivePhone = user?.phone || "";
+
+  const handlePay = async () => {
+    try {
+      setIsInitiatingPayment(true);
+      setPaymentError(null);
+
+      const res = await fetch("/api/payment/phonepe/initiate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          planId: selectedOption,
+          userPhone: effectivePhone,
+          userName: effectiveName,
+          userDob: effectiveDob,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success && data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+      } else {
+        setPaymentError(data.error || "Unable to reach PhonePe gateway. Please try again.");
+        setIsInitiatingPayment(false);
+      }
+    } catch (err: any) {
+      console.error("Payment initiation error:", err);
+      setPaymentError(err.message || "Network error. Please try again.");
+      setIsInitiatingPayment(false);
+    }
+  };
 
   const catalog: Record<PurchaseOptionType, { price: string; label: string; badge?: string }> = {
     trial_99: { price: "99", label: "₹99 Starter Pack (1 Profile / 2 Deep Questions / 1 Matchmaking Analysis)" },
@@ -67,8 +95,8 @@ export default function PaywallModal({
   const itemInfo = catalog[selectedOption] || catalog.trial_99;
 
   const waMessage = selectedOption.startsWith("topup")
-    ? `Hi Rekha, I am ${effectiveName} (Phone: ${effectivePhone}). I have exhausted my matchmaking quota and want to buy the ${itemInfo.label}. Please send me the QR or payment link for instant top-up credit.`
-    : `Hi Rekha, I am ${effectiveName}, DOB: ${effectiveDob}, Phone: ${effectivePhone}. I want to subscribe to the ₹${itemInfo.price} plan (${itemInfo.label}). Please send me the QR or payment link for instant activation.`;
+    ? `Hi Rekha, I am ${effectiveName} (Phone: ${effectivePhone}). I have a query about the ${itemInfo.label}.`
+    : `Hi Rekha, I am ${effectiveName}, DOB: ${effectiveDob}, Phone: ${effectivePhone}. I have a query regarding the ₹${itemInfo.price} plan (${itemInfo.label}).`;
 
   const waLink = `https://wa.me/918511739865?text=${encodeURIComponent(waMessage)}`;
 
@@ -103,78 +131,8 @@ export default function PaywallModal({
           </div>
         )}
 
-        {showAdminNotice ? (
-          <div className="text-center py-8 space-y-5 animate-scaleUp">
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
-              <Clock className="w-8 h-8" />
-            </div>
-
-            <div className="space-y-2">
-              <h3 className="text-2xl sm:text-3xl font-bold font-serif text-white">
-                Instant WhatsApp Activation
-              </h3>
-              <p className="text-sm text-slate-300 max-w-md mx-auto leading-relaxed">
-                Direct automated payment gateway is being finalized. Activations and top-up credits are updated within 2 minutes via WhatsApp verification.
-              </p>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 max-w-lg mx-auto text-left space-y-2 text-xs text-slate-300">
-              <div className="font-bold text-white text-sm">
-                Selected: {itemInfo.label}
-              </div>
-              <div className="flex items-center gap-1.5 text-gold-300 font-medium text-xs">
-                <MessageCircle className="w-3.5 h-3.5 text-gold-400" />
-                <span>To complete and receive instant credits, message Rekha directly:</span>
-              </div>
-            </div>
-
-            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto">
-              <a
-                href={waLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:flex-1 py-3.5 px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 transition-all"
-              >
-                <MessageCircle className="w-4 h-4" />
-                <span>WhatsApp Rekha For Activation</span>
-              </a>
-
-              {isAdmin && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (selectedOption === "topup_60") {
-                      addMatchmakingCredits(2);
-                      alert("👑 Admin Action: +2 Matchmaking Credits added to your account.");
-                    } else if (selectedOption === "topup_99") {
-                      addMatchmakingCredits(5);
-                      alert("👑 Admin Action: +5 Matchmaking Credits added to your account.");
-                    } else {
-                      unlockSubscription(selectedOption as SubscriptionTierType);
-                      if (onSuccess) onSuccess(selectedOption as SubscriptionTierType);
-                      alert(`👑 Admin Action: Plan activated successfully!`);
-                    }
-                    onClose();
-                  }}
-                  className="w-full sm:w-auto py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-600 text-cosmic-950 text-xs font-black uppercase tracking-wider shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-1.5"
-                >
-                  <span>⚡ Apply Now (Admin Test)</span>
-                </button>
-              )}
-
-              <button
-                type="button"
-                onClick={() => setShowAdminNotice(false)}
-                className="w-full sm:w-auto py-3.5 px-5 rounded-2xl bg-white/10 hover:bg-white/15 text-slate-300 text-xs font-semibold"
-              >
-                Back
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* Header */}
-            <div className="text-center mb-6">
+        {/* Header */}
+        <div className="text-center mb-6">
               <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-gold-500/10 border border-gold-500/30 text-gold-300 text-xs font-semibold uppercase tracking-wider mb-2.5">
                 <Sparkles className="w-3.5 h-3.5 text-gold-400" />
                 Vedic Consultation &amp; Synastry Access
@@ -525,29 +483,76 @@ export default function PaywallModal({
               </div>
             )}
 
-            {/* CTA Button */}
-            <div className="space-y-3">
+            {/* PhonePe CTA & Security Section */}
+            <div className="space-y-3.5 pt-2">
+              {paymentError && (
+                <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs text-center animate-shake">
+                  {paymentError}
+                </div>
+              )}
+
               <button
                 type="button"
+                disabled={isInitiatingPayment}
                 onClick={handlePay}
-                className="w-full py-4 rounded-2xl text-xs sm:text-sm font-extrabold uppercase tracking-wider text-cosmic-950 bg-gradient-to-r from-gold-300 via-gold-400 to-amber-300 shadow-xl shadow-gold-500/30 hover:shadow-gold-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                className={`w-full py-4 px-6 rounded-2xl text-xs sm:text-sm font-extrabold uppercase tracking-wider text-cosmic-950 bg-gradient-to-r from-gold-300 via-gold-400 to-amber-300 shadow-xl shadow-gold-500/30 hover:shadow-gold-500/50 hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 ${
+                  isInitiatingPayment ? "opacity-75 cursor-wait" : ""
+                }`}
               >
-                <span>
-                  Proceed for ₹{itemInfo.price} {selectedOption.startsWith("topup") ? "Top-up" : "Activation"}
-                </span>
-                <Sparkles className="w-4 h-4" />
+                {isInitiatingPayment ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-cosmic-950" />
+                    <span>Connecting to PhonePe Secure Gateway...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>
+                      Pay ₹{itemInfo.price} via PhonePe / UPI
+                    </span>
+                    <Sparkles className="w-4 h-4 text-cosmic-950" />
+                  </>
+                )}
               </button>
 
-              <div className="flex items-center justify-center gap-4 text-[11px] text-slate-400">
-                <span className="flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> WhatsApp Verification with Rekha Team
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (selectedOption === "topup_60") {
+                      addMatchmakingCredits(2);
+                      alert("👑 Admin Action: +2 Matchmaking Credits added to your account.");
+                    } else if (selectedOption === "topup_99") {
+                      addMatchmakingCredits(5);
+                      alert("👑 Admin Action: +5 Matchmaking Credits added to your account.");
+                    } else {
+                      unlockSubscription(selectedOption as SubscriptionTierType);
+                      if (onSuccess) onSuccess(selectedOption as SubscriptionTierType);
+                      alert(`👑 Admin Action: Plan activated successfully!`);
+                    }
+                    onClose();
+                  }}
+                  className="w-full py-2.5 px-4 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+                >
+                  <span>👑 Super Admin Instant Test Bypass (Free)</span>
+                </button>
+              )}
+
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1 text-[11px] text-slate-400 px-1">
+                <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  Secured by PhonePe • UPI, Cards & NetBanking
                 </span>
-                <span>•</span>
-                <span>Instant 2-Minute Activation</span>
+                <a
+                  href={waLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-400 hover:text-gold-300 underline underline-offset-2 flex items-center gap-1 transition-colors"
+                >
+                  <MessageCircle className="w-3 h-3 text-gold-400" />
+                  <span>Questions? Chat with Rekha</span>
+                </a>
               </div>
             </div>
-          </>
-        )}
       </div>
     </div>
   );

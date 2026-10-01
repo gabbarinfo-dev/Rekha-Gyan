@@ -14,6 +14,8 @@ export interface SavedProfile {
   isPrimary?: boolean;
 }
 
+export type SubscriptionTierType = "trial_99" | "duo_599" | "unlimited_1009";
+
 export interface UserProfile {
   phone: string;
   name: string;
@@ -26,7 +28,7 @@ export interface UserProfile {
   savedLeftPalm?: string;
   savedRightPalm?: string;
   isSubscribed?: boolean;
-  subscriptionPlan?: "trial_99" | "duo_599" | "unlimited_1009" | null;
+  subscriptionPlan?: SubscriptionTierType | null;
   subscriptionDate?: string;
   subscriptionExpiryDate?: string;
   isAdmin?: boolean;

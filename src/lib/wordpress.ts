@@ -341,6 +341,7 @@ export interface WordPressStoredUser {
   isAdmin?: boolean;
   matchmakingRemaining?: number;
   deepQuestionsRemaining?: number;
+  partnerQuestionsRemaining?: number;
 }
 
 /**

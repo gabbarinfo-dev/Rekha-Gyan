@@ -123,18 +123,18 @@ export default function SubscriptionPage() {
           </h1>
           <p className="text-sm sm:text-base text-slate-300 max-w-xl mx-auto leading-relaxed">
             Unlock REKHA&apos;s complete AI Palmist &amp; Vedic Astrologer capabilities. One-time payment, instant
-            WhatsApp activation within 2 minutes.
+            automated PhonePe &amp; UPI activation.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 pt-2 text-xs text-slate-400">
             <span className="flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> WhatsApp Verified
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> PhonePe Secured
             </span>
             <span className="flex items-center gap-1.5">
               <Lock className="w-3.5 h-3.5 text-emerald-400" /> 256-Bit SSL
             </span>
             <span className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-gold-400" /> 2-Min Activation
+              <Clock className="w-3.5 h-3.5 text-gold-400" /> Instant Activation
             </span>
             <span className="flex items-center gap-1.5">
               <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" /> 12,400+ Seekers
@@ -303,8 +303,8 @@ export default function SubscriptionPage() {
         {/* Bottom note */}
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/[0.04] border border-white/10 text-xs text-slate-300">
-            <MessageCircle className="w-4 h-4 text-emerald-400" />
-            After payment, you&apos;ll be connected to the Rekha team on WhatsApp for instant activation.
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            Instant automated unlock via PhonePe Payment Gateway. UPI, GPay, Paytm, Cards &amp; NetBanking supported.
           </div>
           {!isLoggedIn && (
             <p className="text-xs text-amber-300/80">
