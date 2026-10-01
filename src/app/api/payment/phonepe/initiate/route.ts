@@ -57,12 +57,13 @@ export async function POST(req: NextRequest) {
     // Generate unique Merchant Order ID: RG_{TIMESTAMP}_{RANDOM}
     const merchantOrderId = `RG_${Date.now()}_${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
 
-    const host =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      req.headers.get("origin") ||
+    const proto = req.headers.get("x-forwarded-proto") || "https";
+    const hostHeader =
+      req.headers.get("x-forwarded-host") ||
+      req.headers.get("origin")?.replace(/^https?:\/\//, "") ||
       req.headers.get("host") ||
-      "https://rekhagyan.online";
-    const appUrl = host.startsWith("http") ? host : `https://${host}`;
+      "ai.rekhagyan.online";
+    const appUrl = `${proto}://${hostHeader}`;
 
     // Callback URL where PhonePe returns the user after transaction
     const redirectUrl = `${appUrl}/api/payment/phonepe/callback?orderId=${merchantOrderId}&plan=${planId}&phone=${encodeURIComponent(

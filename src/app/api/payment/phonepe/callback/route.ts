@@ -38,12 +38,13 @@ async function handleCallback(req: NextRequest) {
     const orderStatus = await checkPhonePeOrderStatus(orderId);
     console.log(`PhonePe Callback: Order ${orderId} -> State: ${orderStatus.state}`);
 
-    const host =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      req.headers.get("origin") ||
+    const proto = req.headers.get("x-forwarded-proto") || "https";
+    const hostHeader =
+      req.headers.get("x-forwarded-host") ||
+      req.headers.get("origin")?.replace(/^https?:\/\//, "") ||
       req.headers.get("host") ||
-      "https://rekhagyan.online";
-    const appUrl = host.startsWith("http") ? host : `https://${host}`;
+      "ai.rekhagyan.online";
+    const appUrl = `${proto}://${hostHeader}`;
 
     if (orderStatus.state === "COMPLETED") {
       // Activate plan on server
