@@ -24,6 +24,9 @@ import {
   HeartHandshake,
   Globe,
   Heart,
+  Phone,
+  KeyRound,
+  Users,
 } from "lucide-react";
 import ReadingDisplay from "./ReadingDisplay";
 import AuthModal from "./AuthModal";
@@ -38,7 +41,17 @@ interface ReadingFormProps {
 }
 
 export default function ReadingForm({ initialFocus }: ReadingFormProps) {
-  const { user, isLoggedIn, updateProfile, lockPrimaryProfile, consumeQuota, canAskPartnerQuestion, canDoMatchmaking } = useAuth();
+  const {
+    user,
+    isLoggedIn,
+    updateProfile,
+    lockPrimaryProfile,
+    consumeQuota,
+    canAskPartnerQuestion,
+    canDoMatchmaking,
+    hasServiceAccess,
+    registerOrLoginInline,
+  } = useAuth();
   const { language, setLanguage, setIsLanguageModalOpen } = useLanguage();
 
   // Wizard Steps: 1: Basic Details, 2: Dedicated Palm Upload, 3: Review Screen
@@ -50,6 +63,26 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
   const [dob, setDob] = useState(user?.dob || "");
   const [tob, setTob] = useState(user?.tob || "12:00");
   const [pob, setPob] = useState(user?.pob || "");
+  const [maritalStatus, setMaritalStatus] = useState<string>(
+    user?.maritalStatus || "Single / Unmarried"
+  );
+  const [phone, setPhone] = useState(user?.phone || "");
+  const [pin, setPin] = useState("");
+  const [selectedService, setSelectedService] = useState<string>("trial_99");
+
+  // Specialized Service Questions & Tailored States
+  const [lovePartnerName, setLovePartnerName] = useState("");
+  const [loveSeparationTime, setLoveSeparationTime] = useState("1 se 3 Mahine");
+  const [loveRelationStage, setLoveRelationStage] = useState("Breakup ho gaya hai aur baat band hai");
+
+  const [kaleshTarget, setKaleshTarget] = useState("Saas (Mother-in-law) ke sath taane aur aadar ki kami");
+  const [marriageYears, setMarriageYears] = useState("1-3 Saal");
+
+  const [intercastePartnerName, setIntercastePartnerName] = useState("");
+  const [intercastePartnerCommunity, setIntercastePartnerCommunity] = useState("");
+  const [opposingSide, setOpposingSide] = useState("Ladke ke mata-pita nahi maan rahe");
+  const [primaryHesitation, setPrimaryHesitation] = useState("Jaati / Gotra aur samajik darr");
+
   const [lifeFocus, setLifeFocus] = useState(initialFocus || "Career & Wealth Breakthrough");
   const [question, setQuestion] = useState("");
 
@@ -58,6 +91,7 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
   const [suggestedRelation, setSuggestedRelation] = useState("Partner / Spouse");
   const [showSecondaryModal, setShowSecondaryModal] = useState(false);
   const [showLockWarningModal, setShowLockWarningModal] = useState(false);
+  const [lockModalMode, setLockModalMode] = useState<"warning_first_lock" | "limit_reached">("limit_reached");
   const [showPaywallModal, setShowPaywallModal] = useState(false);
   const [paywallTargetPlan, setPaywallTargetPlan] = useState<SubscriptionTierType>("trial_99");
   const [paywallTab, setPaywallTab] = useState<"plans" | "topup">("plans");
@@ -85,11 +119,14 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
   // Auto-prefill if user logs in
   useEffect(() => {
     if (user) {
-      if (user.name && !name) setName(user.name);
+      if (user.primaryProfileName) setName(user.primaryProfileName);
+      else if (user.name) setName(user.name);
       if (user.gender) setGender(user.gender);
-      if (user.dob && !dob) setDob(user.dob);
+      if (user.dob) setDob(user.dob);
       if (user.tob) setTob(user.tob);
       if (user.pob && !pob) setPob(user.pob);
+      if (user.maritalStatus) setMaritalStatus(user.maritalStatus);
+      if (user.phone) setPhone(user.phone);
       if (user.savedLeftPalm && !leftPalmBase64) {
         setLeftPalmBase64(user.savedLeftPalm);
         setLeftPreview(user.savedLeftPalm);
@@ -100,6 +137,41 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
       }
     }
   }, [user]);
+
+  // Listen for custom service selection event from 6 cards
+  useEffect(() => {
+    const handler = (e: any) => {
+      if (e.detail) {
+        setSelectedService(e.detail);
+        if (e.detail === "love_ex_249") {
+          setLifeFocus("Love, Marriage & Relationship Destiny");
+        } else if (e.detail === "kalesh_saas_299") {
+          setLifeFocus("Love, Marriage & Relationship Destiny");
+          setMaritalStatus("Married");
+        } else if (e.detail === "intercaste_349") {
+          setLifeFocus("Love, Marriage & Relationship Destiny");
+        }
+      }
+    };
+    window.addEventListener("rekha_select_service", handler);
+    return () => window.removeEventListener("rekha_select_service", handler);
+  }, []);
+
+  // Read ?service= from URL query params (e.g. from WordPress deep link)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const s = params.get("service");
+      if (s) {
+        if (s === "starter_99") setSelectedService("trial_99");
+        else if (s === "duo_499") setSelectedService("duo_599");
+        else if (s === "unlimited_999") setSelectedService("unlimited_1009");
+        else if (["love_ex_249", "kalesh_saas_299", "intercaste_349", "trial_99", "duo_599", "unlimited_1009"].includes(s)) {
+          setSelectedService(s);
+        }
+      }
+    }
+  }, []);
 
   const focusOptions = [
     "Career & Wealth Breakthrough",
@@ -296,15 +368,29 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
           lifeFocus,
           question,
           language,
+          maritalStatus,
+          selectedService,
+          specializedData: {
+            partnerName: lovePartnerName || intercastePartnerName || undefined,
+            relationStage: loveRelationStage,
+            separationTime: loveSeparationTime,
+            kaleshTarget,
+            marriageYears,
+            opposingSide,
+            primaryHesitation,
+          },
           leftPalmBase64: leftPalmBase64 || undefined,
           rightPalmBase64: rightPalmBase64 || undefined,
           secondaryPerson: secondaryPerson || undefined,
-          userPhone: user?.phone || undefined,
+          userPhone: user?.phone || phone || undefined,
         }),
       });
 
       if (isLoggedIn) {
         consumeQuota(secondaryPerson ? "matchmaking" : "deepQuestion");
+        if (!user?.primaryProfileLocked) {
+          lockPrimaryProfile();
+        }
       }
 
       clearTimeout(timer1);
@@ -490,76 +576,151 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
         {/* STEP 1: Basic Details & Life Focus */}
         {step === 1 && (
           <div className="space-y-6 animate-fadeIn">
-            {/* Quick Vedic Samadhan Inquiries Strip */}
-            <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-rose-950/40 via-purple-950/40 to-emerald-950/40 border border-gold-500/25 shadow-lg shadow-purple-950/20">
-              <div className="flex items-center justify-between mb-2.5">
+            {/* 6 Services Selection Strip & Gating Engine */}
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
                 <span className="text-[11px] font-black uppercase tracking-wider text-gold-300 flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-gold-400" />
-                  Specialized Shastriya Samadhan Inquiries
+                  Select Your Consultation Service (6 Dedicated Pathways)
                 </span>
-                <span className="text-[10px] text-slate-400 font-medium">1-Click Auto Fill</span>
+                <span className="text-[10px] text-slate-400 font-medium">
+                  {user?.isSubscribed ? "Active Passes Highlighted" : "Free Initial Preview Available"}
+                </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLifeFocus("Love, Marriage & Relationship Destiny");
-                    setQuestion("Mera khoya pyar / ex partner kab wapas aayega aur hamare beech algaav ka shastriya nivaran kya hai?");
-                    setShowSecondaryModal(true);
-                  }}
-                  className="p-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-left transition-all group"
-                >
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-rose-300 group-hover:text-rose-200">
-                    <Heart className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                    <span>Khoya Pyar / Ex Back</span>
-                  </div>
-                  <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">
-                    Shukra-Chandra synastry &amp; dual palm sync
-                  </p>
-                </button>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLifeFocus("Love, Marriage & Relationship Destiny");
-                    setQuestion("Ghar main kalesh aur saas se vivad se mukti kaise milegi? Parivaar me izzat aur shanti ka shastriya upaay batayein.");
-                    setShowSecondaryModal(true);
-                  }}
-                  className="p-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-left transition-all group"
-                >
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-300 group-hover:text-emerald-200">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                    <span>Ghar Kalesh &amp; Saas Vivad</span>
-                  </div>
-                  <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">
-                    4th &amp; 10th house peace &amp; Vastu
-                  </p>
-                </button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                {[
+                  {
+                    id: "trial_99",
+                    name: "Niji Jeevan Starter",
+                    price: "₹99",
+                    sub: "1 Palm, Mukhya Sawaal & 30-Day Access",
+                    accent: "border-amber-500/40 text-amber-300 bg-amber-500/10",
+                  },
+                  {
+                    id: "duo_599",
+                    name: "Jeevan Darshan Duo",
+                    price: "₹499",
+                    sub: "2 Palms Synastry & 6 Deep Inquiries",
+                    accent: "border-blue-500/40 text-blue-300 bg-blue-500/10",
+                  },
+                  {
+                    id: "unlimited_1009",
+                    name: "Pro Kundali & Family",
+                    price: "₹999",
+                    sub: "Unlimited Profiles & Full Synastry",
+                    accent: "border-gold-500/40 text-gold-300 bg-gold-500/10",
+                  },
+                  {
+                    id: "love_ex_249",
+                    name: "Prem Punarmilan & Ex Back",
+                    price: "₹249",
+                    sub: "Shukra Synastry & 2 Palms Match",
+                    accent: "border-rose-500/40 text-rose-300 bg-rose-500/10",
+                  },
+                  {
+                    id: "kalesh_saas_299",
+                    name: "Ghar Kalesh & Saas Vivad",
+                    price: "₹299",
+                    sub: "Griha Shanti & 3 Profiles Peace",
+                    accent: "border-emerald-500/40 text-emerald-300 bg-emerald-500/10",
+                  },
+                  {
+                    id: "intercaste_349",
+                    name: "Intercaste Vivah & Parivaar",
+                    price: "₹349",
+                    sub: "Parents Consent & 4 Profiles Sync",
+                    accent: "border-purple-500/40 text-purple-300 bg-purple-500/10",
+                  },
+                ].map((srv) => {
+                  const isUserSubscribed = Boolean(user?.isSubscribed);
+                  const isUnlocked = hasServiceAccess(srv.id);
+                  const isSelected = selectedService === srv.id;
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLifeFocus("Love, Marriage & Relationship Destiny");
-                    setQuestion("Intercaste vivah ke liye dono parivaaron ko manane ka shastriya muhurat aur graha samadhan kya hai?");
-                    setShowSecondaryModal(true);
-                  }}
-                  className="p-2.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-left transition-all group"
-                >
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-purple-300 group-hover:text-purple-200">
-                    <Sparkles className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-                    <span>Intercaste Vivah &amp; Parivaar</span>
-                  </div>
-                  <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">
-                    Parents consent &amp; Brihaspati bal vidhi
-                  </p>
-                </button>
+                  // GATING LOGIC:
+                  // If user has subscription, only unlocked services are active; non-subscribed services are greyed out!
+                  // If user is not subscribed (free preview mode), all are accessible for initial trust reading.
+                  const isGreyedOut = isUserSubscribed && !isUnlocked;
+
+                  return (
+                    <div
+                      key={srv.id}
+                      onClick={() => {
+                        if (isGreyedOut) {
+                          setPaywallTargetPlan(srv.id as any);
+                          setPaywallTab("plans");
+                          setPaywallReason(`Aapka subscription active hai, parantu ${srv.name} (${srv.price}) service ke liye ye pass required hai.`);
+                          setShowPaywallModal(true);
+                          return;
+                        }
+                        setSelectedService(srv.id);
+                        if (srv.id === "love_ex_249") {
+                          setLifeFocus("Love, Marriage & Relationship Destiny");
+                          if (!question || question.includes("Ghar main kalesh") || question.includes("Intercaste")) {
+                            setQuestion("Mera khoya pyar / ex partner kab wapas aayega aur hamare beech algaav ka shastriya nivaran kya hai?");
+                          }
+                        } else if (srv.id === "kalesh_saas_299") {
+                          setLifeFocus("Love, Marriage & Relationship Destiny");
+                          setMaritalStatus("Married");
+                          if (!question || question.includes("khoya pyar") || question.includes("Intercaste")) {
+                            setQuestion("Ghar main kalesh aur saas se vivad se mukti kaise milegi? Parivaar me izzat aur shanti ka shastriya upaay batayein.");
+                          }
+                        } else if (srv.id === "intercaste_349") {
+                          setLifeFocus("Love, Marriage & Relationship Destiny");
+                          if (!question || question.includes("khoya pyar") || question.includes("saas")) {
+                            setQuestion("Intercaste vivah ke liye dono parivaaron ko manane ka shastriya muhurat aur graha samadhan kya hai?");
+                          }
+                        }
+                      }}
+                      className={`p-3 rounded-2xl border transition-all text-left relative overflow-hidden cursor-pointer ${
+                        isSelected
+                          ? `${srv.accent} shadow-md scale-[1.01]`
+                          : isGreyedOut
+                          ? "opacity-50 grayscale bg-black/40 border-white/5 cursor-not-allowed"
+                          : "bg-white/[0.02] border-white/10 hover:border-white/20 text-slate-300"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <span className="text-xs font-bold truncate">
+                          {srv.name}
+                        </span>
+                        <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-white/10 shrink-0">
+                          {srv.price}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 leading-tight">
+                        {srv.sub}
+                      </p>
+
+                      {/* Gating Status Badges */}
+                      {isGreyedOut ? (
+                        <div className="mt-2 flex items-center justify-between text-[10px] text-amber-300/80 bg-black/40 px-2 py-0.5 rounded">
+                          <span className="flex items-center gap-1">
+                            <Lock className="w-3 h-3 text-amber-400" />
+                            Locked
+                          </span>
+                          <span className="font-bold underline text-amber-300">
+                            Unlock {srv.price} Pass
+                          </span>
+                        </div>
+                      ) : isUserSubscribed && isUnlocked ? (
+                        <div className="mt-2 flex items-center gap-1 text-[10px] font-bold text-emerald-400">
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>Active Unlocked</span>
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {/* User Account & Basic Details */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
               {/* Full Name */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-gold-400" />
                   Your Full Name <span className="text-gold-400">*</span>
                 </label>
                 <input
@@ -572,8 +733,69 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
                 />
               </div>
 
+              {/* Relationship / Marital Status */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                  <Heart className="w-3.5 h-3.5 text-rose-400" />
+                  Marital / Relationship Status <span className="text-gold-400">*</span>
+                </label>
+                <select
+                  value={maritalStatus}
+                  onChange={(e) => setMaritalStatus(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl bg-cosmic-950/70 border border-white/10 text-white focus:border-gold-400 focus:outline-none text-sm transition-all"
+                >
+                  <option value="Single / Unmarried">Single / Unmarried</option>
+                  <option value="In a Relationship">In a Relationship (Prem Sambandh)</option>
+                  <option value="Married">Married (Vivahit)</option>
+                  <option value="Separated / Dooriyan">Separated (Algaav / Doori)</option>
+                  <option value="Divorced">Divorced (Talakshuda)</option>
+                </select>
+              </div>
+
+              {/* Mandatory Mobile Number & PIN Gate - Only visible when NOT logged in */}
+              {!isLoggedIn && (
+                <>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                      <Phone className="w-3.5 h-3.5 text-gold-400" />
+                      Mobile Number (WhatsApp/SMS) <span className="text-gold-400">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-xs font-bold text-gold-400">
+                        +91
+                      </div>
+                      <input
+                        type="tel"
+                        required
+                        maxLength={10}
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
+                        placeholder="9876543210"
+                        className="w-full pl-12 pr-4 py-3 rounded-2xl bg-cosmic-950/70 border border-white/10 text-white placeholder-slate-500 focus:border-gold-400 focus:outline-none text-sm transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                      <KeyRound className="w-3.5 h-3.5 text-gold-400" />
+                      4-Digit Security PIN / Password <span className="text-gold-400">*</span>
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      maxLength={6}
+                      value={pin}
+                      onChange={(e) => setPin(e.target.value)}
+                      placeholder="e.g. 1234"
+                      className="w-full px-4 py-3 rounded-2xl bg-cosmic-950/70 border border-white/10 text-white placeholder-slate-500 focus:border-gold-400 focus:outline-none text-sm tracking-widest transition-all"
+                    />
+                  </div>
+                </>
+              )}
+
               {/* Gender */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
                   Gender
                 </label>
@@ -589,7 +811,7 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
               </div>
 
               {/* Date of Birth */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5 text-gold-400" />
                   Date of Birth <span className="text-gold-400">*</span>
@@ -604,7 +826,7 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
               </div>
 
               {/* Time of Birth */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5 text-gold-400" />
                   Time of Birth (Optional)
@@ -618,7 +840,7 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
               </div>
 
               {/* Place of Birth */}
-              <div className="sm:col-span-2 space-y-2">
+              <div className="space-y-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-gold-400" />
                   Place of Birth (City, Country) <span className="text-gold-400">*</span>
@@ -634,30 +856,203 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
               </div>
             </div>
 
-            {/* Life Focus Area */}
-            <div className="space-y-2 pt-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                Primary Life Focus Area
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {focusOptions.map((f, i) => (
-                  <button
-                    type="button"
-                    key={i}
-                    onClick={() => setLifeFocus(f)}
-                    className={`p-3 rounded-2xl text-left text-xs font-medium border transition-all ${
-                      lifeFocus === f
-                        ? "bg-gold-500/15 text-gold-200 border-gold-500/40 shadow-sm shadow-gold-500/20"
-                        : "bg-white/[0.02] text-slate-300 border-white/5 hover:border-gold-500/20"
-                    }`}
-                  >
-                    {f}
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* TAILORED SPECIALIZED QUESTIONS OR STANDARD QUESTION */}
+            {selectedService === "love_ex_249" && (
+              <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-br from-rose-950/40 to-cosmic-950 border border-rose-500/35 space-y-4 shadow-xl">
+                <div className="flex items-center gap-2">
+                  <Heart className="w-5 h-5 text-rose-400" />
+                  <h4 className="text-base font-bold text-white font-serif">
+                    Prem Punarmilan &amp; Ex Wapsi Focus
+                  </h4>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Shukra aur Chandra rekhaon dwara algaav dosh aur hriday ki dooriyan scan karne ke liye apne sambandh ki vartaman sthiti batayein:
+                </p>
 
-            {/* Specific Question */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-rose-200">
+                      Partner / Ex Ka Naam (Optional / Initials)
+                    </label>
+                    <input
+                      type="text"
+                      value={lovePartnerName}
+                      onChange={(e) => setLovePartnerName(e.target.value)}
+                      placeholder="e.g. Riya / Sameer"
+                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-rose-500/30 text-white text-xs placeholder-slate-500 focus:border-rose-400 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-rose-200">
+                      Sambandh Ki Vartaman Sthiti
+                    </label>
+                    <select
+                      value={loveRelationStage}
+                      onChange={(e) => setLoveRelationStage(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-rose-500/30 text-white text-xs focus:border-rose-400 focus:outline-none"
+                    >
+                      <option value="Breakup ho gaya hai aur baat band hai">Breakup ho gaya hai aur baat band hai</option>
+                      <option value="Rishte me thandak / dooriyan aa gayi hain">Rishte me thandak / achanak dooriyan aa gayi hain</option>
+                      <option value="Shaadi-shuda hain lekin aapsi algaav chal raha hai">Shaadi-shuda hain lekin aapsi algaav chal raha hai</option>
+                      <option value="Divorce / Legal algaav ki sthiti hai">Divorce / Legal algaav ki sthiti hai</option>
+                    </select>
+                  </div>
+
+                  <div className="sm:col-span-2 space-y-1.5">
+                    <label className="text-xs font-bold text-rose-200">
+                      Kab Se Doori Ya Baatcheet Band Hai?
+                    </label>
+                    <select
+                      value={loveSeparationTime}
+                      onChange={(e) => setLoveSeparationTime(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-rose-500/30 text-white text-xs focus:border-rose-400 focus:outline-none"
+                    >
+                      <option value="1 se 3 Mahine">1 se 3 Mahine</option>
+                      <option value="3 se 6 Mahine">3 se 6 Mahine</option>
+                      <option value="6 Mahine se 1 Saal">6 Mahine se 1 Saal</option>
+                      <option value="1 Saal se adhik samay se">1 Saal se adhik samay se</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {selectedService === "kalesh_saas_299" && (
+              <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-br from-emerald-950/40 to-cosmic-950 border border-emerald-500/35 space-y-4 shadow-xl">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                  <h4 className="text-base font-bold text-white font-serif">
+                    Griha Shanti &amp; Saas Vivad Mukti Focus
+                  </h4>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  4th House Griha Bhava aur Matru-Pitri graha shaanti ke liye parivarik vivad ka mukhya bindu darj karein:
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-emerald-200">
+                      Kiske Sath Vivad Ya Klesh Mukhya Hai?
+                    </label>
+                    <select
+                      value={kaleshTarget}
+                      onChange={(e) => setKaleshTarget(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-emerald-500/30 text-white text-xs focus:border-emerald-400 focus:outline-none"
+                    >
+                      <option value="Saas (Mother-in-law) ke sath taane aur aadar ki kami">Saas (Mother-in-law) ke sath taane aur aadar ki kami</option>
+                      <option value="Pati aur Saas dono ke sath aapsi vivad">Pati aur Saas dono ke sath aapsi vivad</option>
+                      <option value="Nanad / Sasural ke anya sadasyon dwara anban">Nanad / Sasural ke anya sadasyon dwara anban</option>
+                      <option value="Ghar me achanak hone wale krodh aur Vastu klesh">Ghar me achanak hone wale krodh aur Vastu klesh</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-emerald-200">
+                      Vivah Ko Kitna Samay Hua Hai?
+                    </label>
+                    <select
+                      value={marriageYears}
+                      onChange={(e) => setMarriageYears(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-emerald-500/30 text-white text-xs focus:border-emerald-400 focus:outline-none"
+                    >
+                      <option value="1 Saal se kam">1 Saal se kam</option>
+                      <option value="1 se 3 Saal">1 se 3 Saal</option>
+                      <option value="3 se 7 Saal">3 se 7 Saal</option>
+                      <option value="7 Saal se adhik">7 Saal se adhik</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {selectedService === "intercaste_349" && (
+              <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-br from-purple-950/40 to-cosmic-950 border border-purple-500/35 space-y-4 shadow-xl">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-purple-400" />
+                  <h4 className="text-base font-bold text-white font-serif">
+                    Intercaste Vivah &amp; Parivaar Sahmati Focus
+                  </h4>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  9th House Pitra aur Guru-Brihaspati kripa praapti ke liye dono parivaaron ki sthiti darj karein:
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-purple-200">
+                      Partner Ka Naam Ya Community
+                    </label>
+                    <input
+                      type="text"
+                      value={intercastePartnerName}
+                      onChange={(e) => setIntercastePartnerName(e.target.value)}
+                      placeholder="e.g. Partner Name / Community"
+                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-purple-500/30 text-white text-xs placeholder-slate-500 focus:border-purple-400 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-purple-200">
+                      Kis Parivaar Ki Asahmati Mukhya Hai?
+                    </label>
+                    <select
+                      value={opposingSide}
+                      onChange={(e) => setOpposingSide(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-purple-500/30 text-white text-xs focus:border-purple-400 focus:outline-none"
+                    >
+                      <option value="Ladke ke mata-pita nahi maan rahe">Ladke ke mata-pita nahi maan rahe</option>
+                      <option value="Ladki ke mata-pita nahi maan rahe">Ladki ke mata-pita nahi maan rahe</option>
+                      <option value="Dono pakshon ke parivaar asahmat hain">Dono pakshon ke parivaar asahmat hain</option>
+                    </select>
+                  </div>
+
+                  <div className="sm:col-span-2 space-y-1.5">
+                    <label className="text-xs font-bold text-purple-200">
+                      Mukhya Vivad / Darr Ka Mudda Kya Hai?
+                    </label>
+                    <select
+                      value={primaryHesitation}
+                      onChange={(e) => setPrimaryHesitation(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-purple-500/30 text-white text-xs focus:border-purple-400 focus:outline-none"
+                    >
+                      <option value="Jaati / Gotra aur samajik darr">Jaati / Gotra aur samajik darr</option>
+                      <option value="Kundali dosh / Manglik / Nadi dosh">Kundali dosh / Manglik / Nadi dosh</option>
+                      <option value="Aarthik ya sanskritik rehen-sehan ka antar">Aarthik ya sanskritik rehen-sehan ka antar</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Standard Life Focus & Specific Question */}
+            {!["love_ex_249", "kalesh_saas_299", "intercaste_349"].includes(selectedService) && (
+              <>
+                <div className="space-y-2 pt-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                    Primary Life Focus Area
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {focusOptions.map((f, i) => (
+                      <button
+                        type="button"
+                        key={i}
+                        onClick={() => setLifeFocus(f)}
+                        className={`p-3 rounded-2xl text-left text-xs font-medium border transition-all ${
+                          lifeFocus === f
+                            ? "bg-gold-500/15 text-gold-200 border-gold-500/40 shadow-sm shadow-gold-500/20"
+                            : "bg-white/[0.02] text-slate-300 border-white/5 hover:border-gold-500/20"
+                        }`}
+                      >
+                        {f}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Specific Question Box */}
             <div className="space-y-2">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
                 <HelpCircle className="w-3.5 h-3.5 text-gold-400" />
@@ -668,23 +1063,25 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
                 required
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
-                placeholder="Ask clearly about timing, business, career pivot, relationship compatibility, or karmic lessons..."
+                placeholder="Ask clearly about timing, relationship synastry, career pivot, or karmic lessons..."
                 className="w-full px-4 py-3 rounded-2xl bg-cosmic-950/70 border border-white/10 text-white placeholder-slate-500 focus:border-gold-400 focus:outline-none text-sm transition-all resize-none"
               />
 
-              {/* Quick Suggestion Pills */}
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {quickQuestions.map((q, idx) => (
-                  <button
-                    type="button"
-                    key={idx}
-                    onClick={() => setQuestion(q)}
-                    className="text-[11px] px-2.5 py-1 rounded-full bg-white/[0.03] hover:bg-gold-500/10 text-slate-400 hover:text-gold-300 border border-white/5 hover:border-gold-500/20 transition-all text-left"
-                  >
-                    + {q}
-                  </button>
-                ))}
-              </div>
+              {!["love_ex_249", "kalesh_saas_299", "intercaste_349"].includes(selectedService) && (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {quickQuestions.map((q, idx) => (
+                    <button
+                      type="button"
+                      key={idx}
+                      onClick={() => setQuestion(q)}
+                      className="text-[11px] px-2.5 py-1 rounded-full bg-white/[0.03] hover:bg-gold-500/10 text-slate-400 hover:text-gold-300 border border-white/5 hover:border-gold-500/20 transition-all text-left"
+                    >
+                      + {q}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               {/* Partner Synastry Add / Edit Button */}
               <div className="pt-2">
                 {secondaryPerson ? (
@@ -741,45 +1138,156 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
               </div>
             </div>
 
+            {/* SUBMIT BUTTON WITH MANDATORY ACCOUNT CREATION */}
             <div className="pt-4 flex flex-col items-end gap-3 w-full">
               <button
                 type="button"
                 onClick={() => {
-                  if (!name.trim() || !dob || !pob.trim() || !question.trim()) {
-                    const missing: string[] = [];
-                    if (!name.trim()) missing.push("Name");
-                    if (!dob) missing.push("Date of Birth");
-                    if (!pob.trim()) missing.push("Place of Birth");
-                    if (!question.trim()) missing.push("Your Question");
+                  const missing: string[] = [];
+                  if (!name.trim()) missing.push("Name");
+                  if (!dob) missing.push("Date of Birth");
+                  if (!pob.trim()) missing.push("Place of Birth");
+
+                  // Account Gate validation
+                  if (!isLoggedIn) {
+                    const clean = phone.replace(/\D/g, "");
+                    if (clean.length < 10) missing.push("10-Digit Mobile Number");
+                    if (!pin || pin.length < 4) missing.push("4-Digit Security PIN");
+                  }
+
+                  // Auto craft question for specialized services if empty
+                  let finalQuestion = question.trim();
+                  if (!finalQuestion) {
+                    if (selectedService === "love_ex_249") {
+                      finalQuestion = `Mera khoya pyar ${lovePartnerName ? `(${lovePartnerName})` : ""} kab wapas aayega aur hamare beech algaav (${loveRelationStage}, ${loveSeparationTime}) ka shastriya nivaran kya hai?`;
+                      setQuestion(finalQuestion);
+                    } else if (selectedService === "kalesh_saas_299") {
+                      finalQuestion = `Ghar main kalesh aur ${kaleshTarget} se vivad (${marriageYears}) se mukti kaise milegi? Parivaar me izzat aur shanti ka shastriya upaay batayein.`;
+                      setQuestion(finalQuestion);
+                    } else if (selectedService === "intercaste_349") {
+                      finalQuestion = `Intercaste vivah (${intercastePartnerName ? `with ${intercastePartnerName}` : ""}) ke liye ${opposingSide} ko manane (${primaryHesitation}) ka shastriya samadhan aur shubh muhurat kya hai?`;
+                      setQuestion(finalQuestion);
+                    } else {
+                      missing.push("Your Question");
+                    }
+                  }
+
+                  if (missing.length > 0) {
                     setStep1Error(`⚠️ Please fill in: ${missing.join(", ")}`);
-                    // Scroll the error into view after render
                     setTimeout(() => step1ErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
                     return;
                   }
 
-                  // 1. Check if question concerns another person (partner/friend/spouse) and details haven't been added yet
-                  const secondPersonCheck = detectSecondPersonContext(question);
-                  if (secondPersonCheck.isDetected && !secondaryPerson) {
+                  // If user is not logged in, execute inline registration/login gate
+                  if (!isLoggedIn) {
+                    const regResult = registerOrLoginInline({
+                      phone,
+                      pin,
+                      name,
+                      gender,
+                      dob,
+                      tob,
+                      pob,
+                      maritalStatus,
+                    });
+
+                    if (!regResult.success) {
+                      setStep1Error(`⚠️ ${regResult.error}`);
+                      setTimeout(() => step1ErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
+                      return;
+                    }
+                  } else {
+                    // Update profile with marital status if changed
+                    updateProfile({ maritalStatus });
+                  }
+
+                  // Check second person context if applicable
+                  const secondPersonCheck = detectSecondPersonContext(finalQuestion);
+                  if (
+                    secondPersonCheck.isDetected &&
+                    !secondaryPerson &&
+                    selectedService !== "love_ex_249" &&
+                    selectedService !== "kalesh_saas_299" &&
+                    selectedService !== "intercaste_349"
+                  ) {
                     setSuggestedRelation(secondPersonCheck.suggestedRelation);
                     setShowSecondaryModal(true);
                     return;
                   }
 
-                  // 2. Check ₹99 plan profile lock warning
-                  if (user?.subscriptionPlan === "trial_99" && !user.primaryProfileLocked) {
-                    setShowLockWarningModal(true);
-                    return;
+                  // Check subscription profile limits & lock policy (Single user vs Duo vs Family)
+                  if (isLoggedIn && user?.isSubscribed) {
+                    const primaryLockedName = (user.primaryProfileName || user.name || "").trim().toLowerCase();
+                    const enteredName = name.trim().toLowerCase();
+                    const isSingleUserPlan =
+                      !user.subscriptionPlan ||
+                      user.subscriptionPlan === "trial_99" ||
+                      user.subscriptionPlan === "love_ex_249" ||
+                      user.subscriptionPlan === "kalesh_saas_299" ||
+                      user.subscriptionPlan === "intercaste_349";
+
+                    // Single user plan check: once a reading is seen or profile is locked, switching user triggers popup
+                    if (isSingleUserPlan) {
+                      if (
+                        (user.primaryProfileLocked || user.primaryProfileName) &&
+                        primaryLockedName &&
+                        enteredName &&
+                        primaryLockedName !== enteredName
+                      ) {
+                        setLockModalMode("limit_reached");
+                        setShowLockWarningModal(true);
+                        return;
+                      }
+
+                      // If first time on ₹99 plan before initial lock
+                      if (user.subscriptionPlan === "trial_99" && !user.primaryProfileLocked) {
+                        setLockModalMode("warning_first_lock");
+                        setShowLockWarningModal(true);
+                        return;
+                      }
+                    }
+
+                    // Duo Plan check (max 2 users)
+                    if (user.subscriptionPlan === "duo_599") {
+                      const registeredProfiles = [
+                        primaryLockedName,
+                        ...(user.profiles?.map((p) => p.name.trim().toLowerCase()) || []),
+                      ].filter(Boolean);
+
+                      if (
+                        registeredProfiles.length >= 2 &&
+                        enteredName &&
+                        !registeredProfiles.includes(enteredName)
+                      ) {
+                        setLockModalMode("limit_reached");
+                        setShowLockWarningModal(true);
+                        return;
+                      }
+                    }
                   }
 
                   setStep1Error(null);
                   setError(null);
                   setStep(2);
                 }}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full text-xs font-bold uppercase tracking-wider text-cosmic-950 bg-gradient-to-r from-gold-300 to-amber-400 hover:shadow-lg hover:shadow-gold-500/30 transition-all"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full text-xs font-black uppercase tracking-wider text-cosmic-950 bg-gradient-to-r from-gold-300 via-gold-400 to-amber-300 hover:shadow-xl hover:shadow-gold-500/40 transition-all active:scale-95"
               >
-                <span>Continue to Palm Upload</span>
+                <span>
+                  {isLoggedIn
+                    ? "Continue to Palm Upload"
+                    : "Sign Up and Continue to Palm Upload"}
+                </span>
                 <ArrowRight className="w-4 h-4 shrink-0" />
               </button>
+
+              <div className="text-[10px] text-slate-400 flex items-center gap-1.5 self-center sm:self-end">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>
+                  {isLoggedIn
+                    ? "Your session is securely authenticated"
+                    : "Instant account creation • Palm photos & readings auto-saved"}
+                </span>
+              </div>
 
               {/* Inline validation error — shown BELOW the button so user sees it immediately */}
               {step1Error && (
@@ -1256,11 +1764,32 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
         }}
       />
 
-      {/* Profile Lock Warning Modal (₹99 Plan) */}
+      {/* Profile Lock & User Limit Warning Modal */}
       <ProfileLockWarningModal
         isOpen={showLockWarningModal}
+        mode={lockModalMode}
         onClose={() => setShowLockWarningModal(false)}
         profileName={name}
+        lockedName={user?.primaryProfileName || user?.name || "Primary User"}
+        allowedCount={user?.subscriptionPlan === "duo_599" ? 2 : 1}
+        planName={
+          user?.subscriptionPlan === "duo_599"
+            ? "Duo Pass (₹499)"
+            : user?.subscriptionPlan === "unlimited_1009"
+            ? "Family Pro (₹999)"
+            : "Single User Plan (₹99)"
+        }
+        onRestore={() => {
+          if (user) {
+            setName(user.primaryProfileName || user.name || "");
+            if (user.dob) setDob(user.dob);
+            if (user.gender) setGender(user.gender);
+            if (user.tob) setTob(user.tob);
+            if (user.pob) setPob(user.pob);
+            if (user.maritalStatus) setMaritalStatus(user.maritalStatus);
+          }
+          setShowLockWarningModal(false);
+        }}
         onConfirmLock={() => {
           lockPrimaryProfile();
           setShowLockWarningModal(false);
@@ -1268,7 +1797,7 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
         }}
         onUpgrade={() => {
           setShowLockWarningModal(false);
-          setPaywallTargetPlan("duo_599");
+          setPaywallTargetPlan(user?.subscriptionPlan === "duo_599" ? "unlimited_1009" : "duo_599");
           setShowPaywallModal(true);
         }}
       />

@@ -25,6 +25,17 @@ export interface PalmAnalysisRequest {
   pob: string;
   question: string;
   lifeFocus: string;
+  maritalStatus?: string;
+  selectedService?: string;
+  specializedData?: {
+    partnerName?: string;
+    relationStage?: string;
+    separationTime?: string;
+    kaleshTarget?: string;
+    marriageYears?: string;
+    opposingSide?: string;
+    primaryHesitation?: string;
+  };
   language?: string;
   leftPalmBase64?: string;
   leftPalmUrl?: string;
@@ -235,6 +246,41 @@ Target Language: HINGLISH (Hindi written using English/Latin alphabet).
   const shiftStartAge = Math.max(12, shiftAge - 2);
   const shiftEndAge = shiftAge + 2;
 
+  const selectedService = input.selectedService || "";
+  const specializedData = input.specializedData || {};
+  const maritalStatus = input.maritalStatus || "";
+
+  const specializedDirective = selectedService === "love_ex_249"
+    ? `
+SPECIALIZED RECONCILIATION DIRECTIVE (Khoya Pyar Wapas Paayen & Get Your Ex Back):
+- Seeker Status: ${maritalStatus || 'In a Relationship / Separated'} | Partner: ${specializedData.partnerName || 'Beloved / Ex'}
+- Situation: ${specializedData.relationStage || 'Separation / Silence'} | Separation Period: ${specializedData.separationTime || 'Recent'}
+- In the FREE TEASER, create profound curiosity & psychological resonance:
+  * "swabhavHeadline": Focus on ${name}'s loyalty (Hriday Sthirta). Reveal whether their heart wanders or if they are fiercely, deeply loyal (ek baar kisi se jud jaayein to poori aatma se samarpit rehte hain, jald baazi me kisi ko dil se nahi nikaalte), citing their Venus mount and deep Heart line.
+  * "pastGhatnaAndDhokha": MUST connect the shift around ${shiftYear} (at age ${shiftStartAge}-${shiftEndAge}) directly to an emotional rupture, betrayal, or heartbreaking silence/distance in love life.
+  * "heartMindConflict": Describe the inner tug-of-war between their intense affection/yearning for this person (Dil) vs their self-respect, hurt ego, and fear of being hurt again (Dimaag).
+  * "nightOverthinkingTrait": Vividly capture how late at night, old memories and unspoken conversations replay on a loop in their mind.`
+    : selectedService === "kalesh_saas_299"
+    ? `
+SPECIALIZED DOMESTIC HARMONY DIRECTIVE (Ghar Main Kalesh Se Mukti & Saas Vivad):
+- Seeker Status: ${maritalStatus || 'Married'} | Target: ${specializedData.kaleshTarget || 'Mother-in-law & domestic misunderstandings'}
+- Duration of Marriage: ${specializedData.marriageYears || 'Several years'}
+- In the FREE TEASER, validate their good intentions:
+  * "swabhavHeadline": Frame ${name} as a peacemaker and Griha Lakshmi who inherently values dignity, respect, and family unity. Make it clear that spite and quarrels are against their true nature.
+  * "pastGhatnaAndDhokha": Address the astrological turning point around ${shiftYear} (at age ${shiftStartAge}-${shiftEndAge}) where innocuous words were misinterpreted by family members, creating lingering tension.
+  * "heartMindConflict": The silent exhaustion of suppressing emotions to avoid further drama vs the need for respect.
+  * "nightOverthinkingTrait": How domestic stress and fear of tomorrow's atmosphere disrupts their peaceful sleep.`
+    : selectedService === "intercaste_349"
+    ? `
+SPECIALIZED INTERCASTE VIVAH DIRECTIVE (Intercaste Marriage & Parivaar Manana):
+- Partner: ${specializedData.partnerName || 'Partner'} (${specializedData.primaryHesitation || 'Orthodox/Caste hesitation'}) | Opposition: ${specializedData.opposingSide || 'Parents/Elders'}.
+- In the FREE TEASER, create immense positive resonance:
+  * "swabhavHeadline": Praise ${name}'s dharmic values—they seek harmony and genuine parental blessings, not rebellion or disrespect.
+  * "pastGhatnaAndDhokha": Point out when societal pressures or family expectations first became a hurdle in their relationship path around ${shiftYear}.
+  * "heartMindConflict": Balancing their sacred love for their partner with their deep love and respect for their parents.
+  * "nightOverthinkingTrait": Nocturnal worry about finding the right words and auspicious moment to win elders' hearts.`
+    : "";
+
   return `
 You are REKHA — The World's Foremost AI Palmist & Vedic Astrologer (from rekhagyan.online).
 You speak in a warm, authoritative, mystical yet rigorously factual first-person voice ("I am REKHA...").
@@ -306,6 +352,8 @@ CRITICAL ZERO-GENERIC-TEMPLATE DIRECTIVE:
    - "secretIntuition": Must evaluate their 6th sense based on their specific detected markings: ${features.specialMarks.join(", ")}.
    - "palmSignsWitness": MUST cite the real physical evidence: ${features.mounts.dominant} and ${features.heartLine.curvature}.
    - "summaryNarrative": A bespoke 2-3 sentence poetic emotional synthesis of ${name}'s soul core based on their ${vedicChart.ascendant} Lagna and ${vedicChart.currentMahadasha}. NO generic clichés!
+
+${specializedDirective}
 
 STRICT BOUNDARY FOR FREE TEASER:
 The free teaser MUST ONLY analyze personality, psychological duality, and past life trials.

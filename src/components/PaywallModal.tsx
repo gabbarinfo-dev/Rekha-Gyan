@@ -5,15 +5,16 @@ import { X, Sparkles, Check, Flame, ShieldCheck, MessageCircle, Clock, Users, He
 import { useAuth } from "@/lib/auth-context";
 import AuthModal from "./AuthModal";
 
-export type SubscriptionTierType = "trial_99" | "duo_599" | "unlimited_1009";
+export type StandardTierType = "trial_99" | "duo_599" | "unlimited_1009";
 export type SpecialPassType = "love_ex_249" | "kalesh_saas_299" | "intercaste_349";
-export type PurchaseOptionType = SubscriptionTierType | "topup_60" | "topup_99" | SpecialPassType;
+export type SubscriptionTierType = StandardTierType | SpecialPassType;
+export type PurchaseOptionType = SubscriptionTierType | "topup_60" | "topup_99";
 
 interface PaywallModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: (plan: SubscriptionTierType | SpecialPassType) => void;
-  defaultPlan?: SubscriptionTierType;
+  onSuccess?: (plan: PurchaseOptionType) => void;
+  defaultPlan?: PurchaseOptionType;
   defaultTab?: "plans" | "special" | "topup";
   defaultOption?: PurchaseOptionType;
   userName?: string;
@@ -48,15 +49,24 @@ export default function PaywallModal({
   // Sync state whenever modal is opened or props change
   useEffect(() => {
     if (isOpen) {
-      setActiveTab(defaultTab);
-      setSelectedOption(
-        defaultOption ||
-          (defaultTab === "topup"
-            ? "topup_60"
-            : defaultTab === "special"
-            ? "love_ex_249"
-            : defaultPlan)
-      );
+      if (
+        defaultPlan === "love_ex_249" ||
+        defaultPlan === "kalesh_saas_299" ||
+        defaultPlan === "intercaste_349"
+      ) {
+        setActiveTab("special");
+        setSelectedOption(defaultPlan);
+      } else {
+        setActiveTab(defaultTab);
+        setSelectedOption(
+          defaultOption ||
+            (defaultTab === "topup"
+              ? "topup_60"
+              : defaultTab === "special"
+              ? "love_ex_249"
+              : defaultPlan)
+        );
+      }
       setIsInitiatingPayment(false);
       setPaymentError(null);
       if (user?.name) setGuestName(user.name);

@@ -2,6 +2,7 @@
 
 import React from "react";
 import { CheckCircle2, XCircle, Sparkles, BookCheck, ShieldAlert, Cpu, Eye } from "lucide-react";
+import SpecializedServicesCards from "./SpecializedServicesCards";
 
 export default function WhyRekhaSection() {
   const comparisons = [
@@ -41,6 +42,9 @@ export default function WhyRekhaSection() {
     <section id="why-rekha" className="relative py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       {/* Decorative Aura */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-mystic-purple/10 blur-[120px] rounded-full pointer-events-none" />
+
+      {/* 3 Specialized Vedic Samadhan Cards (Khoya Pyar, Ghar Kalesh, Intercaste Marriage) */}
+      <SpecializedServicesCards />
 
       {/* Section Header */}
       <div className="text-center max-w-3xl mx-auto mb-16 relative">

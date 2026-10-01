@@ -201,6 +201,10 @@ export default function SubscriptionPage() {
               <ul className="space-y-2.5">
                 <li className="flex items-start gap-2 text-xs text-slate-300">
                   <Check className="w-3.5 h-3.5 shrink-0 mt-0.5 text-emerald-400" />
+                  <span>Download Your Kundali</span>
+                </li>
+                <li className="flex items-start gap-2 text-xs text-slate-300">
+                  <Check className="w-3.5 h-3.5 shrink-0 mt-0.5 text-emerald-400" />
                   <span>1 Primary Profile (Permanently locked)</span>
                 </li>
                 <li className="flex items-start gap-2 text-xs text-slate-300">
@@ -245,6 +249,10 @@ export default function SubscriptionPage() {
               <ul className="space-y-2.5">
                 <li className="flex items-start gap-2 text-xs text-slate-300">
                   <Check className="w-3.5 h-3.5 shrink-0 mt-0.5 text-gold-400" />
+                  <span>Download Your Kundali</span>
+                </li>
+                <li className="flex items-start gap-2 text-xs text-slate-300">
+                  <Check className="w-3.5 h-3.5 shrink-0 mt-0.5 text-gold-400" />
                   <span>2 Saved Profiles (Switch between 2 people)</span>
                 </li>
                 <li className="flex items-start gap-2 text-xs text-slate-300">
@@ -287,6 +295,10 @@ export default function SubscriptionPage() {
               </div>
               <p className="text-xs text-slate-300 mb-5 leading-relaxed">Complete family destiny &amp; multi-partner matchmaking.</p>
               <ul className="space-y-2.5">
+                <li className="flex items-start gap-2 text-xs text-slate-300">
+                  <Check className="w-3.5 h-3.5 shrink-0 mt-0.5 text-purple-400" />
+                  <span>Download Your Kundali</span>
+                </li>
                 <li className="flex items-start gap-2 text-xs text-slate-300">
                   <Check className="w-3.5 h-3.5 shrink-0 mt-0.5 text-purple-400" />
                   <span>Multi-Profile Access for full family</span>

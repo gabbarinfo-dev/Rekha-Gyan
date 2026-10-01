@@ -253,6 +253,20 @@ export default function ReadingDisplay({
 
   const isUnlocked = Boolean(isUnlockedProp || user?.isSubscribed || unlockedLocally);
 
+  const openPaywall = (plan?: SubscriptionTierType) => {
+    let target = plan || "trial_99";
+    const qLower = (userQuestion || "").toLowerCase();
+    if (qLower.includes("khoya pyar") || qLower.includes("ex") || qLower.includes("prem")) {
+      target = "love_ex_249";
+    } else if (qLower.includes("kalesh") || qLower.includes("saas")) {
+      target = "kalesh_saas_299";
+    } else if (qLower.includes("intercaste") || qLower.includes("manane")) {
+      target = "intercaste_349";
+    }
+    setPaywallPlan(target);
+    setShowPaywall(true);
+  };
+
   const handleUnlockFullReport = async () => {
     if (!readingId) return;
     setIsUnlocking(true);
@@ -411,10 +425,6 @@ export default function ReadingDisplay({
     }
   };
 
-  const openPaywall = (plan: SubscriptionTierType = "trial_99") => {
-    setPaywallPlan(plan);
-    setShowPaywall(true);
-  };
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6 sm:space-y-8 animate-fadeIn px-1 sm:px-0">

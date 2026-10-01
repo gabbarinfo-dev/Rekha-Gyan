@@ -14,7 +14,13 @@ export interface SavedProfile {
   isPrimary?: boolean;
 }
 
-export type SubscriptionTierType = "trial_99" | "duo_599" | "unlimited_1009";
+export type SubscriptionTierType =
+  | "trial_99"
+  | "duo_599"
+  | "unlimited_1009"
+  | "love_ex_249"
+  | "kalesh_saas_299"
+  | "intercaste_349";
 
 export interface UserProfile {
   phone: string;
@@ -23,12 +29,14 @@ export interface UserProfile {
   dob?: string;
   tob?: string;
   pob?: string;
+  maritalStatus?: "Single / Unmarried" | "In a Relationship" | "Married" | "Separated / Dooriyan" | "Divorced" | string;
   issue?: string;
   lifeFocus?: string;
   savedLeftPalm?: string;
   savedRightPalm?: string;
   isSubscribed?: boolean;
   subscriptionPlan?: SubscriptionTierType | null;
+  activePasses?: string[];
   subscriptionDate?: string;
   subscriptionExpiryDate?: string;
   isAdmin?: boolean;
@@ -46,9 +54,20 @@ interface AuthContextType {
   isAdmin: boolean;
   login: (phone: string, pin: string) => { success: boolean; error?: string };
   signup: (phone: string, pin: string, name: string) => { success: boolean; error?: string };
+  registerOrLoginInline: (details: {
+    phone: string;
+    pin: string;
+    name: string;
+    gender?: string;
+    dob?: string;
+    tob?: string;
+    pob?: string;
+    maritalStatus?: string;
+  }) => { success: boolean; error?: string };
+  hasServiceAccess: (serviceId: string) => boolean;
   logout: () => void;
   updateProfile: (data: Partial<UserProfile>) => void;
-  unlockSubscription: (plan: "trial_99" | "duo_599" | "unlimited_1009") => void;
+  unlockSubscription: (plan: SubscriptionTierType) => void;
   lockPrimaryProfile: () => void;
   consumeQuota: (type: "deepQuestion" | "partnerQuestion" | "matchmaking") => boolean;
   canAskPartnerQuestion: () => boolean;
@@ -257,6 +276,109 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const registerOrLoginInline = (details: {
+    phone: string;
+    pin: string;
+    name: string;
+    gender?: string;
+    dob?: string;
+    tob?: string;
+    pob?: string;
+    maritalStatus?: string;
+  }) => {
+    const cleanPhone = (details.phone || "").replace(/\D/g, "");
+    if (cleanPhone.length < 10) {
+      return { success: false, error: "Kripya 10-digit mobile number enter karein." };
+    }
+    if (!details.pin || details.pin.length < 4) {
+      return { success: false, error: "4-Digit Security PIN zaroori hai." };
+    }
+    if (!details.name.trim()) {
+      return { success: false, error: "Kripya apna poora naam likhein." };
+    }
+
+    try {
+      const usersMap = JSON.parse(localStorage.getItem(USERS_DB_KEY) || "{}");
+      const existing = usersMap[cleanPhone];
+
+      if (existing) {
+        // User exists -> verify PIN
+        if (
+          existing._pin !== details.pin &&
+          !(cleanPhone === ADMIN_PHONE && (details.pin === ADMIN_PASS || details.pin === "1029"))
+        ) {
+          return {
+            success: false,
+            error: "Is mobile number par account pehle se bana hai. Kripya apna sahi 4-digit PIN dalein.",
+          };
+        }
+        // Login & update details
+        const isAdminUser = cleanPhone === ADMIN_PHONE;
+        const updatedProfile: UserProfile = {
+          ...existing,
+          name: details.name.trim() || existing.name,
+          gender: details.gender || existing.gender,
+          dob: details.dob || existing.dob,
+          tob: details.tob || existing.tob,
+          pob: details.pob || existing.pob,
+          maritalStatus: details.maritalStatus || existing.maritalStatus,
+          isAdmin: isAdminUser,
+          isSubscribed: isAdminUser ? true : existing.isSubscribed,
+        };
+        const { _pin, ...publicProfile } = updatedProfile as any;
+        setUser(publicProfile);
+        usersMap[cleanPhone] = { ...updatedProfile, _pin: existing._pin };
+        localStorage.setItem(USERS_DB_KEY, JSON.stringify(usersMap));
+        localStorage.setItem(ACTIVE_SESSION_KEY, cleanPhone);
+        syncToServerRegistry(publicProfile);
+        return { success: true };
+      } else {
+        // Create new account
+        const isAdminUser = cleanPhone === ADMIN_PHONE;
+        const newProfile: UserProfile & { _pin: string } = {
+          phone: cleanPhone,
+          name: isAdminUser ? ADMIN_NAME : details.name.trim(),
+          gender: details.gender || "Male",
+          dob: isAdminUser ? ADMIN_DOB : details.dob,
+          tob: details.tob || "12:00",
+          pob: details.pob || "",
+          maritalStatus: details.maritalStatus || "Single / Unmarried",
+          _pin: details.pin,
+          isAdmin: isAdminUser,
+          isSubscribed: isAdminUser,
+          subscriptionPlan: isAdminUser ? "unlimited_1009" : null,
+          activePasses: isAdminUser
+            ? ["unlimited_1009", "duo_599", "trial_99", "love_ex_249", "kalesh_saas_299", "intercaste_349"]
+            : [],
+          createdAt: new Date().toISOString(),
+        } as any;
+
+        usersMap[cleanPhone] = newProfile;
+        localStorage.setItem(USERS_DB_KEY, JSON.stringify(usersMap));
+        const { _pin, ...publicProfile } = newProfile;
+        setUser(publicProfile);
+        localStorage.setItem(ACTIVE_SESSION_KEY, cleanPhone);
+        syncToServerRegistry(publicProfile);
+        return { success: true };
+      }
+    } catch (e) {
+      return { success: false, error: "Account create nahi ho saka. Kripya punah prayas karein." };
+    }
+  };
+
+  const hasServiceAccess = (serviceId: string): boolean => {
+    if (user?.isAdmin) return true;
+    if (!user?.isSubscribed) return false;
+    if (user.activePasses?.includes(serviceId)) return true;
+    if (user.subscriptionPlan === serviceId) return true;
+    // Standard master passes
+    if (user.subscriptionPlan === "unlimited_1009") {
+      if (serviceId === "trial_99" || serviceId === "duo_599") return true;
+    }
+    if (user.subscriptionPlan === "duo_599" && serviceId === "trial_99") return true;
+    return false;
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem(ACTIVE_SESSION_KEY);
@@ -287,21 +409,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const unlockSubscription = (plan: "trial_99" | "duo_599" | "unlimited_1009") => {
+  const unlockSubscription = (plan: SubscriptionTierType) => {
     if (!user) return;
-    const initialQuotas = {
+    const initialQuotas: Record<string, { deep: number; partner: number; match: number }> = {
       trial_99: { deep: 2, partner: 0, match: 1 },
       duo_599: { deep: 6, partner: 2, match: 3 },
       unlimited_1009: { deep: 18, partner: 6, match: 5 },
-    }[plan];
+      love_ex_249: { deep: 2, partner: 2, match: 1 },
+      kalesh_saas_299: { deep: 3, partner: 3, match: 2 },
+      intercaste_349: { deep: 4, partner: 4, match: 2 },
+    };
+    const quotas = initialQuotas[plan] || { deep: 2, partner: 1, match: 1 };
+    const currentPasses = user.activePasses || [];
+    const newPasses = currentPasses.includes(plan) ? currentPasses : [...currentPasses, plan];
 
     updateProfile({
       isSubscribed: true,
       subscriptionPlan: plan,
+      activePasses: newPasses,
       subscriptionDate: new Date().toISOString(),
-      deepQuestionsRemaining: initialQuotas.deep,
-      partnerQuestionsRemaining: initialQuotas.partner,
-      matchmakingRemaining: initialQuotas.match,
+      deepQuestionsRemaining: (user.deepQuestionsRemaining ?? 0) + quotas.deep,
+      partnerQuestionsRemaining: (user.partnerQuestionsRemaining ?? 0) + quotas.partner,
+      matchmakingRemaining: (user.matchmakingRemaining ?? 0) + quotas.match,
     });
   };
 
@@ -371,6 +500,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAdmin: Boolean(user?.isAdmin || user?.phone === ADMIN_PHONE),
         login,
         signup,
+        registerOrLoginInline,
+        hasServiceAccess,
         logout,
         updateProfile,
         unlockSubscription,
