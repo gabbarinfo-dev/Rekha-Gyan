@@ -27,6 +27,7 @@ import {
   Phone,
   KeyRound,
   Users,
+  ChevronDown,
 } from "lucide-react";
 import ReadingDisplay from "./ReadingDisplay";
 import AuthModal from "./AuthModal";
@@ -467,6 +468,7 @@ export default function ReadingForm({ initialFocus, onResultStateChange }: Readi
         secondaryPerson={resultData.secondaryPerson}
         readingId={resultData.readingId}
         isUnlocked={resultData.isUnlocked}
+        selectedService={resultData.selectedService || selectedService}
         onReset={handleReset}
       />
     );
@@ -596,142 +598,70 @@ export default function ReadingForm({ initialFocus, onResultStateChange }: Readi
         {/* STEP 1: Basic Details & Life Focus */}
         {step === 1 && (
           <div className="space-y-6 animate-fadeIn">
-            {/* 6 Services Selection Strip & Gating Engine */}
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-black uppercase tracking-wider text-gold-300 flex items-center gap-1.5">
+            {/* Consultation Pathway Selector (Compact & Clean - Zero Upfront Prices) */}
+            <div className="space-y-1.5">
+              <label
+                htmlFor="consultation-service-select"
+                className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center justify-between"
+              >
+                <span className="flex items-center gap-1.5 text-gold-300">
                   <Sparkles className="w-3.5 h-3.5 text-gold-400" />
-                  Select Your Consultation Service (6 Dedicated Pathways)
+                  Select Consultation Pathway (6 Dedicated Services)
                 </span>
                 <span className="text-[10px] text-slate-400 font-medium">
-                  {user?.isSubscribed ? "Active Passes Highlighted" : "Free Initial Preview Available"}
+                  {user?.isSubscribed ? "Active Passes Linked" : "Free Initial Reading Preview"}
                 </span>
-              </div>
+              </label>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-                {[
-                  {
-                    id: "trial_99",
-                    name: "Niji Jeevan Starter",
-                    price: "₹99",
-                    sub: "1 Palm, Mukhya Sawaal & 30-Day Access",
-                    accent: "border-amber-500/40 text-amber-300 bg-amber-500/10",
-                  },
-                  {
-                    id: "duo_599",
-                    name: "Jeevan Darshan Duo",
-                    price: "₹499",
-                    sub: "2 Palms Synastry & 6 Deep Inquiries",
-                    accent: "border-blue-500/40 text-blue-300 bg-blue-500/10",
-                  },
-                  {
-                    id: "unlimited_1009",
-                    name: "Pro Kundali & Family",
-                    price: "₹999",
-                    sub: "Unlimited Profiles & Full Synastry",
-                    accent: "border-gold-500/40 text-gold-300 bg-gold-500/10",
-                  },
-                  {
-                    id: "love_ex_249",
-                    name: "Prem Punarmilan & Ex Back",
-                    price: "₹249",
-                    sub: "Shukra Synastry & 2 Palms Match",
-                    accent: "border-rose-500/40 text-rose-300 bg-rose-500/10",
-                  },
-                  {
-                    id: "kalesh_saas_299",
-                    name: "Ghar Kalesh & Saas Vivad",
-                    price: "₹299",
-                    sub: "Griha Shanti & 3 Profiles Peace",
-                    accent: "border-emerald-500/40 text-emerald-300 bg-emerald-500/10",
-                  },
-                  {
-                    id: "intercaste_349",
-                    name: "Intercaste Vivah & Parivaar",
-                    price: "₹349",
-                    sub: "Parents Consent & 4 Profiles Sync",
-                    accent: "border-purple-500/40 text-purple-300 bg-purple-500/10",
-                  },
-                ].map((srv) => {
-                  const isUserSubscribed = Boolean(user?.isSubscribed);
-                  const isUnlocked = hasServiceAccess(srv.id);
-                  const isSelected = selectedService === srv.id;
-
-                  // GATING LOGIC:
-                  // If user has subscription, only unlocked services are active; non-subscribed services are greyed out!
-                  // If user is not subscribed (free preview mode), all are accessible for initial trust reading.
-                  const isGreyedOut = isUserSubscribed && !isUnlocked;
-
-                  return (
-                    <div
-                      key={srv.id}
-                      onClick={() => {
-                        if (isGreyedOut) {
-                          setPaywallTargetPlan(srv.id as any);
-                          setPaywallTab("plans");
-                          setPaywallReason(`Aapka subscription active hai, parantu ${srv.name} (${srv.price}) service ke liye ye pass required hai.`);
-                          setShowPaywallModal(true);
-                          return;
-                        }
-                        setSelectedService(srv.id);
-                        if (srv.id === "love_ex_249") {
-                          setLifeFocus("Love, Marriage & Relationship Destiny");
-                          if (!question || question.includes("Ghar main kalesh") || question.includes("Intercaste")) {
-                            setQuestion("Mera khoya pyar / ex partner kab wapas aayega aur hamare beech algaav ka shastriya nivaran kya hai?");
-                          }
-                        } else if (srv.id === "kalesh_saas_299") {
-                          setLifeFocus("Love, Marriage & Relationship Destiny");
-                          setMaritalStatus("Married");
-                          if (!question || question.includes("khoya pyar") || question.includes("Intercaste")) {
-                            setQuestion("Ghar main kalesh aur saas se vivad se mukti kaise milegi? Parivaar me izzat aur shanti ka shastriya upaay batayein.");
-                          }
-                        } else if (srv.id === "intercaste_349") {
-                          setLifeFocus("Love, Marriage & Relationship Destiny");
-                          if (!question || question.includes("khoya pyar") || question.includes("saas")) {
-                            setQuestion("Intercaste vivah ke liye dono parivaaron ko manane ka shastriya muhurat aur graha samadhan kya hai?");
-                          }
-                        }
-                      }}
-                      className={`p-3 rounded-2xl border transition-all text-left relative overflow-hidden cursor-pointer ${
-                        isSelected
-                          ? `${srv.accent} shadow-md scale-[1.01]`
-                          : isGreyedOut
-                          ? "opacity-50 grayscale bg-black/40 border-white/5 cursor-not-allowed"
-                          : "bg-white/[0.02] border-white/10 hover:border-white/20 text-slate-300"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-1 mb-1">
-                        <span className="text-xs font-bold truncate">
-                          {srv.name}
-                        </span>
-                        <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-white/10 shrink-0">
-                          {srv.price}
-                        </span>
-                      </div>
-                      <p className="text-[10px] text-slate-400 leading-tight">
-                        {srv.sub}
-                      </p>
-
-                      {/* Gating Status Badges */}
-                      {isGreyedOut ? (
-                        <div className="mt-2 flex items-center justify-between text-[10px] text-amber-300/80 bg-black/40 px-2 py-0.5 rounded">
-                          <span className="flex items-center gap-1">
-                            <Lock className="w-3 h-3 text-amber-400" />
-                            Locked
-                          </span>
-                          <span className="font-bold underline text-amber-300">
-                            Unlock {srv.price} Pass
-                          </span>
-                        </div>
-                      ) : isUserSubscribed && isUnlocked ? (
-                        <div className="mt-2 flex items-center gap-1 text-[10px] font-bold text-emerald-400">
-                          <CheckCircle2 className="w-3 h-3" />
-                          <span>Active Unlocked</span>
-                        </div>
-                      ) : null}
-                    </div>
-                  );
-                })}
+              <div className="relative">
+                <select
+                  id="consultation-service-select"
+                  value={selectedService}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSelectedService(val);
+                    if (val === "love_ex_249") {
+                      setLifeFocus("Love, Marriage & Relationship Destiny");
+                      if (!question || question.includes("Ghar main kalesh") || question.includes("Intercaste")) {
+                        setQuestion("Mera khoya pyar / ex partner kab wapas aayega aur hamare beech algaav ka shastriya nivaran kya hai?");
+                      }
+                    } else if (val === "kalesh_saas_299") {
+                      setLifeFocus("Love, Marriage & Relationship Destiny");
+                      setMaritalStatus("Married");
+                      if (!question || question.includes("khoya pyar") || question.includes("Intercaste")) {
+                        setQuestion("Ghar main kalesh aur saas se vivad se mukti kaise milegi? Parivaar me izzat aur shanti ka shastriya upaay batayein.");
+                      }
+                    } else if (val === "intercaste_349") {
+                      setLifeFocus("Love, Marriage & Relationship Destiny");
+                      if (!question || question.includes("khoya pyar") || question.includes("saas")) {
+                        setQuestion("Intercaste vivah ke liye dono parivaaron ko manane ka shastriya muhurat aur graha samadhan kya hai?");
+                      }
+                    }
+                  }}
+                  className="w-full bg-cosmic-900/90 border border-gold-500/35 text-white rounded-xl px-4 py-3 sm:py-3.5 pr-10 text-xs sm:text-sm font-semibold focus:outline-none focus:border-gold-400 focus:ring-1 focus:ring-gold-400/50 appearance-none shadow-inner cursor-pointer transition-all hover:border-gold-500/50"
+                >
+                  <option value="trial_99" className="bg-cosmic-950 text-white py-2">
+                    🪐 Kundali D1 &amp; D9 Navamsha
+                  </option>
+                  <option value="duo_599" className="bg-cosmic-950 text-white py-2">
+                    💍 Vedic Match Making &amp; Kundli Milan
+                  </option>
+                  <option value="love_ex_249" className="bg-cosmic-950 text-white py-2">
+                    ❤️ Khoya Pyar Wapas Paayen &amp; Get Your Ex Back
+                  </option>
+                  <option value="intercaste_349" className="bg-cosmic-950 text-white py-2">
+                    ✨ Intercaste Marriage &amp; Parivaar Manana
+                  </option>
+                  <option value="kalesh_saas_299" className="bg-cosmic-950 text-white py-2">
+                    🛡️ Ghar Main Kalesh Se Mukti &amp; Saas Se Banti Nahi?
+                  </option>
+                  <option value="unlimited_1009" className="bg-cosmic-950 text-white py-2">
+                    🔮 Deep Question Vedic Guidance
+                  </option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-gold-400">
+                  <ChevronDown className="w-4 h-4" />
+                </div>
               </div>
             </div>
 

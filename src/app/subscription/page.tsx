@@ -31,6 +31,7 @@ export default function SubscriptionPage() {
   const [authOpen, setAuthOpen] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [topupNotice, setTopupNotice] = useState<"login_required" | "subscription_required" | null>(null);
+  const [highlightedPlan, setHighlightedPlan] = useState<string | null>(null);
 
   const handlePay = (plan: SubscriptionTierType) => {
     setPendingPlan(plan);
@@ -77,46 +78,46 @@ export default function SubscriptionPage() {
       const params = new URLSearchParams(window.location.search);
       const planParam = params.get("plan");
       const tabParam = params.get("tab");
+      const autoCheckout = params.get("auto") === "true";
 
       if (tabParam === "topup") {
         handleTopupClick();
-      } else if (tabParam === "special") {
-        const specialOption = planParam === "299" || planParam === "kalesh_saas_299"
-          ? "kalesh_saas_299"
-          : planParam === "349" || planParam === "intercaste_349"
-          ? "intercaste_349"
-          : "love_ex_249";
-        handleSpecialPassClick(specialOption);
-      } else if (planParam) {
-        const cleanPlan = planParam.toLowerCase().trim();
-        if (cleanPlan === "249" || cleanPlan === "love_ex_249" || cleanPlan === "love") {
-          handleSpecialPassClick("love_ex_249");
-          return;
-        }
-        if (cleanPlan === "299" || cleanPlan === "kalesh_saas_299" || cleanPlan === "kalesh") {
-          handleSpecialPassClick("kalesh_saas_299");
-          return;
-        }
-        if (cleanPlan === "349" || cleanPlan === "intercaste_349" || cleanPlan === "intercaste") {
-          handleSpecialPassClick("intercaste_349");
-          return;
-        }
+        return;
+      }
 
-        let targetPlan: SubscriptionTierType = "trial_99";
-        if (cleanPlan === "499" || cleanPlan === "duo" || cleanPlan === "duo_599") {
+      if (planParam) {
+        const cleanPlan = planParam.toLowerCase().trim();
+        let targetPlan: string = "trial_99";
+        if (cleanPlan === "249" || cleanPlan === "love_ex_249" || cleanPlan === "love") {
+          targetPlan = "love_ex_249";
+        } else if (cleanPlan === "299" || cleanPlan === "kalesh_saas_299" || cleanPlan === "kalesh") {
+          targetPlan = "kalesh_saas_299";
+        } else if (cleanPlan === "349" || cleanPlan === "intercaste_349" || cleanPlan === "intercaste") {
+          targetPlan = "intercaste_349";
+        } else if (cleanPlan === "499" || cleanPlan === "duo" || cleanPlan === "duo_599") {
           targetPlan = "duo_599";
         } else if (cleanPlan === "999" || cleanPlan === "ultimate" || cleanPlan === "unlimited_1009" || cleanPlan === "pro" || cleanPlan === "family") {
           targetPlan = "unlimited_1009";
         } else {
           targetPlan = "trial_99";
         }
-        setPendingPlan(targetPlan);
-        setPaywallTab("plans");
-        setPendingOption(targetPlan);
-        if (!isLoggedIn && !isAdmin) {
-          setAuthOpen(true);
-        } else {
-          setPaywallOpen(true);
+
+        setHighlightedPlan(targetPlan);
+
+        // Smoothly scroll to the target plan card on mount so user immediately sees it highlighted
+        setTimeout(() => {
+          const el = document.getElementById(`plan-${targetPlan}`);
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }, 200);
+
+        if (autoCheckout) {
+          if (["love_ex_249", "kalesh_saas_299", "intercaste_349"].includes(targetPlan)) {
+            handleSpecialPassClick(targetPlan as SpecialPassType);
+          } else {
+            handlePay(targetPlan as SubscriptionTierType);
+          }
         }
       }
     }
@@ -187,7 +188,20 @@ export default function SubscriptionPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
 
           {/* Tier 1: Starter */}
-          <div className="relative rounded-3xl p-6 border border-white/10 hover:border-gold-400/50 transition-all duration-300 flex flex-col justify-between bg-cosmic-950/60">
+          <div
+            id="plan-trial_99"
+            className={`relative rounded-3xl p-6 border transition-all duration-300 flex flex-col justify-between ${
+              highlightedPlan === "trial_99"
+                ? "border-gold-400 ring-2 ring-gold-400 shadow-2xl shadow-gold-500/40 scale-[1.03] bg-gradient-to-b from-cosmic-800 to-amber-950/40"
+                : "border-white/10 hover:border-gold-400/50 bg-cosmic-950/60"
+            }`}
+          >
+            {highlightedPlan === "trial_99" && (
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-lg bg-gradient-to-r from-gold-400 via-amber-300 to-gold-400 text-cosmic-950 flex items-center gap-1.5 animate-pulse z-10 whitespace-nowrap">
+                <Sparkles className="w-3 h-3 text-cosmic-950" />
+                ✓ Selected for Your Reading (Recommended)
+              </div>
+            )}
             <div>
               <div className="flex items-center gap-1.5 mb-3 text-xs font-bold uppercase tracking-wider text-slate-300">
                 <User className="w-4 h-4 text-slate-400" />
@@ -232,9 +246,16 @@ export default function SubscriptionPage() {
           </div>
 
           {/* Tier 2: Duo Pass – Featured */}
-          <div className="relative rounded-3xl p-6 border border-gold-400 bg-gradient-to-b from-cosmic-800 to-purple-950/40 shadow-2xl shadow-gold-500/20 scale-[1.02] transition-all duration-300 flex flex-col justify-between">
-            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md bg-gradient-to-r from-gold-400 to-amber-500 text-cosmic-950">
-              Most Popular
+          <div
+            id="plan-duo_599"
+            className={`relative rounded-3xl p-6 border transition-all duration-300 flex flex-col justify-between ${
+              highlightedPlan === "duo_599"
+                ? "border-gold-400 ring-2 ring-gold-400 shadow-2xl shadow-gold-500/40 scale-[1.03] bg-gradient-to-b from-cosmic-800 to-purple-950/40"
+                : "border-gold-400 bg-gradient-to-b from-cosmic-800 to-purple-950/40 shadow-2xl shadow-gold-500/20 scale-[1.02]"
+            }`}
+          >
+            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md bg-gradient-to-r from-gold-400 to-amber-500 text-cosmic-950 whitespace-nowrap z-10">
+              {highlightedPlan === "duo_599" ? "✓ Selected for Your Reading (Recommended)" : "Most Popular"}
             </div>
             <div>
               <div className="flex items-center gap-1.5 mb-3 text-xs font-bold uppercase tracking-wider text-gold-300">
@@ -280,9 +301,16 @@ export default function SubscriptionPage() {
           </div>
 
           {/* Tier 3: Family / Pro */}
-          <div className="relative rounded-3xl p-6 border border-white/10 hover:border-purple-400/50 transition-all duration-300 flex flex-col justify-between bg-cosmic-950/60">
-            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md bg-gradient-to-r from-purple-500 to-indigo-500 text-white">
-              Best Value
+          <div
+            id="plan-unlimited_1009"
+            className={`relative rounded-3xl p-6 border transition-all duration-300 flex flex-col justify-between ${
+              highlightedPlan === "unlimited_1009"
+                ? "border-purple-400 ring-2 ring-purple-400 shadow-2xl shadow-purple-500/40 scale-[1.03] bg-gradient-to-b from-cosmic-800 to-purple-950/60"
+                : "border-white/10 hover:border-purple-400/50 bg-cosmic-950/60"
+            }`}
+          >
+            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md bg-gradient-to-r from-purple-500 to-indigo-500 text-white whitespace-nowrap z-10">
+              {highlightedPlan === "unlimited_1009" ? "✓ Selected for Your Reading (Recommended)" : "Best Value"}
             </div>
             <div>
               <div className="flex items-center gap-1.5 mb-3 text-xs font-bold uppercase tracking-wider text-purple-300">
@@ -346,9 +374,21 @@ export default function SubscriptionPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* PASS 1: Khoya Pyar Wapas Paayen & Get Your Ex Back (₹249) */}
-            <div className="relative rounded-3xl p-6 border border-rose-500/40 bg-gradient-to-b from-rose-950/80 via-cosmic-950/95 to-pink-950/40 shadow-xl shadow-rose-950/50 hover:border-rose-400/70 transition-all flex flex-col justify-between overflow-hidden">
+            <div
+              id="plan-love_ex_249"
+              className={`relative rounded-3xl p-6 border bg-gradient-to-b from-rose-950/80 via-cosmic-950/95 to-pink-950/40 shadow-xl transition-all flex flex-col justify-between overflow-hidden ${
+                highlightedPlan === "love_ex_249"
+                  ? "border-rose-400 ring-2 ring-rose-400 shadow-2xl shadow-rose-500/40 scale-[1.03]"
+                  : "border-rose-500/40 shadow-rose-950/50 hover:border-rose-400/70"
+              }`}
+            >
+              {highlightedPlan === "love_ex_249" && (
+                <div className="absolute top-0 left-0 right-0 py-1 bg-gradient-to-r from-rose-500 to-pink-500 text-white text-[10px] font-black uppercase tracking-wider text-center shadow-md z-10">
+                  ✓ Selected for Your Reading (Recommended)
+                </div>
+              )}
               {/* Glowing Top Pill */}
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-3 mt-1">
                 <span className="px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 text-[10px] font-black uppercase tracking-wider border border-rose-500/40 flex items-center gap-1.5">
                   <Heart className="w-3 h-3 text-rose-400 fill-rose-400/40" />
                   Prem Punarmilan &amp; Ex Wapsi
@@ -439,9 +479,21 @@ export default function SubscriptionPage() {
             </div>
 
             {/* PASS 2: Ghar Kalesh & Saas Se Banti Nahi Hai? (₹299) */}
-            <div className="relative rounded-3xl p-6 border border-emerald-500/40 bg-gradient-to-b from-emerald-950/80 via-cosmic-950/95 to-teal-950/40 shadow-xl shadow-emerald-950/50 hover:border-emerald-400/70 transition-all flex flex-col justify-between overflow-hidden">
+            <div
+              id="plan-kalesh_saas_299"
+              className={`relative rounded-3xl p-6 border bg-gradient-to-b from-emerald-950/80 via-cosmic-950/95 to-teal-950/40 shadow-xl transition-all flex flex-col justify-between overflow-hidden ${
+                highlightedPlan === "kalesh_saas_299"
+                  ? "border-emerald-400 ring-2 ring-emerald-400 shadow-2xl shadow-emerald-500/40 scale-[1.03]"
+                  : "border-emerald-500/40 shadow-emerald-950/50 hover:border-emerald-400/70"
+              }`}
+            >
+              {highlightedPlan === "kalesh_saas_299" && (
+                <div className="absolute top-0 left-0 right-0 py-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-cosmic-950 text-[10px] font-black uppercase tracking-wider text-center shadow-md z-10">
+                  ✓ Selected for Your Reading (Recommended)
+                </div>
+              )}
               {/* Glowing Top Pill */}
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-3 mt-1">
                 <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase tracking-wider border border-emerald-500/40 flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                   Griha Shanti &amp; Parivarik Izzat
@@ -519,9 +571,21 @@ export default function SubscriptionPage() {
             </div>
 
             {/* PASS 3: Intercaste Vivah & Parivaar Manana (₹349) */}
-            <div className="relative rounded-3xl p-6 border border-purple-500/40 bg-gradient-to-b from-purple-950/80 via-cosmic-950/95 to-indigo-950/40 shadow-xl shadow-purple-950/50 hover:border-purple-400/70 transition-all flex flex-col justify-between overflow-hidden">
+            <div
+              id="plan-intercaste_349"
+              className={`relative rounded-3xl p-6 border bg-gradient-to-b from-purple-950/80 via-cosmic-950/95 to-indigo-950/40 shadow-xl transition-all flex flex-col justify-between overflow-hidden ${
+                highlightedPlan === "intercaste_349"
+                  ? "border-purple-400 ring-2 ring-purple-400 shadow-2xl shadow-purple-500/40 scale-[1.03]"
+                  : "border-purple-500/40 shadow-purple-950/50 hover:border-purple-400/70"
+              }`}
+            >
+              {highlightedPlan === "intercaste_349" && (
+                <div className="absolute top-0 left-0 right-0 py-1 bg-gradient-to-r from-purple-400 to-indigo-400 text-white text-[10px] font-black uppercase tracking-wider text-center shadow-md z-10">
+                  ✓ Selected for Your Reading (Recommended)
+                </div>
+              )}
               {/* Glowing Top Pill */}
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-3 mt-1">
                 <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-black uppercase tracking-wider border border-purple-500/40 flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-purple-400" />
                   Vivah Svikriti &amp; Parivaar Sahmati

@@ -211,6 +211,7 @@ interface ReadingDisplayProps {
   secondaryPerson?: { name: string; relation: string };
   readingId?: string;
   isUnlocked?: boolean;
+  selectedService?: string;
   onReset: () => void;
 }
 
@@ -231,6 +232,7 @@ export default function ReadingDisplay({
   secondaryPerson,
   readingId,
   isUnlocked: isUnlockedProp,
+  selectedService,
   onReset,
 }: ReadingDisplayProps) {
   const { user } = useAuth();
@@ -259,14 +261,16 @@ export default function ReadingDisplay({
   const isUnlocked = Boolean(isUnlockedProp || user?.isSubscribed || unlockedLocally);
 
   const openPaywall = (plan?: SubscriptionTierType) => {
-    let target = plan || "trial_99";
+    let target = (selectedService as SubscriptionTierType) || plan || "trial_99";
     const qLower = (userQuestion || "").toLowerCase();
-    if (qLower.includes("khoya pyar") || qLower.includes("ex") || qLower.includes("prem")) {
-      target = "love_ex_249";
-    } else if (qLower.includes("kalesh") || qLower.includes("saas")) {
-      target = "kalesh_saas_299";
-    } else if (qLower.includes("intercaste") || qLower.includes("manane")) {
-      target = "intercaste_349";
+    if (!selectedService) {
+      if (qLower.includes("khoya pyar") || qLower.includes("ex") || qLower.includes("prem")) {
+        target = "love_ex_249";
+      } else if (qLower.includes("kalesh") || qLower.includes("saas")) {
+        target = "kalesh_saas_299";
+      } else if (qLower.includes("intercaste") || qLower.includes("manane")) {
+        target = "intercaste_349";
+      }
     }
     setPaywallPlan(target);
     setShowPaywall(true);
@@ -852,23 +856,23 @@ export default function ReadingDisplay({
                 : "REKHA has computed your complete personalized 3-year timeline, exact month-by-month breakthroughs, karmic warning signs, and sacred Pooja Vidhi."}
             </p>
 
-            {/* Price Cards Banner */}
+            {/* Paywall Action Banner */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-5 w-full max-w-md">
               <button
-                onClick={() => openPaywall("trial_99")}
+                onClick={() => openPaywall((selectedService as SubscriptionTierType) || (secondaryPerson ? "duo_599" : "trial_99"))}
                 className="w-full sm:flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-gold-300 via-gold-400 to-amber-300 text-cosmic-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl shadow-gold-500/25 hover:shadow-gold-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
               >
-                <span>UNLOCK FOR ₹99</span>
+                <span>UNLOCK FULL SHASTRIYA READING</span>
                 <Sparkles className="w-4 h-4 shrink-0" />
               </button>
 
-              <button
-                onClick={() => openPaywall(secondaryPerson ? "duo_599" : "unlimited_1009")}
-                className="w-full sm:flex-1 py-3 px-4 rounded-2xl bg-white/10 hover:bg-white/15 border border-gold-500/30 text-white font-bold text-xs sm:text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-1.5"
+              <a
+                href={`/subscription?plan=${selectedService || (secondaryPerson ? "duo_599" : "trial_99")}`}
+                className="w-full sm:flex-1 py-3 px-4 rounded-2xl bg-white/10 hover:bg-white/15 border border-gold-500/30 text-white font-bold text-xs sm:text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 text-center"
               >
                 <Flame className="w-4 h-4 text-amber-400 fill-amber-400 shrink-0" />
-                <span>{secondaryPerson ? "DUO + SYNASTRY" : "PASS + POOJA VIDHI"}</span>
-              </button>
+                <span>VIEW ALL PLANS</span>
+              </a>
             </div>
 
             <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-[11px] text-slate-400 mt-3.5">
