@@ -20,6 +20,7 @@ import TestimonialsSection from "@/components/TestimonialsSection";
 
 export default function HomePage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [hasReadingResult, setHasReadingResult] = useState(false);
 
   const faqs = [
     {
@@ -46,8 +47,10 @@ export default function HomePage() {
       <div className="absolute top-12 left-1/4 w-72 sm:w-96 h-72 sm:h-96 rounded-full bg-gold-500/10 blur-[100px] pointer-events-none animate-pulse-glow" />
       <div className="absolute top-1/3 right-10 w-64 sm:w-80 h-64 sm:h-80 rounded-full bg-purple-600/15 blur-[100px] pointer-events-none animate-float-slow" />
 
-      {/* HERO SECTION */}
-      <section className="relative pt-8 pb-14 sm:pt-20 sm:pb-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
+      {/* HERO SECTION & WHY REKHA (6 CARDS + PARADIGM SHIFT) - Hidden when reading results arrive */}
+      {!hasReadingResult && (
+        <>
+          <section className="relative pt-8 pb-14 sm:pt-20 sm:pb-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center">
           {/* Left Column: Hook Copy & Call-To-Actions */}
           <div className="lg:col-span-7 space-y-5 sm:space-y-6 text-center lg:text-left">
@@ -134,16 +137,26 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* WHY REKHA SECTION */}
-      <WhyRekhaSection />
+          {/* WHY REKHA SECTION (6 SERVICE CARDS + AUTHENTIC PARADIGM SHIFT) */}
+          <WhyRekhaSection />
+        </>
+      )}
 
-      {/* INTERACTIVE READING FORM SECTION */}
-      <section id="interactive-reading" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <ReadingForm />
+      {/* INTERACTIVE READING FORM / DESTINY REVELATION SECTION */}
+      <section
+        id="interactive-reading"
+        className={`px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto ${
+          hasReadingResult ? "pt-4 sm:pt-6 pb-16" : "py-20"
+        }`}
+      >
+        <ReadingForm onResultStateChange={setHasReadingResult} />
       </section>
 
-      {/* 50+ CLASSICAL SOURCES SECTION */}
-      <VedicSourcesSection />
+      {/* FOOTER MARKETING & FAQ SECTIONS - Hidden when reading results arrive */}
+      {!hasReadingResult && (
+        <>
+          {/* 50+ CLASSICAL SOURCES SECTION */}
+          <VedicSourcesSection />
 
       {/* TESTIMONIALS SECTION */}
       <TestimonialsSection />
@@ -191,6 +204,8 @@ export default function HomePage() {
           })}
         </div>
       </section>
+        </>
+      )}
     </div>
   );
 }

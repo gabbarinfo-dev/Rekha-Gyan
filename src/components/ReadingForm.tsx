@@ -38,9 +38,10 @@ import { useLanguage, LanguageType } from "@/lib/language-context";
 
 interface ReadingFormProps {
   initialFocus?: string;
+  onResultStateChange?: (hasResult: boolean) => void;
 }
 
-export default function ReadingForm({ initialFocus }: ReadingFormProps) {
+export default function ReadingForm({ initialFocus, onResultStateChange }: ReadingFormProps) {
   const {
     user,
     isLoggedIn,
@@ -109,6 +110,16 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [step1Error, setStep1Error] = useState<string | null>(null);
   const [resultData, setResultData] = useState<any | null>(null);
+
+  // Notify parent page if reading results are active and scroll to top
+  useEffect(() => {
+    if (onResultStateChange) {
+      onResultStateChange(Boolean(resultData));
+    }
+    if (resultData) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [resultData, onResultStateChange]);
 
   // Ref for inline step-1 error (scrolls into view on mobile)
   const step1ErrorRef = useRef<HTMLDivElement>(null);
@@ -428,6 +439,12 @@ export default function ReadingForm({ initialFocus }: ReadingFormProps) {
     setResultData(null);
     setStep(1);
     setQuestion("");
+    if (onResultStateChange) {
+      onResultStateChange(false);
+    }
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 50);
   };
 
   if (resultData) {
