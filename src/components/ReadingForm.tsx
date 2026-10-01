@@ -91,6 +91,7 @@ export default function ReadingForm({ initialFocus, onResultStateChange }: Readi
   const [secondaryPerson, setSecondaryPerson] = useState<SecondaryPersonData | null>(null);
   const [suggestedRelation, setSuggestedRelation] = useState("Partner / Spouse");
   const [showSecondaryModal, setShowSecondaryModal] = useState(false);
+  const [secondaryModalSource, setSecondaryModalSource] = useState<"manual" | "step_transition">("manual");
   const [showLockWarningModal, setShowLockWarningModal] = useState(false);
   const [lockModalMode, setLockModalMode] = useState<"warning_first_lock" | "limit_reached">("limit_reached");
   const [showPaywallModal, setShowPaywallModal] = useState(false);
@@ -896,7 +897,13 @@ export default function ReadingForm({ initialFocus, onResultStateChange }: Readi
                     <input
                       type="text"
                       value={lovePartnerName}
-                      onChange={(e) => setLovePartnerName(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setLovePartnerName(val);
+                        if (secondaryPerson) {
+                          setSecondaryPerson({ ...secondaryPerson, name: val });
+                        }
+                      }}
                       placeholder="e.g. Riya / Sameer"
                       className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-rose-500/30 text-white text-xs placeholder-slate-500 focus:border-rose-400 focus:outline-none"
                     />
@@ -952,6 +959,7 @@ export default function ReadingForm({ initialFocus, onResultStateChange }: Readi
                             type="button"
                             onClick={() => {
                               setSuggestedRelation("Partner / Ex");
+                              setSecondaryModalSource("manual");
                               setShowSecondaryModal(true);
                             }}
                             className="text-xs text-rose-300 hover:text-white underline font-semibold"
@@ -982,6 +990,7 @@ export default function ReadingForm({ initialFocus, onResultStateChange }: Readi
                           type="button"
                           onClick={() => {
                             setSuggestedRelation("Partner / Ex");
+                            setSecondaryModalSource("manual");
                             setShowSecondaryModal(true);
                           }}
                           className="shrink-0 px-4 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 justify-center"
@@ -1064,7 +1073,13 @@ export default function ReadingForm({ initialFocus, onResultStateChange }: Readi
                     <input
                       type="text"
                       value={intercastePartnerName}
-                      onChange={(e) => setIntercastePartnerName(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setIntercastePartnerName(val);
+                        if (secondaryPerson) {
+                          setSecondaryPerson({ ...secondaryPerson, name: val });
+                        }
+                      }}
                       placeholder="e.g. Partner Name / Community"
                       className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-purple-500/30 text-white text-xs placeholder-slate-500 focus:border-purple-400 focus:outline-none"
                     />
@@ -1118,6 +1133,7 @@ export default function ReadingForm({ initialFocus, onResultStateChange }: Readi
                             type="button"
                             onClick={() => {
                               setSuggestedRelation("Partner");
+                              setSecondaryModalSource("manual");
                               setShowSecondaryModal(true);
                             }}
                             className="text-xs text-purple-300 hover:text-white underline font-semibold"
@@ -1148,6 +1164,7 @@ export default function ReadingForm({ initialFocus, onResultStateChange }: Readi
                           type="button"
                           onClick={() => {
                             setSuggestedRelation("Partner");
+                            setSecondaryModalSource("manual");
                             setShowSecondaryModal(true);
                           }}
                           className="shrink-0 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-amber-500 hover:from-purple-600 hover:to-amber-600 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 justify-center"
@@ -1219,47 +1236,53 @@ export default function ReadingForm({ initialFocus, onResultStateChange }: Readi
                 </div>
               )}
 
-              {/* Partner Synastry Add / Edit Button */}
-              <div className="pt-2">
-                {secondaryPerson ? (
-                  <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2">
-                      <HeartHandshake className="w-4 h-4 text-rose-400 shrink-0" />
-                      <span>
-                        Partner Added for Synastry: <strong className="text-white">{secondaryPerson.name}</strong> ({secondaryPerson.relation})
-                      </span>
+              {/* Partner Synastry Add / Edit Button — Hidden when dedicated partner service card is already shown above */}
+              {!["love_ex_249", "intercaste_349", "kundli_milan"].includes(selectedService) && (
+                <div className="pt-2">
+                  {secondaryPerson ? (
+                    <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <HeartHandshake className="w-4 h-4 text-rose-400 shrink-0" />
+                        <span>
+                          Partner Added for Synastry: <strong className="text-white">{secondaryPerson.name}</strong> ({secondaryPerson.relation})
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSecondaryModalSource("manual");
+                            setShowSecondaryModal(true);
+                          }}
+                          className="text-[11px] text-rose-300 hover:underline"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSecondaryPerson(null)}
+                          className="text-[11px] text-red-400 hover:underline"
+                        >
+                          Remove
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setShowSecondaryModal(true)}
-                        className="text-[11px] text-rose-300 hover:underline"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setSecondaryPerson(null)}
-                        className="text-[11px] text-red-400 hover:underline"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSuggestedRelation("Partner / Spouse");
-                      setShowSecondaryModal(true);
-                    }}
-                    className="text-xs px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/25 transition-all flex items-center gap-1.5"
-                  >
-                    <HeartHandshake className="w-3.5 h-3.5" />
-                    <span>+ Add Partner / Second Person for Compatibility &amp; Synastry</span>
-                  </button>
-                )}
-              </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSuggestedRelation("Partner / Spouse");
+                        setSecondaryModalSource("manual");
+                        setShowSecondaryModal(true);
+                      }}
+                      className="text-xs px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/25 transition-all flex items-center gap-1.5"
+                    >
+                      <HeartHandshake className="w-3.5 h-3.5" />
+                      <span>+ Add Partner / Second Person for Compatibility &amp; Synastry</span>
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* SUBMIT BUTTON WITH MANDATORY ACCOUNT CREATION */}
@@ -1340,6 +1363,7 @@ export default function ReadingForm({ initialFocus, onResultStateChange }: Readi
                         ? "Partner"
                         : secondPersonCheck.suggestedRelation || "Partner"
                     );
+                    setSecondaryModalSource("step_transition");
                     setShowSecondaryModal(true);
                     return;
                   }
@@ -1876,20 +1900,35 @@ export default function ReadingForm({ initialFocus, onResultStateChange }: Readi
       {/* Secondary Person Details Modal */}
       <SecondaryPersonModal
         isOpen={showSecondaryModal}
+        initialName={
+          secondaryPerson?.name ||
+          (selectedService === "love_ex_249" ? lovePartnerName : "") ||
+          (selectedService === "intercaste_349" ? intercastePartnerName : "") ||
+          ""
+        }
         initialRelation={suggestedRelation}
         onClose={() => setShowSecondaryModal(false)}
         onSkip={() => {
           setShowSecondaryModal(false);
           setStep1Error(null);
           setError(null);
-          setStep(2);
+          if (secondaryModalSource === "step_transition") {
+            setStep(2);
+          }
         }}
         onConfirm={(data) => {
           setSecondaryPerson(data);
+          if (selectedService === "love_ex_249" && data.name) {
+            setLovePartnerName(data.name);
+          } else if (selectedService === "intercaste_349" && data.name) {
+            setIntercastePartnerName(data.name);
+          }
           setError(null);
           setStep1Error(null);
           setShowSecondaryModal(false);
-          setStep(2);
+          if (secondaryModalSource === "step_transition") {
+            setStep(2);
+          }
         }}
       />
 

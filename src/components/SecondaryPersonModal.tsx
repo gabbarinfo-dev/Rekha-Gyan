@@ -18,6 +18,7 @@ interface SecondaryPersonModalProps {
   onClose: () => void;
   onConfirm: (data: SecondaryPersonData) => void;
   onSkip?: () => void;
+  initialName?: string;
   initialRelation?: string;
 }
 
@@ -26,9 +27,10 @@ export default function SecondaryPersonModal({
   onClose,
   onConfirm,
   onSkip,
+  initialName = "",
   initialRelation = "Partner / Spouse",
 }: SecondaryPersonModalProps) {
-  const [name, setName] = useState("");
+  const [name, setName] = useState(initialName);
   const [relation, setRelation] = useState(initialRelation);
   const [dob, setDob] = useState("");
   const [tob, setTob] = useState("");
@@ -43,10 +45,15 @@ export default function SecondaryPersonModal({
   const [error, setError] = useState<string | null>(null);
 
   React.useEffect(() => {
-    if (initialRelation) {
-      setRelation(initialRelation);
+    if (isOpen) {
+      if (initialName) {
+        setName(initialName);
+      }
+      if (initialRelation) {
+        setRelation(initialRelation);
+      }
     }
-  }, [initialRelation, isOpen]);
+  }, [initialName, initialRelation, isOpen]);
 
   if (!isOpen) return null;
 
