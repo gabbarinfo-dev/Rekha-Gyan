@@ -9,6 +9,8 @@ interface AuthModalProps {
   onClose: () => void;
   onSuccess?: () => void;
   initialMode?: "login" | "signup";
+  title?: string;
+  subtitle?: string;
 }
 
 export default function AuthModal({
@@ -16,6 +18,8 @@ export default function AuthModal({
   onClose,
   onSuccess,
   initialMode = "login",
+  title,
+  subtitle,
 }: AuthModalProps) {
   const { login, signup } = useAuth();
   const [mode, setMode] = useState<"login" | "signup">(initialMode);
@@ -80,12 +84,12 @@ export default function AuthModal({
             </div>
           </div>
           <h3 className="text-2xl font-bold font-serif text-white">
-            {mode === "login" ? "Welcome Back to REKHA" : "Create Your Astro Profile"}
+            {title || (mode === "login" ? "Welcome Back to REKHA" : "Create Your Astro Profile")}
           </h3>
           <p className="text-xs text-slate-400 mt-1">
-            {mode === "login"
+            {subtitle || (mode === "login"
               ? "Access your saved palm scans & personalized Vedic readings"
-              : "Save your details once, get instant 1-click palm readings anytime"}
+              : "Save your details once, get instant 1-click palm readings anytime")}
           </p>
         </div>
 

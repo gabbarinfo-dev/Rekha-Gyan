@@ -2,6 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { checkPhonePeOrderStatus } from "@/lib/phonepe";
 import { activateUserPlanServer } from "@/lib/server-registry";
 
+import fs from "fs";
+import path from "path";
+
+function findOrderInfo(orderId: string): any {
+  try {
+    const filePath = path.join(process.cwd(), "data", "orders-registry.json");
+    if (fs.existsSync(filePath)) {
+      const orders = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+      return orders.find((o: any) => o.merchantOrderId === orderId || o.phonePeOrderId === orderId);
+    }
+  } catch {}
+  return null;
+}
+
 async function handleCallback(req: NextRequest) {
   try {
     const url = new URL(req.url);
@@ -32,6 +46,13 @@ async function handleCallback(req: NextRequest) {
     if (!orderId) {
       console.error("PhonePe callback missing orderId");
       return NextResponse.redirect(new URL("/payment-success?status=failed&error=missing_order_id", req.url));
+    }
+
+    // Recover phone or plan from saved disk order if query params were trimmed
+    if (!phone && orderId) {
+      const saved = findOrderInfo(orderId);
+      if (saved?.userPhone) phone = saved.userPhone;
+      if (saved?.planId) plan = saved.planId;
     }
 
     // Live query to PhonePe API to verify order state

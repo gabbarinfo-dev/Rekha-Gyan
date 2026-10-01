@@ -87,6 +87,39 @@ function PaymentSuccessContent() {
 
       // Activate client auth context
       if (!hasActivated) {
+        const cleanPhone = phone ? phone.replace(/\D/g, "") : "";
+        if (cleanPhone) {
+          try {
+            const usersDb = JSON.parse(localStorage.getItem("rekha_users_db") || "{}");
+            const existing = usersDb[cleanPhone] || {
+              phone: cleanPhone,
+              name: "Seeker",
+              createdAt: new Date().toISOString(),
+            };
+            existing.isSubscribed = true;
+            existing.subscriptionPlan = plan.startsWith("topup") ? (existing.subscriptionPlan || "trial_99") : plan;
+            if (plan === "topup_60") {
+              existing.matchmakingRemaining = (existing.matchmakingRemaining || 0) + 2;
+            } else if (plan === "topup_99") {
+              existing.matchmakingRemaining = (existing.matchmakingRemaining || 0) + 5;
+            } else {
+              const quotas = {
+                trial_99: { deep: 2, partner: 0, match: 1 },
+                duo_599: { deep: 6, partner: 2, match: 3 },
+                unlimited_1009: { deep: 18, partner: 6, match: 5 },
+              }[plan as "trial_99" | "duo_599" | "unlimited_1009"] || { deep: 2, partner: 0, match: 1 };
+              existing.deepQuestionsRemaining = (existing.deepQuestionsRemaining || 0) + quotas.deep;
+              existing.partnerQuestionsRemaining = (existing.partnerQuestionsRemaining || 0) + quotas.partner;
+              existing.matchmakingRemaining = (existing.matchmakingRemaining || 0) + quotas.match;
+            }
+            usersDb[cleanPhone] = existing;
+            localStorage.setItem("rekha_users_db", JSON.stringify(usersDb));
+            localStorage.setItem("rekha_active_session", cleanPhone);
+          } catch (e) {
+            console.error("Local storage sync error in payment-success:", e);
+          }
+        }
+
         if (plan === "topup_60") {
           addMatchmakingCredits(2);
         } else if (plan === "topup_99") {
@@ -97,9 +130,10 @@ function PaymentSuccessContent() {
         setHasActivated(true);
       }
     }
-  }, [status, plan, hasActivated, unlockSubscription, addMatchmakingCredits]);
+  }, [status, plan, phone, hasActivated, unlockSubscription, addMatchmakingCredits]);
 
   const planInfo = PLAN_META[plan] || PLAN_META.trial_99;
+  const displayPhone = phone || user?.phone || "";
 
   return (
     <div className="relative min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-8 flex items-center justify-center overflow-hidden">
@@ -133,6 +167,11 @@ function PaymentSuccessContent() {
                 <div>
                   <div className="text-base font-bold text-white">{planInfo.name}</div>
                   <div className="text-xs text-gold-400 font-medium">{planInfo.tag}</div>
+                  {displayPhone && (
+                    <div className="text-[11px] text-emerald-400 font-mono mt-1">
+                      Linked Account: +91 {displayPhone}
+                    </div>
+                  )}
                 </div>
                 <div className="text-right">
                   <div className="text-[10px] text-slate-400 uppercase tracking-wider">Order ID</div>

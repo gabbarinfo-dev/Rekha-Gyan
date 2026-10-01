@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Sparkles, Check, Flame, ShieldCheck, MessageCircle, Clock, Users, HeartHandshake, User, PlusCircle, Loader2 } from "lucide-react";
+import { X, Sparkles, Check, Flame, ShieldCheck, MessageCircle, Clock, Users, HeartHandshake, User, PlusCircle, Loader2, Phone } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import AuthModal from "./AuthModal";
 
 export type SubscriptionTierType = "trial_99" | "duo_599" | "unlimited_1009";
 export type PurchaseOptionType = SubscriptionTierType | "topup_60" | "topup_99";
@@ -30,13 +31,18 @@ export default function PaywallModal({
   userDob,
   exhaustedReason,
 }: PaywallModalProps) {
-  const { user, isAdmin, unlockSubscription, addMatchmakingCredits } = useAuth();
+  const { user, isAdmin, login, signup, unlockSubscription, addMatchmakingCredits } = useAuth();
   const [activeTab, setActiveTab] = useState<"plans" | "topup">(defaultTab);
   const [selectedOption, setSelectedOption] = useState<PurchaseOptionType>(
     defaultOption || (defaultTab === "topup" ? "topup_60" : defaultPlan)
   );
   const [isInitiatingPayment, setIsInitiatingPayment] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+
+  // Unauthenticated user identification fields
+  const [guestName, setGuestName] = useState(userName || "");
+  const [guestPhone, setGuestPhone] = useState("");
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Sync state whenever modal is opened or props change
   useEffect(() => {
@@ -45,27 +51,50 @@ export default function PaywallModal({
       setSelectedOption(defaultOption || (defaultTab === "topup" ? "topup_60" : defaultPlan));
       setIsInitiatingPayment(false);
       setPaymentError(null);
+      if (user?.name) setGuestName(user.name);
+      else if (userName) setGuestName(userName);
+      if (user?.phone) setGuestPhone(user.phone);
     }
-  }, [isOpen, defaultTab, defaultPlan, defaultOption]);
+  }, [isOpen, defaultTab, defaultPlan, defaultOption, user, userName]);
 
   if (!isOpen) return null;
 
-  const effectiveName = userName || user?.name || "Seeker";
   const effectiveDob = userDob || user?.dob || "Not specified";
-  const effectivePhone = user?.phone || "";
 
   const handlePay = async () => {
     try {
-      setIsInitiatingPayment(true);
       setPaymentError(null);
+
+      const targetPhone = (user?.phone || guestPhone || "").replace(/\D/g, "");
+      const targetName = (user?.name || guestName || userName || "Seeker").trim();
+
+      if (!targetPhone || targetPhone.length < 10) {
+        setPaymentError("Please enter your 10-digit mobile number so your subscription records and quotas are safely attached to your account.");
+        return;
+      }
+
+      if (!targetName) {
+        setPaymentError("Please enter your name.");
+        return;
+      }
+
+      // If user isn't logged in, register/log in locally so their account exists
+      if (!user) {
+        const signRes = signup(targetPhone, "1234", targetName);
+        if (!signRes.success && signRes.error?.includes("already exists")) {
+          login(targetPhone, "1234");
+        }
+      }
+
+      setIsInitiatingPayment(true);
 
       const res = await fetch("/api/payment/phonepe/initiate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           planId: selectedOption,
-          userPhone: effectivePhone,
-          userName: effectiveName,
+          userPhone: targetPhone,
+          userName: targetName,
           userDob: effectiveDob,
         }),
       });
@@ -94,9 +123,12 @@ export default function PaywallModal({
 
   const itemInfo = catalog[selectedOption] || catalog.trial_99;
 
+  const currentName = user?.name || guestName || userName || "Seeker";
+  const currentPhone = user?.phone || guestPhone || "Not provided";
+
   const waMessage = selectedOption.startsWith("topup")
-    ? `Hi Rekha, I am ${effectiveName} (Phone: ${effectivePhone}). I have a query about the ${itemInfo.label}.`
-    : `Hi Rekha, I am ${effectiveName}, DOB: ${effectiveDob}, Phone: ${effectivePhone}. I have a query regarding the ₹${itemInfo.price} plan (${itemInfo.label}).`;
+    ? `Hi Rekha, I am ${currentName} (Phone: ${currentPhone}). I have a query about the ${itemInfo.label}.`
+    : `Hi Rekha, I am ${currentName}, DOB: ${effectiveDob}, Phone: ${currentPhone}. I have a query regarding the ₹${itemInfo.price} plan (${itemInfo.label}).`;
 
   const waLink = `https://wa.me/918511739865?text=${encodeURIComponent(waMessage)}`;
 
@@ -483,6 +515,75 @@ export default function PaywallModal({
               </div>
             )}
 
+            {/* Account Identification Section */}
+            {user?.phone ? (
+              <div className="mb-3 p-3.5 rounded-2xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-between text-xs text-gold-200">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-xl bg-gold-500/20 border border-gold-500/30 flex items-center justify-center text-gold-400">
+                    <User className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] text-slate-400">Activating Plan For Account:</div>
+                    <div className="text-white font-bold flex items-center gap-1.5">
+                      <span>{user.name || "Seeker"}</span>
+                      <span className="text-gold-300 font-mono text-xs">(+91 {user.phone})</span>
+                    </div>
+                  </div>
+                </div>
+                <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold uppercase tracking-wider">
+                  Verified Seeker
+                </span>
+              </div>
+            ) : (
+              <div className="mb-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-left space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-amber-300 font-bold text-xs uppercase tracking-wider">
+                    <Phone className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Mobile Number Required to Link Plan</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowAuthModal(true)}
+                    className="text-[11px] text-gold-300 hover:text-white underline underline-offset-2 font-medium transition-colors"
+                  >
+                    Already have an account? Log In
+                  </button>
+                </div>
+                <p className="text-xs text-slate-300">
+                  Enter your 10-digit mobile number so your payment is safely attached to your account and accessible across devices.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-0.5">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">Your Full Name</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Rahul Sharma"
+                      value={guestName}
+                      onChange={(e) => setGuestName(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-cosmic-950 border border-white/20 text-white text-xs focus:border-gold-400 outline-none transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">10-Digit Mobile Number *</label>
+                    <div className="flex items-center rounded-xl bg-cosmic-950 border border-white/20 focus-within:border-gold-400 overflow-hidden px-3 py-2 transition-colors">
+                      <span className="text-xs text-slate-400 font-semibold mr-1.5">+91</span>
+                      <input
+                        type="tel"
+                        maxLength={10}
+                        placeholder="9876543210"
+                        value={guestPhone}
+                        onChange={(e) => {
+                          setGuestPhone(e.target.value.replace(/\D/g, ""));
+                          setPaymentError(null);
+                        }}
+                        className="w-full bg-transparent text-white text-xs font-mono outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* PhonePe CTA & Security Section */}
             <div className="space-y-3.5 pt-2">
               {paymentError && (
@@ -554,6 +655,15 @@ export default function PaywallModal({
               </div>
             </div>
       </div>
+
+      {/* Quick Auth Modal for Existing User Login */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={() => setShowAuthModal(false)}
+        title="Log In to Continue"
+        subtitle="Enter your registered mobile number and PIN to link this subscription."
+      />
     </div>
   );
 }

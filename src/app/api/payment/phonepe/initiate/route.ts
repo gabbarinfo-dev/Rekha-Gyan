@@ -51,6 +51,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const cleanPhone = (userPhone || "").replace(/\D/g, "");
+    if (!cleanPhone || cleanPhone.length < 10) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "A valid 10-digit mobile number is required to link and activate your subscription.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const safeName = (userName || "Seeker").trim();
+
     const plan = PLAN_CATALOG[planId];
     const amountInRupees = plan.price;
 
@@ -67,15 +80,15 @@ export async function POST(req: NextRequest) {
 
     // Callback URL where PhonePe returns the user after transaction
     const redirectUrl = `${appUrl}/api/payment/phonepe/callback?orderId=${merchantOrderId}&plan=${planId}&phone=${encodeURIComponent(
-      userPhone || ""
+      cleanPhone
     )}`;
 
     const result = await createPhonePeOrder({
       merchantOrderId,
       amountInRupees,
       redirectUrl,
-      userPhone,
-      userName,
+      userPhone: cleanPhone,
+      userName: safeName,
     });
 
     if (!result.success || !result.redirectUrl) {
@@ -91,8 +104,8 @@ export async function POST(req: NextRequest) {
       phonePeOrderId: result.orderId,
       planId,
       amountInRupees,
-      userPhone: userPhone || "",
-      userName: userName || "",
+      userPhone: cleanPhone,
+      userName: safeName,
       userDob: userDob || "",
       status: "PENDING",
       createdAt: new Date().toISOString(),

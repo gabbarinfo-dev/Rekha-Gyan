@@ -35,12 +35,17 @@ export default function SubscriptionPage() {
     setPendingPlan(plan);
     setPaywallTab("plans");
     setPendingOption(plan);
+    if (!isLoggedIn && !isAdmin) {
+      setAuthOpen(true);
+      return;
+    }
     setPaywallOpen(true);
   };
 
   const handleTopupClick = () => {
     if (!isLoggedIn && !isAdmin) {
       setTopupNotice("login_required");
+      setAuthOpen(true);
       return;
     }
     if (!isSubscribed && !isAdmin) {
@@ -76,7 +81,11 @@ export default function SubscriptionPage() {
         setPendingPlan(targetPlan);
         setPaywallTab("plans");
         setPendingOption(targetPlan);
-        setPaywallOpen(true);
+        if (!isLoggedIn && !isAdmin) {
+          setAuthOpen(true);
+        } else {
+          setPaywallOpen(true);
+        }
       }
     }
   }, [isLoggedIn, isSubscribed, isAdmin]);
@@ -426,6 +435,8 @@ export default function SubscriptionPage() {
         onClose={() => setAuthOpen(false)}
         onSuccess={handleAuthSuccess}
         initialMode="signup"
+        title="Mobile Number Required to Subscribe"
+        subtitle="Enter your 10-digit mobile number so your subscription plan and consultation privileges are safely attached to your account."
       />
 
       {/* Paywall Modal — opens after auth (or directly if already logged in) */}
