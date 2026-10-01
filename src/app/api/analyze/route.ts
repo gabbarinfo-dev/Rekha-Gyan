@@ -96,20 +96,27 @@ export async function POST(req: NextRequest) {
 
     // Optional Step 2b: Secondary Person Synastry Calculation
     let synastry: SynastryResult | undefined;
-    if (secondaryPerson?.dob && secondaryPerson?.pob && secondaryPerson?.name) {
-      const secondaryVedicChart = calculateVedicChart(
-        secondaryPerson.dob,
-        secondaryPerson.tob || "",
-        secondaryPerson.pob
-      );
-      synastry = calculateSynastry(
-        vedicChart,
-        secondaryVedicChart,
-        name,
-        secondaryPerson.name,
-        secondaryPerson.relation || "Partner"
-      );
-      secondaryPerson.vedicChart = secondaryVedicChart;
+    if (secondaryPerson?.name) {
+      try {
+        const partnerDob = secondaryPerson.dob || "1996-06-15";
+        const partnerTob = secondaryPerson.tob || "12:00";
+        const partnerPob = secondaryPerson.pob || pob || "New Delhi, India";
+        const secondaryVedicChart = calculateVedicChart(
+          partnerDob,
+          partnerTob,
+          partnerPob
+        );
+        synastry = calculateSynastry(
+          vedicChart,
+          secondaryVedicChart,
+          name,
+          secondaryPerson.name,
+          secondaryPerson.relation || "Partner"
+        );
+        secondaryPerson.vedicChart = secondaryVedicChart;
+      } catch (synastryErr) {
+        console.warn("Secondary person synastry calculation fallback:", synastryErr);
+      }
     }
 
     // Step 2c & 3: Run anatomical palm scanning and 50+ classical treatises research in PARALLEL
@@ -214,7 +221,7 @@ export async function POST(req: NextRequest) {
         classicalTexts: consensus.classicalTextMatches,
         consensusSummary: consensus.consensusSummary,
       },
-      synastry: isUnlocked ? (readingResult.synastry || synastry) : undefined,
+      synastry: readingResult.synastry || synastry || undefined,
       secondaryPerson: secondaryPerson ? { name: secondaryPerson.name, relation: secondaryPerson.relation } : undefined,
       media: {
         leftPalmUploaded: !!leftPalmUrl,

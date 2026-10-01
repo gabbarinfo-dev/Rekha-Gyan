@@ -933,6 +933,65 @@ export default function ReadingForm({ initialFocus, onResultStateChange }: Readi
                       <option value="1 Saal se adhik samay se">1 Saal se adhik samay se</option>
                     </select>
                   </div>
+
+                  {/* Partner Details Synastry Status */}
+                  <div className="sm:col-span-2 pt-1">
+                    {secondaryPerson ? (
+                      <div className="p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                        <div className="flex items-center gap-2.5">
+                          <HeartHandshake className="w-5 h-5 text-rose-400 shrink-0" />
+                          <div>
+                            <p className="font-bold text-white">Partner / Ex Details Linked: {secondaryPerson.name}</p>
+                            <p className="text-[11px] text-slate-300">
+                              DOB: {secondaryPerson.dob || "Estimated/Unknown"} • POB: {secondaryPerson.pob || "Not specified"} • Palm: {(secondaryPerson.leftPalmBase64 || secondaryPerson.rightPalmBase64) ? "Uploaded" : "Skipped (Chart only)"}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSuggestedRelation("Partner / Ex");
+                              setShowSecondaryModal(true);
+                            }}
+                            className="text-xs text-rose-300 hover:text-white underline font-semibold"
+                          >
+                            Edit Details
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSecondaryPerson(null)}
+                            className="text-xs text-red-400 hover:text-red-300 underline font-semibold"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-3.5 rounded-2xl bg-rose-950/40 border border-rose-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                        <div className="space-y-0.5">
+                          <p className="font-bold text-rose-200 flex items-center gap-1.5">
+                            <HeartHandshake className="w-4 h-4 text-rose-400" />
+                            Partner / Ex Kundali &amp; Palm Details (Match Making Synastry)
+                          </p>
+                          <p className="text-[11px] text-slate-300">
+                            Sateek punarmilan samay aur bhavishya ke liye partner ka vivran jaroori hai. Exact time/place ya photo na hone par skip kar sakte hain.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSuggestedRelation("Partner / Ex");
+                            setShowSecondaryModal(true);
+                          }}
+                          className="shrink-0 px-4 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 justify-center"
+                        >
+                          <HeartHandshake className="w-3.5 h-3.5" />
+                          <span>+ Enter Partner Details</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -1040,6 +1099,65 @@ export default function ReadingForm({ initialFocus, onResultStateChange }: Readi
                       <option value="Aarthik ya sanskritik rehen-sehan ka antar">Aarthik ya sanskritik rehen-sehan ka antar</option>
                     </select>
                   </div>
+
+                  {/* Partner Details Synastry Status */}
+                  <div className="sm:col-span-2 pt-1">
+                    {secondaryPerson ? (
+                      <div className="p-3.5 rounded-2xl bg-purple-500/15 border border-purple-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                        <div className="flex items-center gap-2.5">
+                          <HeartHandshake className="w-5 h-5 text-purple-400 shrink-0" />
+                          <div>
+                            <p className="font-bold text-white">Partner Synastry Linked: {secondaryPerson.name}</p>
+                            <p className="text-[11px] text-slate-300">
+                              DOB: {secondaryPerson.dob || "Estimated/Unknown"} • POB: {secondaryPerson.pob || "Not specified"} • Palm: {(secondaryPerson.leftPalmBase64 || secondaryPerson.rightPalmBase64) ? "Uploaded" : "Skipped (Chart only)"}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSuggestedRelation("Partner");
+                              setShowSecondaryModal(true);
+                            }}
+                            className="text-xs text-purple-300 hover:text-white underline font-semibold"
+                          >
+                            Edit Details
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSecondaryPerson(null)}
+                            className="text-xs text-red-400 hover:text-red-300 underline font-semibold"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-3.5 rounded-2xl bg-purple-950/40 border border-purple-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                        <div className="space-y-0.5">
+                          <p className="font-bold text-purple-200 flex items-center gap-1.5">
+                            <HeartHandshake className="w-4 h-4 text-purple-400" />
+                            Partner Kundali &amp; Palm Details (Match Making Synastry)
+                          </p>
+                          <p className="text-[11px] text-slate-300">
+                            Intercaste vivah me parivaar sahmati aur manglik/nadi dosh nivaran ke liye dono ka vivran aavashyak hai. Exact time/place ya photo na hone par skip kar sakte hain.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSuggestedRelation("Partner");
+                            setShowSecondaryModal(true);
+                          }}
+                          className="shrink-0 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-amber-500 hover:from-purple-600 hover:to-amber-600 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 justify-center"
+                        >
+                          <HeartHandshake className="w-3.5 h-3.5" />
+                          <span>+ Enter Partner Details</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -1132,21 +1250,8 @@ export default function ReadingForm({ initialFocus, onResultStateChange }: Readi
                   <button
                     type="button"
                     onClick={() => {
-                      if (!user?.isSubscribed) {
-                        setPaywallTab("plans");
-                        setPaywallReason(undefined);
-                        setPaywallTargetPlan("trial_99");
-                        setShowPaywallModal(true);
-                        return;
-                      }
-                      if (!canDoMatchmaking()) {
-                        setPaywallTab("topup");
-                        setPaywallReason("You have exhausted all matchmaking analyses included in your active plan. Top-up for 2 or 5 more matches below, or switch to a higher plan.");
-                        setPaywallTargetPlan(user?.subscriptionPlan === "trial_99" ? "duo_599" : "unlimited_1009");
-                        setShowPaywallModal(true);
-                      } else {
-                        setShowSecondaryModal(true);
-                      }
+                      setSuggestedRelation("Partner / Spouse");
+                      setShowSecondaryModal(true);
                     }}
                     className="text-xs px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/25 transition-all flex items-center gap-1.5"
                   >
@@ -1220,16 +1325,21 @@ export default function ReadingForm({ initialFocus, onResultStateChange }: Readi
                     updateProfile({ maritalStatus });
                   }
 
-                  // Check second person context if applicable
+                  // Check partner service or second person context across all plans
+                  const isPartnerService =
+                    selectedService === "love_ex_249" ||
+                    selectedService === "intercaste_349" ||
+                    selectedService === "kundli_milan";
                   const secondPersonCheck = detectSecondPersonContext(finalQuestion);
-                  if (
-                    secondPersonCheck.isDetected &&
-                    !secondaryPerson &&
-                    selectedService !== "love_ex_249" &&
-                    selectedService !== "kalesh_saas_299" &&
-                    selectedService !== "intercaste_349"
-                  ) {
-                    setSuggestedRelation(secondPersonCheck.suggestedRelation);
+
+                  if ((isPartnerService || secondPersonCheck.isDetected) && !secondaryPerson) {
+                    setSuggestedRelation(
+                      selectedService === "love_ex_249"
+                        ? "Partner / Ex"
+                        : selectedService === "intercaste_349"
+                        ? "Partner"
+                        : secondPersonCheck.suggestedRelation || "Partner"
+                    );
                     setShowSecondaryModal(true);
                     return;
                   }

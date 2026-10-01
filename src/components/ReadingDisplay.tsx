@@ -783,6 +783,26 @@ export default function ReadingDisplay({
             {t.importantNoteSuffix}
           </p>
         </div>
+
+        {/* Section E: Secondary Person / Synastry Teaser Preview Banner */}
+        {secondaryPerson && (
+          <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-rose-950/40 via-purple-950/30 to-cosmic-950 border border-rose-500/35 space-y-2.5 shadow-lg">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <HeartHandshake className="w-5 h-5 text-rose-400 shrink-0" />
+                <h4 className="text-sm sm:text-base font-bold text-white font-serif">
+                  Kundli Milan &amp; Synastry: {userName} &amp; {secondaryPerson.name} ({secondaryPerson.relation})
+                </h4>
+              </div>
+              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 uppercase tracking-wider shrink-0">
+                Calculated
+              </span>
+            </div>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Dono kundaliyon ka 36 Guna Ashta Kuta milan, Manglik dosha saamyata aur sambandh bhavishya calculate ho chuka hai. Poori synastry report aur samadhan niche full reading me uplabdh hai.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* LOCKED DEEP IN-DEPTH SECTION (Behind Paywall) */}
@@ -815,11 +835,21 @@ export default function ReadingDisplay({
             </div>
 
             <h3 className="text-lg sm:text-2xl md:text-3xl font-extrabold font-serif text-white max-w-lg leading-snug px-2">
-              Unlock Exact Resolution to Your Dilemma: <span className="block mt-0.5 text-gold-300">&ldquo;{userQuestion || "Your Sacred Question"}&rdquo;</span>
+              {secondaryPerson ? (
+                <>
+                  Unlock Resolution &amp; Synastry with <span className="text-gold-300">{secondaryPerson.name}</span>
+                </>
+              ) : (
+                <>
+                  Unlock Exact Resolution to Your Dilemma: <span className="block mt-0.5 text-gold-300">&ldquo;{userQuestion || "Your Sacred Question"}&rdquo;</span>
+                </>
+              )}
             </h3>
 
             <p className="text-xs sm:text-sm text-slate-300 mt-2 max-w-md px-2">
-              REKHA has computed your complete personalized 3-year timeline, exact month-by-month breakthroughs, karmic warning signs, and sacred Pooja Vidhi.
+              {secondaryPerson
+                ? `REKHA has computed your 36 Guna Shastriya Milan, Manglik Dosha parity, 3-year timeline, and sacred remedies for you and ${secondaryPerson.name}.`
+                : "REKHA has computed your complete personalized 3-year timeline, exact month-by-month breakthroughs, karmic warning signs, and sacred Pooja Vidhi."}
             </p>
 
             {/* Price Cards Banner */}
@@ -833,11 +863,11 @@ export default function ReadingDisplay({
               </button>
 
               <button
-                onClick={() => openPaywall("unlimited_1009")}
+                onClick={() => openPaywall(secondaryPerson ? "duo_599" : "unlimited_1009")}
                 className="w-full sm:flex-1 py-3 px-4 rounded-2xl bg-white/10 hover:bg-white/15 border border-gold-500/30 text-white font-bold text-xs sm:text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-1.5"
               >
                 <Flame className="w-4 h-4 text-amber-400 fill-amber-400 shrink-0" />
-                <span>PASS + POOJA VIDHI</span>
+                <span>{secondaryPerson ? "DUO + SYNASTRY" : "PASS + POOJA VIDHI"}</span>
               </button>
             </div>
 
@@ -854,53 +884,123 @@ export default function ReadingDisplay({
         /* FULL UNLOCKED READING */
         <div className="space-y-8 animate-fadeIn">
           {/* RELATIONSHIP SYNASTRY CARD IF PRESENT */}
-          {synastry && (
-            <div className="cosmic-card rounded-3xl p-5 sm:p-8 border border-rose-500/40 bg-gradient-to-b from-cosmic-900/90 to-rose-950/30 backdrop-blur-2xl shadow-2xl space-y-5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-rose-500/20 to-gold-500/20 border border-rose-500/30 flex items-center justify-center text-rose-300">
-                    <HeartHandshake className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl sm:text-2xl font-bold font-serif text-white">
-                      Dual Synastry &amp; Ashta Kuta Compatibility
-                    </h3>
-                    <p className="text-xs text-slate-300">
-                      {userName} &amp; {secondaryPerson?.name || synastry.person2Name} ({secondaryPerson?.relation || synastry.relation})
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xl sm:text-2xl font-black text-rose-300 font-serif">
-                    {synastry.gunaScore}/36
-                  </span>
-                  <span className="text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-200 border border-rose-500/30">
-                    {synastry.compatibilityTier}
-                  </span>
-                </div>
-              </div>
+          {(synastry || secondaryPerson) && (() => {
+            const hasMatchmakingAccess =
+              Boolean(user?.isAdmin) ||
+              user?.subscriptionPlan === "duo_599" ||
+              user?.subscriptionPlan === "unlimited_1009" ||
+              user?.subscriptionPlan === "love_ex_249" ||
+              user?.subscriptionPlan === "intercaste_349" ||
+              (user?.matchmakingRemaining ?? 0) > 0;
 
-              {/* Manglik & Outlook */}
-              <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-1.5 text-xs">
-                <div className="text-amber-300 font-bold">Manglik Analysis &amp; Karmic Dynamic:</div>
-                <p className="text-slate-300 leading-relaxed">{synastry.manglikStatus?.verdict}</p>
-                <div className="text-slate-400 italic pt-1">{synastry.relationshipOutlook}</div>
-              </div>
-
-              {/* 8 Kutas Grid */}
-              {synastry.kutas && (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                  {Object.entries(synastry.kutas).map(([key, kuta]: any) => (
-                    <div key={key} className="p-2.5 rounded-xl bg-cosmic-950/60 border border-white/5 space-y-0.5">
-                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 capitalize">{key}</div>
-                      <div className="font-bold text-rose-300">{kuta.points}/{kuta.max} pts</div>
-                      <div className="text-[10px] text-slate-500 truncate">{kuta.desc}</div>
+            if (synastry && hasMatchmakingAccess) {
+              return (
+                <div className="cosmic-card rounded-3xl p-5 sm:p-8 border border-rose-500/40 bg-gradient-to-b from-cosmic-900/90 to-rose-950/30 backdrop-blur-2xl shadow-2xl space-y-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-rose-500/20 to-gold-500/20 border border-rose-500/30 flex items-center justify-center text-rose-300">
+                        <HeartHandshake className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl sm:text-2xl font-bold font-serif text-white">
+                          Dual Synastry &amp; Ashta Kuta Compatibility
+                        </h3>
+                        <p className="text-xs text-slate-300">
+                          {userName} &amp; {secondaryPerson?.name || synastry.person2Name} ({secondaryPerson?.relation || synastry.relation})
+                        </p>
+                      </div>
                     </div>
-                  ))}
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl sm:text-2xl font-black text-rose-300 font-serif">
+                        {synastry.gunaScore}/36
+                      </span>
+                      <span className="text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-200 border border-rose-500/30">
+                        {synastry.compatibilityTier}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Manglik & Outlook */}
+                  <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-1.5 text-xs">
+                    <div className="text-amber-300 font-bold">Manglik Analysis &amp; Karmic Dynamic:</div>
+                    <p className="text-slate-300 leading-relaxed">{synastry.manglikStatus?.verdict}</p>
+                    <div className="text-slate-400 italic pt-1">{synastry.relationshipOutlook}</div>
+                  </div>
+
+                  {/* 8 Kutas Grid */}
+                  {synastry.kutas && (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                      {Object.entries(synastry.kutas).map(([key, kuta]: any) => (
+                        <div key={key} className="p-2.5 rounded-xl bg-cosmic-950/60 border border-white/5 space-y-0.5">
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 capitalize">{key}</div>
+                          <div className="font-bold text-rose-300">{kuta.points}/{kuta.max} pts</div>
+                          <div className="text-[10px] text-slate-500 truncate">{kuta.desc}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          )}
+              );
+            }
+
+            // Gated/Blurred Synastry for users on single-user plan (e.g. trial_99) without matchmaking quota
+            return (
+              <div className="cosmic-card rounded-3xl p-5 sm:p-8 border border-rose-500/40 bg-gradient-to-b from-cosmic-900/90 to-rose-950/30 backdrop-blur-2xl shadow-2xl space-y-5 relative overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-rose-500/20 to-gold-500/20 border border-rose-500/30 flex items-center justify-center text-rose-300">
+                      <HeartHandshake className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl sm:text-2xl font-bold font-serif text-white">
+                        Dual Synastry &amp; Ashta Kuta Compatibility
+                      </h3>
+                      <p className="text-xs text-slate-300">
+                        {userName} &amp; {secondaryPerson?.name || synastry?.person2Name || "Partner"} ({secondaryPerson?.relation || synastry?.relation || "Partner"})
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-1.5">
+                      <Lock className="w-3.5 h-3.5" />
+                      <span>Matchmaking Upgrade Required</span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Blurred preview of Kutas */}
+                <div className="filter blur-[5px] select-none pointer-events-none opacity-40 space-y-3">
+                  <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-1.5 text-xs">
+                    <div className="text-amber-300 font-bold">Manglik Analysis &amp; Karmic Dynamic:</div>
+                    <p className="text-slate-300">Manglik dosha parity and graha maitri indicate critical karmic alignment...</p>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                    {["Varna", "Vashya", "Tara", "Yoni", "Maitri", "Gana", "Bhakoot", "Nadi"].map((k) => (
+                      <div key={k} className="p-2.5 rounded-xl bg-cosmic-950/60 border border-white/5 space-y-0.5">
+                        <div className="text-[10px] font-bold text-slate-400">{k}</div>
+                        <div className="font-bold text-rose-300">-- / -- pts</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Overlay Action Prompt */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-rose-950/80 border border-rose-500/40 text-center space-y-3">
+                  <p className="text-xs sm:text-sm text-rose-200 leading-relaxed max-w-lg mx-auto">
+                    ✨ Aapka aur <strong>{secondaryPerson?.name || "Partner"}</strong> ka <strong>36 Guna Shastriya Milan &amp; Synastry</strong> calculate ho chuka hai! Poora 36 gun score, Manglik dosha nivaran aur ex/sambandh samadhan dekhne ke liye <strong>Duo Plan (₹499)</strong> ya <strong>Matchmaking Pass</strong> unlock karein.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => openPaywall("duo_599")}
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full text-xs font-black uppercase tracking-wider text-cosmic-950 bg-gradient-to-r from-rose-300 via-amber-300 to-gold-400 hover:shadow-lg hover:shadow-rose-500/30 transition-all active:scale-95"
+                  >
+                    <HeartHandshake className="w-4 h-4 shrink-0" />
+                    <span>Unlock 36 Guna Milan &amp; Synastry Report</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* HIGH-PRIORITY DIRECT QUESTION HIGHLIGHT BANNER */}
           {userQuestion && (

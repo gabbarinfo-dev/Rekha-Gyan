@@ -38,6 +38,8 @@ export default function SecondaryPersonModal({
   const [leftPreview, setLeftPreview] = useState("");
   const [rightPreview, setRightPreview] = useState("");
   const [showMissingPalmWarning, setShowMissingPalmWarning] = useState(false);
+  const [dontKnowTimePlace, setDontKnowTimePlace] = useState(false);
+  const [dontHavePalmPhotos, setDontHavePalmPhotos] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   React.useEffect(() => {
@@ -126,14 +128,16 @@ export default function SecondaryPersonModal({
 
   const handleValidateAndProceed = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !dob || !pob.trim()) {
-      setError("Please fill in Name, Date of Birth, and Place of Birth.");
+    if (!name.trim()) {
+      setError("Please fill in Partner / Second Person's Name.");
       return;
     }
-
-    // Check if palm photos are missing
-    if (!leftPalmBase64 && !rightPalmBase64) {
-      setShowMissingPalmWarning(true);
+    if (!dob) {
+      setError("Please enter Partner's Date of Birth.");
+      return;
+    }
+    if (!dontKnowTimePlace && !pob.trim()) {
+      setError("Please enter Place of Birth or select 'Don't know exact birth time/place'.");
       return;
     }
 
@@ -145,10 +149,10 @@ export default function SecondaryPersonModal({
       name: name.trim(),
       relation,
       dob,
-      tob: tob.trim() || undefined,
-      pob: pob.trim(),
-      leftPalmBase64: leftPalmBase64 || undefined,
-      rightPalmBase64: rightPalmBase64 || undefined,
+      tob: dontKnowTimePlace ? undefined : (tob.trim() || undefined),
+      pob: dontKnowTimePlace ? (pob.trim() || "India") : pob.trim(),
+      leftPalmBase64: dontHavePalmPhotos ? undefined : (leftPalmBase64 || undefined),
+      rightPalmBase64: dontHavePalmPhotos ? undefined : (rightPalmBase64 || undefined),
     });
     onClose();
   };
@@ -305,16 +309,32 @@ export default function SecondaryPersonModal({
               {/* Place of Birth */}
               <div className="sm:col-span-2 space-y-1.5">
                 <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
-                  Their Place of Birth <span className="text-gold-400">*</span>
+                  Their Place of Birth {!dontKnowTimePlace && <span className="text-gold-400">*</span>}
                 </label>
                 <input
                   type="text"
-                  required
-                  value={pob}
+                  required={!dontKnowTimePlace}
+                  disabled={dontKnowTimePlace}
+                  value={dontKnowTimePlace ? "Unknown (Default: India)" : pob}
                   onChange={(e) => setPob(e.target.value)}
                   placeholder="e.g. Delhi, India or Chicago, USA"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-cosmic-950/80 border border-white/10 text-white placeholder-slate-500 text-xs focus:border-gold-400 focus:outline-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-cosmic-950/80 border border-white/10 text-white placeholder-slate-500 text-xs focus:border-gold-400 focus:outline-none disabled:opacity-60"
                 />
+
+                {/* Checkbox for unknown TOB/POB */}
+                <label className="flex items-center gap-2 cursor-pointer pt-1 text-xs text-amber-300/90 select-none">
+                  <input
+                    type="checkbox"
+                    checked={dontKnowTimePlace}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setDontKnowTimePlace(checked);
+                      if (checked && !pob) setPob("India");
+                    }}
+                    className="rounded border-amber-500/40 text-gold-400 focus:ring-0"
+                  />
+                  <span>Mujhe partner ka exact Janma Samay (TOB) / Janma Sthan (POB) pata nahi hai</span>
+                </label>
               </div>
             </div>
 
@@ -326,6 +346,17 @@ export default function SecondaryPersonModal({
                 </span>
                 <span className="text-[10px] text-slate-400">Can proceed without</span>
               </div>
+
+              {/* Checkbox for missing palm photos */}
+              <label className="flex items-center gap-2 cursor-pointer text-xs text-amber-300/90 select-none">
+                <input
+                  type="checkbox"
+                  checked={dontHavePalmPhotos}
+                  onChange={(e) => setDontHavePalmPhotos(e.target.checked)}
+                  className="rounded border-amber-500/40 text-gold-400 focus:ring-0"
+                />
+                <span>Mere paas partner ke hath ki photo uplabdh nahi hai</span>
+              </label>
 
               <div className="grid grid-cols-2 gap-3">
                 {/* Left Palm */}
@@ -412,6 +443,16 @@ export default function SecondaryPersonModal({
                   )}
                 </div>
               </div>
+
+              {/* Transparent Shastric Accuracy Warning Banner */}
+              {(dontKnowTimePlace || dontHavePalmPhotos || (!leftPalmBase64 && !rightPalmBase64)) && (
+                <div className="p-3 rounded-2xl bg-amber-950/40 border border-amber-500/35 text-amber-200 text-xs flex items-start gap-2.5 mt-2">
+                  <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Vedic Shastriya Note:</strong> Partner ki exact birth details ya hath ki photo na hone par REKHA available jankari ke aadhar par closest Vedic grah-nakshatra alignment calculate karegi. Grah shanti aur samadhan me prabhav ka thoda antar ho sakta hai.
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Action Buttons */}
