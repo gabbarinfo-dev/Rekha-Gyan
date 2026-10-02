@@ -72,6 +72,7 @@ export const metadata: Metadata = {
 import { AuthProvider } from "@/lib/auth-context";
 import { LanguageProvider } from "@/lib/language-context";
 import Script from "next/script";
+import MetaPixelTracker from "@/components/MetaPixelTracker";
 
 export default function RootLayout({
   children,
@@ -80,7 +81,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${cinzel.variable} ${outfit.variable} scroll-smooth`}>
-      <head>
+      <body className="font-sans min-h-screen flex flex-col bg-cosmic-950 text-slate-100 overflow-x-hidden w-full max-w-full">
+        {/* Meta Pixel Base Code */}
         <Script
           id="meta-pixel"
           strategy="afterInteractive"
@@ -108,8 +110,10 @@ export default function RootLayout({
             alt=""
           />
         </noscript>
-      </head>
-      <body className="font-sans min-h-screen flex flex-col bg-cosmic-950 text-slate-100 overflow-x-hidden w-full max-w-full">
+
+        {/* Client-side route change PageView tracker */}
+        <MetaPixelTracker />
+
         <AuthProvider>
           <LanguageProvider>
             <CosmicBackground />
