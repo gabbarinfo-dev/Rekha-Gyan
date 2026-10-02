@@ -52,6 +52,7 @@ export interface FreeTeaserProfile {
   swabhavHeadline: string;
   introvertExtrovertTrait: string;
   pastGhatnaAndDhokha: string;
+  pastKarmicTurningPoint?: string;
   heartMindConflict: string;
   nightOverthinkingTrait: string;
   secretIntuition: string;
@@ -335,7 +336,16 @@ CRITICAL ZERO-GENERIC-TEMPLATE DIRECTIVE:
 2. Every single observation MUST be mathematically and visually matched to ${name}'s exact data:
    - "swabhavHeadline": Must be derived from ${name}'s ${vedicChart.ascendant} and ${features.handType} hand traits.
    - "introvertExtrovertTrait": Must be calculated from ${vedicChart.nakshatra} (${vedicChart.nakshatraLord}) and their Head line trajectory (${features.headLine.trajectory}).
-   - "pastGhatnaAndDhokha": MUST explicitly mention the calculated transition around ${shiftYear} (transitioning from ${vedicChart.previousMahadasha} to ${vedicChart.currentMahadasha} Mahadasha) when ${name} was strictly between ages ${shiftStartAge} and ${shiftEndAge} (${shiftStartAge} se ${shiftEndAge} saal ki umar).
+   - "pastKarmicTurningPoint" (or "pastGhatnaAndDhokha"): MUST represent the authentic Astrological Turning Point (Jeevan Ka Bada Mod / Karmic Transition) around ${shiftYear} (transitioning from ${vedicChart.previousMahadasha} to ${vedicChart.currentMahadasha} Mahadasha) when ${name} was strictly between ages ${shiftStartAge} and ${shiftEndAge} (${shiftStartAge} se ${shiftEndAge} saal ki umar).
+     * CRITICAL ANTI-CLICHÉ PROHIBITION: UNDER NO CIRCUMSTANCES should you write "ek ghatna hui jismain tumko dhoka mila" or force a generic betrayal/vishwasghat narrative onto every native! This cliché ruins astrological credibility.
+     * DYNAMICALLY TAILOR THIS PAST EVENT TO ${name}'S PRIMARY LIFE FOCUS ("${lifeFocus}") AND PLANETARY TRANSITION (${vedicChart.previousMahadasha} -> ${vedicChart.currentMahadasha}):
+       - When Primary Life Focus is Career / Job / Business / Finances: Focus STRICTLY on a pivotal professional or financial crossroads around ${shiftYear} (at age ${shiftStartAge}-${shiftEndAge})—such as taking a daring career leap, startup/business trial, unexpected job restructuring, major exam/promotion bottleneck, or a financial decision that forced them into total self-reliance. NEVER fabricate relationship betrayal here!
+       - When Primary Life Focus is Higher Studies / Education: Focus on a crucial academic crossroads around ${shiftYear}, exam pressure, change of stream/institution, or stepping out into the real world.
+       - When Primary Life Focus is Family / Domestic / Household: Focus on sudden family responsibility, domestic restructuring, parental wellbeing, or settling-down expectations around ${shiftYear}.
+       - When Primary Life Focus is Health / Mental Wellbeing: Focus on physical burnout, emotional fatigue, or a health wake-up call around ${shiftYear} that forced a lifestyle overhaul.
+       - ONLY when the seeker explicitly asked about Love, Ex, or Relationship Breakup: Address an emotional parting, misunderstanding, or relationship crossroads.
+       - In general life readings: Describe an authentic life milestone around ${shiftYear} (${shiftStartAge}-${shiftEndAge} saal) where old illusions dissolved and circumstances demanded mature independence and distinguishing genuine well-wishers from fair-weather acquaintances.
+     * Always state the calculated age explicitly: ${shiftStartAge}-${shiftEndAge} saal (NEVER write generic "22-26 saal" for everyone).
      * ABSOLUTELY FORBIDDEN: NEVER write "22-26 saal" for every native! Use this person's calculated age: ${shiftStartAge}-${shiftEndAge} saal!
      * Align the theme strictly with the planetary transition (${vedicChart.previousMahadasha} -> ${vedicChart.currentMahadasha}):
        - Rahu: sudden turbulence, betrayal/man-bhed, relocation or shattered illusions.
@@ -366,7 +376,7 @@ First, output the bespoke, complete JSON consultation block:
   "teaser": {
     "swabhavHeadline": "Authentic, tailored headline for ${name} (${vedicChart.ascendant})",
     "introvertExtrovertTrait": "Detailed, bespoke observation derived from ${vedicChart.nakshatra} and Head Line",
-    "pastGhatnaAndDhokha": "Deeply accurate insight referencing the shift around ${shiftYear} (at age ${shiftStartAge}-${shiftEndAge}) and palm stress markings",
+    "pastGhatnaAndDhokha": "Authentic life turning point around ${shiftYear} (at age ${shiftStartAge}-${shiftEndAge}) strictly matching ${name}'s life focus (${lifeFocus}) and dasha shift without cliché dhokha tropes",
     "heartMindConflict": "Bespoke heart vs mind analysis contrasting Heart and Head line trajectories",
     "nightOverthinkingTrait": "Accurate description of late night contemplation based on ${vedicChart.moonSign}",
     "secretIntuition": "Observation on their sixth sense citing detected markings: ${features.specialMarks.join(", ")}",
@@ -599,8 +609,8 @@ function synthesizeDynamicTeaser(
         : `आपका ${asc} लग्न और ${nakshatra} नक्षत्र आपको जन्मजात नेतृत्व और आत्म-नियंत्रण प्रदान करता है। आप आवश्यकता पड़ने पर मुखर हैं, परंतु अपने हृदय की पीड़ा और व्यक्तिगत संघर्षों को पूर्णतः एकांत में ही रखते हैं।`;
 
     const pastGhatnaByDashaHindi: Record<string, string> = {
-      Rahu: `हस्त की जीवन रेखा पर स्थित सूक्ष्म तनाव रेखाएं और वर्ष ${shiftYear} के आसपास (जब आप लगभग ${shiftStartAge} से ${shiftEndAge} वर्ष के थे), ${prevDasha} से राहु महादशा का संधि-काल प्रमाणित करता है कि उस समय आपने एक आकस्मिक जीवन-परिवर्तन, किसी निकटतम व्यक्ति से गहरा विश्वासघात या भ्रम का टूटना झेला है। जिसने आपको भीतर से अति-सतर्क और आत्मनिर्भर बनाया।`,
-      Mercury: `हस्त की जीवन रेखा पर स्थित सूक्ष्म रेखाएं दर्शाती हैं कि वर्ष ${shiftYear} के आसपास (${shiftStartAge} से ${shiftEndAge} वर्ष की आयु में), ${prevDasha} से बुध महादशा के आगमन पर आपकी शिक्षा, कार्यक्षेत्र अथवा वाणिज्यिक निर्णयों में एक बड़ा निर्णायक मोड़ आया। किसी पर अत्यधिक विश्वास करने से आपको सीख मिली, जिसने आपके विवेक को प्रखर किया।`,
+      Rahu: `हस्त की जीवन रेखा पर स्थित सूक्ष्म रेखाएं और वर्ष ${shiftYear} के आसपास (जब आप लगभग ${shiftStartAge} से ${shiftEndAge} वर्ष के थे), ${prevDasha} से राहु महादशा का संधि-काल दर्शाता है कि उस समय आपके जीवन में एक अप्रत्याशित बड़ा मोड़, वातावरण या प्राथमिकताओं में गहरा बदलाव आया था। उस आकस्मिक घटना ने आपको बाह्य निर्भरता से मुक्त कर आत्मनिर्भर और दूरदर्शी बनाया।`,
+      Mercury: `हस्त की जीवन रेखा पर स्थित सूक्ष्म रेखाएं दर्शाती हैं कि वर्ष ${shiftYear} के आसपास (${shiftStartAge} से ${shiftEndAge} वर्ष की आयु में), ${prevDasha} से बुध महादशा के आगमन पर आपकी शिक्षा, कार्यक्षेत्र अथवा वाणिज्यिक निर्णयों में एक बड़ा निर्णायक मोड़ आया। उस समय लिए गए निर्णयों ने आपके बौद्धिक विवेक और समझ को परिपक्व किया।`,
       Saturn: `हस्त रेखाएं संकेत देती हैं कि वर्ष ${shiftYear} के आसपास (${shiftStartAge} से ${shiftEndAge} वर्ष की आयु में), ${prevDasha} से शनि महादशा का प्रारंभ आपके लिए घोर तपस्या और भारी उत्तरदायित्व का समय था। अकेलेपन और अप्रत्याशित विलंबों ने आपके धैर्य की परीक्षा ली, जिससे आप स्वर्ण के समान तप कर निकले।`,
       Jupiter: `हस्त रेखाएं दर्शाती हैं कि वर्ष ${shiftYear} के आसपास (${shiftStartAge}-${shiftEndAge} वर्ष की आयु में), ${prevDasha} से गुरु महादशा में प्रवेश के समय आपके नैतिक आदर्शों एवं मार्गदर्शन पर एक आघात लगा था, जिसने आपको अपनी आंतरिक शक्ति पर आश्रित होना सिखाया।`,
       Venus: `हस्त रेखाएं दर्शाती हैं कि वर्ष ${shiftYear} के आसपास (${shiftStartAge}-${shiftEndAge} वर्ष की आयु में), ${prevDasha} से शुक्र महादशा के संक्रमण ने आपके संबंधों एवं आत्मीय जीवन में एक गहरा भावनात्मक मोड़ लाया, जिससे आपका आत्म-सम्मान और अधिक दृढ़ हुआ।`,
@@ -677,8 +687,8 @@ function synthesizeDynamicTeaser(
         : `Your ${asc} ascendant infuses natural executive presence and self-command. You step forward when action is demanded, yet you compartmentalize personal sorrow, refusing to show distress to an undeserving crowd.`;
 
     const pastGhatnaByDashaEng: Record<string, string> = {
-      Rahu: `The stress bars traversing your Life line around year ${shiftYear} (when you were approximately ${shiftStartAge} to ${shiftEndAge} years old) confirm a sudden dasha crossover into Rahu. This marked a turbulent karmic crucible involving unexpected betrayal, broken illusions, or sudden displacement that forced you into acute self-reliance.`,
-      Mercury: `The fine stress intersections on your palm around year ${shiftYear} (between ages ${shiftStartAge} and ${shiftEndAge}) correlate with your transition into Mercury Mahadasha. This was a critical crossroads concerning career, education, or financial partnerships where misplaced trust yielded crucial discernment.`,
+      Rahu: `The stress line indicators on your palm around year ${shiftYear} (when you were approximately ${shiftStartAge} to ${shiftEndAge} years old) confirm a transition into Rahu Mahadasha. This marked an unexpected turning point and shift in your environment or priorities that broke old assumptions and propelled you toward decisive self-reliance.`,
+      Mercury: `The fine markings on your palm around year ${shiftYear} (between ages ${shiftStartAge} and ${shiftEndAge}) correlate with your transition into Mercury Mahadasha. This brought a major crossroads in education, career, or enterprise where a pivotal choice sharpened your intellect and strategic discernment.`,
       Saturn: `Palm markings around year ${shiftYear} (at age ${shiftStartAge}-${shiftEndAge}) verify your initiation into Saturn's crucible. Heavy obligations, isolation, or prolonged delays tested your stamina to the absolute limit, forging unbreakable resilience.`,
       Jupiter: `Palm evidence around year ${shiftYear} (between ages ${shiftStartAge} and ${shiftEndAge}) marks your transition into Jupiter. A profound disillusionment regarding ethics or trusted mentors compelled you to rebuild your life on authentic principles.`,
       Venus: `Palm indications around year ${shiftYear} (between ages ${shiftStartAge} and ${shiftEndAge}) record your shift into Venus, bringing an emotional crossroad in love or loyalty where personal dignity had to supersede romantic sacrifice.`,
@@ -755,8 +765,8 @@ function synthesizeDynamicTeaser(
       : `Aapka ${asc} lagna aur ${nakshatra} aapko swabhavik netritva aur aatma-niyantran deta hai. Zaroorat padne par aap sabse aage aate hain, par apne niji dukh aur sangharsh ko kisi par zaahir nahi hone dete.`;
 
   const pastGhatnaByDashaHinglish: Record<string, string> = {
-    Rahu: `Aapke haath par jeevan rekha ke stress bars aur lagbhag saal ${shiftYear} ke dauran (jab aap ${shiftStartAge} se ${shiftEndAge} saal ke the), ${prevDasha} se Rahu dasha ka parivartan saaf darshata hai ki us samay aapne kisi bohot kareebi vyakti se vishwasghaat ya gehra man-bhed jhela hai. Aapne bina lalach saath diya tha, par unhone mushkil waqt par akela chhod diya. Is ghatna ne aapko andar se satark aur aatm-nirbhar bana diya.`,
-    Mercury: `Meri calculations aur aapke haath ke stress bars batate hain ki saal ${shiftYear} ke aas-paas (jab aap ${shiftStartAge} se ${shiftEndAge} saal ke the), ${prevDasha} se Budha (Mercury) dasha ka transition aapke liye career, padhai ya vyavsayik disha mein ek bada karmic mod laya tha. Is dauran galat logon par bharosa karne ya financial/decision-making chunautiyon ne aapko bohot gehra anubhav aur dimaagi paripakvata di.`,
+    Rahu: `Aapke haath par jeevan rekha ke stress bars aur lagbhag saal ${shiftYear} ke dauran (jab aap ${shiftStartAge} se ${shiftEndAge} saal ke the), ${prevDasha} se Rahu dasha ka sandhi-kaal darshata hai ki us dauran jeevan mein ek achanak bada mod, sthitiyon ka badlav ya parivesh mein parivartan aaya tha. Is achanak parivartan ne aapko bheed par nirbhar hone ke bajaye aatm-nirbhar aur doorandesh banaya.`,
+    Mercury: `Meri calculations aur aapke haath ke sanket batate hain ki saal ${shiftYear} ke aas-paas (jab aap ${shiftStartAge} se ${shiftEndAge} saal ke the), ${prevDasha} se Budha (Mercury) dasha ka transition aapke liye career, padhai ya vyavsayik disha mein ek bada karmic mod laya tha. Us samay ke faislon ne aapko dimaagi roop se bohot mature aur paripakva banaya.`,
     Saturn: `Aapke haath par saal ${shiftYear} ke dauran (lagbhag ${shiftStartAge}-${shiftEndAge} saal ki umar mein), ${prevDasha} se Shani (Saturn) Mahadasha mein pravesh ek kathin pariksha ka samay tha. Bhari zimmedariyon, parivarik dharohar ya akelepan ke daur ne aapke dhairya ki aakhiri hadd tak pariksha li, jisse nikal kar aap 'loha tap kar kundan' bane hain.`,
     Jupiter: `Aapke haath aur kundali darshati hai ki saal ${shiftYear} ke dauran (${shiftStartAge}-${shiftEndAge} saal ki aayu mein), ${prevDasha} se Guru dasha mein aate waqt aapke jeevan ke moolyon, adarshon aur vishwas par ek gehra aaghaat laga tha. Jinhe aap margdarshak samajhte the, unki asliyat saamne aayi aur aapne apne aatm-vishwas ko naye sire se punar-sthapit kiya.`,
     Venus: `Aapke haath par lagbhag saal ${shiftYear} (${shiftStartAge}-${shiftEndAge} saal ki umar) mein ${prevDasha} se Shukra dasha ka transition rishton aur bhavnaon mein ek ahem mod laya tha. Prem ya gehri dosti mein expectations tootne ka dukh mila, par usne aapke aatm-samman ko sarvochch bana diya.`,
@@ -848,8 +858,15 @@ function parseReadingResponse(text: string, input: PalmAnalysisRequest): RekhaRe
     try {
       const parsed = JSON.parse(consultationMatch[1]);
       if (parsed.teaser) {
-        freeTeaser = parsed.teaser;
+        const t = parsed.teaser;
+        if (!t.pastGhatnaAndDhokha && (t.pastKarmicTurningPoint || t.pastTurningPoint)) {
+          t.pastGhatnaAndDhokha = t.pastKarmicTurningPoint || t.pastTurningPoint;
+        }
+        freeTeaser = t;
       } else if (parsed.swabhavHeadline || parsed.introvertExtrovertTrait) {
+        if (!parsed.pastGhatnaAndDhokha && (parsed.pastKarmicTurningPoint || parsed.pastTurningPoint)) {
+          parsed.pastGhatnaAndDhokha = parsed.pastKarmicTurningPoint || parsed.pastTurningPoint;
+        }
         freeTeaser = parsed;
       }
       if (parsed.pujaVidhi && parsed.pujaVidhi.sankalp && Array.isArray(parsed.pujaVidhi.samagri)) {
@@ -871,8 +888,15 @@ function parseReadingResponse(text: string, input: PalmAnalysisRequest): RekhaRe
       try {
         const parsed = JSON.parse(bareJsonMatch[0]);
         if (parsed.teaser) {
-          freeTeaser = parsed.teaser;
+          const t = parsed.teaser;
+          if (!t.pastGhatnaAndDhokha && (t.pastKarmicTurningPoint || t.pastTurningPoint)) {
+            t.pastGhatnaAndDhokha = t.pastKarmicTurningPoint || t.pastTurningPoint;
+          }
+          freeTeaser = t;
         } else if (parsed.swabhavHeadline || parsed.introvertExtrovertTrait) {
+          if (!parsed.pastGhatnaAndDhokha && (parsed.pastKarmicTurningPoint || parsed.pastTurningPoint)) {
+            parsed.pastGhatnaAndDhokha = parsed.pastKarmicTurningPoint || parsed.pastTurningPoint;
+          }
           freeTeaser = parsed;
         }
         if (parsed.pujaVidhi && parsed.pujaVidhi.sankalp) {
@@ -916,7 +940,7 @@ Under the divine planetary convergence of your **${input.vedicChart.ascendant}**
   }
 
   // If model omitted teaser or hallucinated, generate combinatorial calculated teaser
-  if (!freeTeaser || !freeTeaser.pastGhatnaAndDhokha) {
+  if (!freeTeaser || (!freeTeaser.pastGhatnaAndDhokha && !(freeTeaser as any).pastKarmicTurningPoint)) {
     freeTeaser = synthesizeDynamicTeaser(input, dominantMount);
   }
 

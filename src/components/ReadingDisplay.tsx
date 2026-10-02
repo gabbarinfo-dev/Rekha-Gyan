@@ -25,6 +25,7 @@ import {
   HeartHandshake,
   Globe,
   Loader2,
+  Milestone,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useAuth } from "@/lib/auth-context";
@@ -47,6 +48,7 @@ export interface FreeTeaserData {
   swabhavHeadline?: string;
   introvertExtrovertTrait?: string;
   pastGhatnaAndDhokha?: string;
+  pastKarmicTurningPoint?: string;
   heartMindConflict?: string;
   nightOverthinkingTrait?: string;
   secretIntuition?: string;
@@ -698,11 +700,11 @@ export default function ReadingDisplay({
                 </p>
               </div>
 
-              {/* Card 2: Past Scars & Transition */}
+              {/* Card 2: Past Karmic Turning Point */}
               <div className="p-3.5 sm:p-5 rounded-2xl bg-gradient-to-br from-rose-500/10 to-transparent border border-rose-500/20 space-y-2">
                 <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5">
                   <span className="text-xs font-bold uppercase tracking-wider text-rose-300 flex items-center gap-1.5">
-                    <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0" />
+                    <Milestone className="w-4 h-4 text-rose-400 shrink-0" />
                     <span>{t.card2Title}</span>
                   </span>
                   <span className="self-start xs:self-auto text-[9px] sm:text-[10px] uppercase font-bold px-2 py-0.5 rounded-md bg-rose-500/15 text-rose-300 border border-rose-500/30">
@@ -710,7 +712,7 @@ export default function ReadingDisplay({
                   </span>
                 </div>
                 <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-                  {currentTeaser?.pastGhatnaAndDhokha || t.card2Fallback}
+                  {currentTeaser?.pastKarmicTurningPoint || currentTeaser?.pastGhatnaAndDhokha || t.card2Fallback}
                 </p>
               </div>
 
