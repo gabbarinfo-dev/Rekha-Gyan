@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkPhonePeOrderStatus } from "@/lib/phonepe";
 import { activateUserPlanServer } from "@/lib/server-registry";
+import { sendMetaLeadEvent } from "@/lib/meta-capi";
 import fs from "fs";
 import path from "path";
 
@@ -45,6 +46,15 @@ export async function POST(req: NextRequest) {
           amount: orderStatus.amountInRupees,
         });
         console.log(`PhonePe Webhook: Plan ${plan} successfully activated for seeker ${phone}`);
+
+        // Fire Meta Conversions API (CAPI) Lead Event in background (fail-safe)
+        sendMetaLeadEvent({
+          phone,
+          amount: orderStatus.amountInRupees,
+          planId: plan,
+          orderId: merchantOrderId,
+          eventSourceUrl: "https://rekhagyan.online/payment-success",
+        }).catch((capiErr) => console.warn("[Meta CAPI Webhook Non-Fatal]", capiErr));
       }
     }
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkPhonePeOrderStatus } from "@/lib/phonepe";
 import { activateUserPlanServer } from "@/lib/server-registry";
+import { sendMetaLeadEvent } from "@/lib/meta-capi";
 
 import fs from "fs";
 import path from "path";
@@ -76,6 +77,17 @@ async function handleCallback(req: NextRequest) {
           orderId,
           amount: orderStatus.amountInRupees,
         });
+
+        // Fire Meta Conversions API (CAPI) Lead Event in background (fail-safe)
+        sendMetaLeadEvent({
+          phone,
+          amount: orderStatus.amountInRupees,
+          planId: plan,
+          orderId,
+          eventSourceUrl: `${appUrl}/payment-success`,
+          clientIp: req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || undefined,
+          userAgent: req.headers.get("user-agent") || undefined,
+        }).catch((capiErr) => console.warn("[Meta CAPI Non-Fatal]", capiErr));
       }
 
       // Redirect to payment success page

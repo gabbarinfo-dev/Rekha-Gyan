@@ -115,6 +115,23 @@ function PaymentSuccessContent() {
         });
       } catch (e) {}
 
+      // Fire Meta Pixel Lead Event (client-side deduplicated with Server CAPI via orderId)
+      try {
+        if (typeof window !== "undefined" && (window as any).fbq) {
+          (window as any).fbq(
+            "track",
+            "Lead",
+            {
+              content_name: plan,
+              currency: "INR",
+            },
+            { eventID: orderId }
+          );
+        }
+      } catch (metaErr) {
+        console.warn("Meta pixel error:", metaErr);
+      }
+
       // Activate client auth context
       if (!hasActivated) {
         const cleanPhone = phone ? phone.replace(/\D/g, "") : "";
