@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { X, Sparkles, Check, Flame, ShieldCheck, MessageCircle, Clock, Users, HeartHandshake, User, PlusCircle, Loader2, Phone, Heart } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import AuthModal from "./AuthModal";
+import { trackMetaSubscribeClick } from "@/lib/meta-pixel";
 
 export type StandardTierType = "trial_99" | "duo_599" | "unlimited_1009";
 export type SpecialPassType = "love_ex_249" | "kalesh_saas_299" | "intercaste_349";
@@ -80,6 +81,8 @@ export default function PaywallModal({
   const effectiveDob = userDob || user?.dob || "Not specified";
 
   const handlePay = async () => {
+    if (isInitiatingPayment) return;
+
     try {
       setPaymentError(null);
 
@@ -103,6 +106,9 @@ export default function PaywallModal({
           login(targetPhone, "1234");
         }
       }
+
+      // Track Meta Pixel Subscribe click event on pixel 1332457502143531 before payment API / PhonePe redirect
+      trackMetaSubscribeClick();
 
       setIsInitiatingPayment(true);
 
