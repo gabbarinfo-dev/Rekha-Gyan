@@ -40,9 +40,10 @@ import { useLanguage, LanguageType } from "@/lib/language-context";
 interface ReadingFormProps {
   initialFocus?: string;
   onResultStateChange?: (hasResult: boolean) => void;
+  onStepChange?: (step: 1 | 2 | 3) => void;
 }
 
-export default function ReadingForm({ initialFocus, onResultStateChange }: ReadingFormProps) {
+export default function ReadingForm({ initialFocus, onResultStateChange, onStepChange }: ReadingFormProps) {
   const {
     user,
     isLoggedIn,
@@ -58,6 +59,33 @@ export default function ReadingForm({ initialFocus, onResultStateChange }: Readi
 
   // Wizard Steps: 1: Basic Details, 2: Dedicated Palm Upload, 3: Review Screen
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  const isFirstMount = useRef(true);
+
+  useEffect(() => {
+    if (onStepChange) {
+      onStepChange(step);
+    }
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
+    // Smoothly scroll to the top of the workflow container so the user never lands on unrelated sections
+    const timer = setTimeout(() => {
+      if (typeof window !== "undefined") {
+        if (step === 1) {
+          const el = document.getElementById("reading-form");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+          } else {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
+        } else {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      }
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [step, onStepChange]);
 
   // Form Fields
   const [name, setName] = useState(user?.name || "");

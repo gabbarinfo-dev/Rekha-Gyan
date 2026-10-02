@@ -21,6 +21,9 @@ import TestimonialsSection from "@/components/TestimonialsSection";
 export default function HomePage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [hasReadingResult, setHasReadingResult] = useState(false);
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+
+  const hideMarketing = hasReadingResult || currentStep > 1;
 
   const faqs = [
     {
@@ -47,8 +50,8 @@ export default function HomePage() {
       <div className="absolute top-12 left-1/4 w-72 sm:w-96 h-72 sm:h-96 rounded-full bg-gold-500/10 blur-[100px] pointer-events-none animate-pulse-glow" />
       <div className="absolute top-1/3 right-10 w-64 sm:w-80 h-64 sm:h-80 rounded-full bg-purple-600/15 blur-[100px] pointer-events-none animate-float-slow" />
 
-      {/* HERO SECTION & WHY REKHA (6 CARDS + PARADIGM SHIFT) - Hidden when reading results arrive */}
-      {!hasReadingResult && (
+      {/* HERO SECTION & WHY REKHA (6 CARDS + PARADIGM SHIFT) - Hidden during Step 2, Step 3, or when reading results arrive */}
+      {!hideMarketing && (
         <>
           <section className="relative pt-8 pb-14 sm:pt-20 sm:pb-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center">
@@ -98,7 +101,6 @@ export default function HomePage() {
                 <span>Get Your Free Reading</span>
                 <ArrowRight className="w-4 h-4 shrink-0" />
               </a>
-
               <a
                 href="#why-rekha"
                 className="w-full sm:w-auto px-5 sm:px-6 py-3.5 sm:py-4 text-xs sm:text-sm font-semibold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-full border border-white/10 transition-all text-center flex items-center justify-center gap-2"
@@ -145,15 +147,18 @@ export default function HomePage() {
       {/* INTERACTIVE READING FORM / DESTINY REVELATION SECTION */}
       <section
         id="interactive-reading"
-        className={`px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto ${
-          hasReadingResult ? "pt-4 sm:pt-6 pb-16" : "py-20"
+        className={`px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto transition-all duration-300 ${
+          hideMarketing ? "pt-4 sm:pt-6 pb-16 min-h-[75vh]" : "py-20"
         }`}
       >
-        <ReadingForm onResultStateChange={setHasReadingResult} />
+        <ReadingForm
+          onResultStateChange={setHasReadingResult}
+          onStepChange={setCurrentStep}
+        />
       </section>
 
-      {/* FOOTER MARKETING & FAQ SECTIONS - Hidden when reading results arrive */}
-      {!hasReadingResult && (
+      {/* FOOTER MARKETING & FAQ SECTIONS - Hidden during Step 2, Step 3, or when reading results arrive */}
+      {!hideMarketing && (
         <>
           {/* 50+ CLASSICAL SOURCES SECTION */}
           <VedicSourcesSection />
