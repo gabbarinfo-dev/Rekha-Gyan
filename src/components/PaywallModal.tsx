@@ -107,7 +107,7 @@ export default function PaywallModal({
         }
       }
 
-      // Track Meta Pixel Subscribe click event on pixel 1332457502143531 before payment API / PhonePe redirect
+      // Track Meta Pixel Subscribe click event on pixel 1634113744768909 before payment API / PhonePe redirect
       trackMetaSubscribeClick();
 
       setIsInitiatingPayment(true);
