@@ -1,6 +1,6 @@
 import crypto from "crypto";
 
-interface MetaLeadEventParams {
+export interface MetaConversionParams {
   phone?: string;
   email?: string;
   leadId?: number | string;
@@ -13,7 +13,7 @@ interface MetaLeadEventParams {
 }
 
 /**
- * SHA-256 hashing function required by Meta for PII compliance
+ * SHA-256 hashing function required by Meta for customer information
  */
 function hashSha256(val: string): string {
   if (!val) return "";
@@ -28,7 +28,6 @@ function hashSha256(val: string): string {
 function normalizePhone(phone: string): string {
   if (!phone) return "";
   let digits = phone.replace(/\D/g, "");
-  // If Indian 10-digit number without country code, prepend 91
   if (digits.length === 10) {
     digits = `91${digits}`;
   } else if (digits.length === 11 && digits.startsWith("0")) {
@@ -38,13 +37,16 @@ function normalizePhone(phone: string): string {
 }
 
 /**
- * Sends a Server-Side "Lead" conversion event to Meta Conversions API (CAPI)
- * Adheres strictly to Meta's CRM implementation payload specifications.
+ * Sends complete Server-Side Conversion events (Purchase, Subscribe, Lead) to Meta Conversions API (CAPI).
+ * Dispatches to all configured Dataset IDs with deduplication keys.
  */
-export async function sendMetaLeadEvent(params: MetaLeadEventParams): Promise<{ success: boolean; data?: any; error?: string }> {
+export async function sendMetaLeadEvent(params: MetaConversionParams): Promise<{ success: boolean; data?: any; error?: string }> {
   try {
-    const datasetId = process.env.META_DATASET_ID || "1452275130078605";
-    const accessToken = process.env.META_ACCESS_TOKEN || "EAAYngk9gXYoBStOZBZB2iCFgsriZAIZBxFVucQ1FgXDZCZBBhXVZApboeUvV1fn8Q2zzhHZBHoJSxpnu3zdwllcJUPNqjt16BbBZCjB41lXY2o29xr9IVFDYet0nEmN3zFGD42ZANsaf1vy3vzrltP1zFXo587xZAZAEgIct5G4MrZC2qNZB4ZCKZACcrCZBiWSXgkBmMPgZDZD";
+    const rawDatasetIds = process.env.META_DATASET_ID || "1332457502143531,1452275130078605";
+    const datasetIds = rawDatasetIds.split(",").map((s) => s.trim()).filter(Boolean);
+    const accessToken =
+      process.env.META_ACCESS_TOKEN ||
+      "EAAYngk9gXYoBSiUhpGijmkSivbx3ZBansQkCZB2zpnExVH2XXewcsJyCUFZCQXEnf18NKJZCSYrGiGVj3rRiX77VaHC6eV6bZATKhZBY3bHFQEvYD5XghcoMR4bVJFftYPkz7SwnwBMY3oHUPehtQ3TrjhPb5ul4pXiVwHDykDZBzKots1KMgKFI7GZClwJ87QZDZD";
 
     if (!accessToken) {
       console.warn("Meta CAPI: Missing META_ACCESS_TOKEN. Event skipped.");
@@ -76,50 +78,84 @@ export async function sendMetaLeadEvent(params: MetaLeadEventParams): Promise<{ 
       userData.client_user_agent = params.userAgent;
     }
 
-    // Exact Meta CRM Lead event payload structure requested in the Meta Instruction Guide
+    const now = Math.floor(Date.now() / 1000);
+    const orderRef = params.orderId || `ord_${now}_${Math.random().toString(36).slice(2, 7)}`;
+    const eventUrl = params.eventSourceUrl || "https://rekhagyan.online/payment-success";
+    const amountVal = params.amount || 99;
+    const planName = params.planId || "Starter Subscription";
+
+    // Batch payload containing: Purchase, Subscribe, and Lead
+    // Matches Meta's exact payload recommendations
     const payload = {
       data: [
         {
-          action_source: "system_generated",
+          action_source: "website",
+          event_name: "Purchase",
+          event_time: now,
+          event_id: `purchase_${orderRef}`,
+          event_source_url: eventUrl,
+          custom_data: {
+            currency: "INR",
+            value: amountVal,
+            content_name: planName,
+            content_type: "product",
+          },
+          user_data: userData,
+        },
+        {
+          action_source: "website",
+          event_name: "Subscribe",
+          event_time: now,
+          event_id: `subscribe_${orderRef}`,
+          event_source_url: eventUrl,
+          custom_data: {
+            currency: "INR",
+            value: amountVal,
+            content_name: planName,
+            predicted_ltv: amountVal,
+          },
+          user_data: userData,
+        },
+        {
+          action_source: "website",
           event_name: "Lead",
-          event_time: Math.floor(Date.now() / 1000),
-          event_id: params.orderId || `lead_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-          event_source_url: params.eventSourceUrl || "https://rekhagyan.online",
+          event_time: now,
+          event_id: `lead_${orderRef}`,
+          event_source_url: eventUrl,
           custom_data: {
             event_source: "crm",
             lead_event_source: "Rekha Gyan Website CRM",
-            value: params.amount || 99,
             currency: "INR",
-            content_name: params.planId || "Starter Subscription",
+            value: amountVal,
+            content_name: planName,
           },
           user_data: userData,
         },
       ],
     };
 
-    const endpoint = `https://graph.facebook.com/v26.0/${datasetId}/events?access_token=${encodeURIComponent(accessToken)}`;
+    const results = await Promise.all(
+      datasetIds.map(async (dsId) => {
+        const endpoint = `https://graph.facebook.com/v26.0/${dsId}/events?access_token=${encodeURIComponent(accessToken)}`;
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const json = await res.json().catch(() => ({}));
+        return { dsId, ok: res.ok, status: res.status, json };
+      })
+    );
 
-    console.log(`[Meta CAPI] Dispatching CRM Lead event for order: ${params.orderId || "direct"}`);
+    const allOk = results.every((r) => r.ok);
+    console.log(`[Meta CAPI Broadcast Results]`, JSON.stringify(results));
 
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-
-    const responseJson = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-      console.error("[Meta CAPI Error]", JSON.stringify(responseJson));
-      return { success: false, error: responseJson?.error?.message || `HTTP ${res.status}` };
-    }
-
-    console.log(`[Meta CAPI Success] Events received by Meta:`, responseJson);
-    return { success: true, data: responseJson };
+    return {
+      success: allOk,
+      data: results.map((r) => r.json),
+      error: allOk ? undefined : "Some dataset endpoints returned errors",
+    };
   } catch (err: any) {
-    // Non-blocking fail-safe: never throw or break payment or reading flow
     console.error("[Meta CAPI Fatal Caught]", err);
     return { success: false, error: err.message };
   }

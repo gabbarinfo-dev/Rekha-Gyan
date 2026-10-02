@@ -115,17 +115,56 @@ function PaymentSuccessContent() {
         });
       } catch (e) {}
 
-      // Fire Meta Pixel Lead Event (client-side deduplicated with Server CAPI via orderId)
+      // Fire Meta Pixel Events (Purchase, Subscribe, Lead - client-side deduplicated with Server CAPI via orderId)
       try {
         if (typeof window !== "undefined" && (window as any).fbq) {
+          const planAmounts: Record<string, number> = {
+            trial_99: 99,
+            duo_599: 499,
+            unlimited_1009: 999,
+            love_ex_249: 249,
+            kalesh_saas_299: 299,
+            intercaste_349: 349,
+            topup_60: 60,
+            topup_99: 99,
+          };
+          const planValue = planAmounts[plan] || 99;
+
+          // 1. Purchase Event
+          (window as any).fbq(
+            "track",
+            "Purchase",
+            {
+              content_name: plan,
+              currency: "INR",
+              value: planValue,
+            },
+            { eventID: `purchase_${orderId}` }
+          );
+
+          // 2. Subscribe Event
+          (window as any).fbq(
+            "track",
+            "Subscribe",
+            {
+              content_name: plan,
+              currency: "INR",
+              value: planValue,
+              predicted_ltv: planValue,
+            },
+            { eventID: `subscribe_${orderId}` }
+          );
+
+          // 3. Lead Event
           (window as any).fbq(
             "track",
             "Lead",
             {
               content_name: plan,
               currency: "INR",
+              value: planValue,
             },
-            { eventID: orderId }
+            { eventID: `lead_${orderId}` }
           );
         }
       } catch (metaErr) {
