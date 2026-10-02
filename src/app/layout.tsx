@@ -105,6 +105,13 @@ export default function RootLayout({
             height="1"
             width="1"
             style={{ display: "none" }}
+            src="https://www.facebook.com/tr?id=1452275130078605&ev=PageView&noscript=1"
+            alt=""
+          />
+          <img
+            height="1"
+            width="1"
+            style={{ display: "none" }}
             src="https://www.facebook.com/tr?id=1332457502143531&ev=PageView&noscript=1"
             alt=""
           />
