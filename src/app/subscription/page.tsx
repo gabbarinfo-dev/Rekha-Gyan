@@ -288,9 +288,21 @@ export default function SubscriptionPage() {
                 <HeartHandshake className="w-4 h-4 text-gold-400" />
                 Duo Pass
               </div>
-              <div className="flex items-baseline gap-1 mb-1">
-                <span className="text-3xl sm:text-4xl font-black text-white font-serif">₹499</span>
-                <span className="text-xs text-slate-400">/ 2 profiles</span>
+              <div className="flex items-baseline gap-2 mb-1">
+                {activeCoupon === "VIP99" ? (
+                  <>
+                    <span className="text-3xl sm:text-4xl font-black text-emerald-400 font-serif">₹99</span>
+                    <span className="text-xs text-gold-300 line-through">₹499</span>
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30 uppercase tracking-wider">
+                      VIP99 Applied
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-3xl sm:text-4xl font-black text-white font-serif">₹499</span>
+                    <span className="text-xs text-slate-400">/ 2 profiles</span>
+                  </>
+                )}
               </div>
               <p className="text-xs text-slate-300 mb-5 leading-relaxed">Couples, partners, and high-clarity synastry.</p>
               <ul className="space-y-2.5">
@@ -322,7 +334,7 @@ export default function SubscriptionPage() {
               className="mt-7 w-full py-3 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all hover:scale-[1.03] active:scale-[0.97] flex items-center justify-center gap-2 bg-gradient-to-r from-gold-300 via-gold-400 to-amber-300 text-cosmic-950 shadow-lg shadow-gold-500/30"
             >
               <Flame className="w-3.5 h-3.5" />
-              Pay ₹499
+              Pay {activeCoupon === "VIP99" ? "₹99" : "₹499"}
             </button>
           </div>
 
@@ -417,7 +429,7 @@ export default function SubscriptionPage() {
                   )}
                 </div>
                 <p className="text-xs text-slate-300 mt-0.5">
-                  Unlock any Special Vedic Pass below for just <strong className="text-emerald-400 font-extrabold text-sm">₹99</strong> (Single-use per account).
+                  Unlock Duo Pass or any Special Vedic Pass below for just <strong className="text-emerald-400 font-extrabold text-sm">₹99</strong> (Single-use per account).
                 </p>
                 {couponNotice && (
                   <p className="text-xs text-rose-300 font-medium mt-1">

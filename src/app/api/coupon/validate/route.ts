@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isCouponUsedByUser } from "@/lib/server-registry";
 
-const SPECIAL_PASSES = ["love_ex_249", "kalesh_saas_299", "intercaste_349"];
+const ELIGIBLE_PASSES = ["duo_599", "love_ex_249", "kalesh_saas_299", "intercaste_349"];
 
 const PASS_NAMES: Record<string, string> = {
+  duo_599: "Duo Pass",
   love_ex_249: "Khoya Pyar & Get Your Ex Back Pass",
   kalesh_saas_299: "Ghar Kalesh & Sasural Shanti Pass",
   intercaste_349: "Intercaste Vivah & Parivaar Manana Pass",
 };
 
 const ORIGINAL_PRICES: Record<string, number> = {
+  duo_599: 499,
   love_ex_249: 249,
   kalesh_saas_299: 299,
   intercaste_349: 349,
@@ -35,11 +37,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!planId || !SPECIAL_PASSES.includes(planId)) {
+    if (!planId || !ELIGIBLE_PASSES.includes(planId)) {
       return NextResponse.json(
         {
           valid: false,
-          error: "VIP99 coupon code sirf Khoya Pyar, Ghar Kalesh aur Intercaste Marriage passes ke liye valid hai.",
+          error: "VIP99 coupon code Duo Pass aur Special Vedic Passes ke liye valid hai (Family Pass ke liye nahi).",
         },
         { status: 400 }
       );

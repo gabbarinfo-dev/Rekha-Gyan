@@ -12,6 +12,7 @@ export type SubscriptionTierType = StandardTierType | SpecialPassType;
 export type PurchaseOptionType = SubscriptionTierType | "topup_60" | "topup_99";
 
 export const SPECIAL_COUPON_PASSES: PurchaseOptionType[] = [
+  "duo_599",
   "love_ex_249",
   "kalesh_saas_299",
   "intercaste_349",
@@ -128,7 +129,7 @@ export default function PaywallModal({
     }
 
     if (!isSpecialPass) {
-      setCouponError("VIP99 code sirf Khoya Pyar, Ghar Kalesh aur Intercaste Marriage passes ke liye valid hai.");
+      setCouponError("VIP99 code sirf Duo Pass, Khoya Pyar, Ghar Kalesh aur Intercaste Marriage passes ke liye valid hai.");
       return;
     }
 
@@ -455,9 +456,21 @@ export default function PaywallModal({
                         2 People Included
                       </span>
                     </div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-2xl sm:text-3xl font-black text-white font-serif">₹499</span>
-                      <span className="text-xs text-slate-400">/ 2 profiles</span>
+                    <div className="flex items-baseline gap-2 mb-1">
+                      {appliedCoupon === "VIP99" ? (
+                        <>
+                          <span className="text-2xl sm:text-3xl font-black text-emerald-400 font-serif">₹99</span>
+                          <span className="text-xs text-gold-300 line-through">₹499</span>
+                          <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30 uppercase tracking-wider">
+                            VIP99 Applied
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-2xl sm:text-3xl font-black text-white font-serif">₹499</span>
+                          <span className="text-xs text-slate-400">/ 2 profiles</span>
+                        </>
+                      )}
                     </div>
                     <p className="text-xs text-slate-300 mt-1">
                       Couples, partners, and high-clarity synastry.
@@ -495,7 +508,7 @@ export default function PaywallModal({
                           : "bg-white/10 text-slate-300"
                       }`}
                     >
-                      Select ₹499 Duo Pass
+                      Select {appliedCoupon === "VIP99" ? "₹99" : "₹499"} Duo Pass
                     </div>
                   </div>
                 </div>
@@ -1091,7 +1104,7 @@ export default function PaywallModal({
                   </div>
 
                   <div className="text-[11px] text-slate-400 flex flex-wrap items-center justify-between gap-1">
-                    <span>Valid exclusively on Khoya Pyar, Ghar Kalesh &amp; Intercaste passes.</span>
+                    <span>Valid exclusively on Duo Pass, Khoya Pyar, Ghar Kalesh &amp; Intercaste passes.</span>
                     {!isSpecialPass && (
                       <button
                         type="button"
