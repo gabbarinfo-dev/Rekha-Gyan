@@ -8,6 +8,7 @@ import {
   verifyUserSubscription,
   checkIpRateLimit,
   cacheServerReading,
+  registerOrUpdateSeeker,
 } from "@/lib/server-registry";
 import { calculateAuthenticPujaVidhi } from "@/lib/puja-vidhi";
 
@@ -59,6 +60,21 @@ export async function POST(req: NextRequest) {
         },
         { status: 429 }
       );
+    }
+
+    // Step 0: Auto-record seeker lead in registry for follow-up and dashboard
+    if (userPhone) {
+      registerOrUpdateSeeker({
+        phone: userPhone,
+        name,
+        dob,
+        tob,
+        pob,
+        gender,
+        issue: question,
+        lifeFocus,
+        selectedService,
+      }).catch((e) => console.warn("Seeker auto-register notice:", e));
     }
 
     // Step 1: Media Storage in WordPress Media Library (non-blocking in background)

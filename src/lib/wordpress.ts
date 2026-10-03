@@ -343,6 +343,9 @@ export interface WordPressStoredUser {
   deepQuestionsRemaining?: number;
   partnerQuestionsRemaining?: number;
   usedCoupons?: string[];
+  whatsappSent?: boolean;
+  whatsappSentAt?: string;
+  selectedService?: string;
 }
 
 /**

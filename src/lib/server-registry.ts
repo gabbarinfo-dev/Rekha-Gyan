@@ -388,3 +388,106 @@ export async function activateUserPlanServer(params: {
   }
 }
 
+/**
+ * Register or update a seeker who submitted a consultation
+ */
+export async function registerOrUpdateSeeker(data: {
+  phone: string;
+  name?: string;
+  dob?: string;
+  tob?: string;
+  pob?: string;
+  gender?: string;
+  issue?: string;
+  lifeFocus?: string;
+  selectedService?: string;
+}): Promise<StoredUser> {
+  const cleanPhone = (data.phone || "").replace(/\D/g, "");
+  if (!cleanPhone) throw new Error("Invalid phone number");
+
+  const users = await getLatestUsers();
+  const existingIndex = users.findIndex((u) => u.phone === cleanPhone);
+
+  const now = new Date().toISOString();
+
+  if (existingIndex >= 0) {
+    const existing = users[existingIndex];
+    users[existingIndex] = {
+      ...existing,
+      name: data.name && data.name !== "Seeker" ? data.name : existing.name,
+      dob: data.dob || existing.dob,
+      tob: data.tob || existing.tob,
+      pob: data.pob || existing.pob,
+      gender: data.gender || existing.gender,
+      issue: data.issue || existing.issue,
+      lifeFocus: data.lifeFocus || existing.lifeFocus,
+      selectedService: data.selectedService || existing.selectedService,
+    };
+    writeUsersToDisk(users);
+    saveUsersRegistryToWordPress(users).catch(() => {});
+    return users[existingIndex];
+  } else {
+    const newUser: StoredUser = {
+      phone: cleanPhone,
+      name: data.name || "Seeker",
+      dob: data.dob,
+      tob: data.tob,
+      pob: data.pob,
+      gender: data.gender,
+      issue: data.issue,
+      lifeFocus: data.lifeFocus,
+      selectedService: data.selectedService,
+      createdAt: now,
+      isSubscribed: false,
+      whatsappSent: false,
+    };
+    users.push(newUser);
+    writeUsersToDisk(users);
+    saveUsersRegistryToWordPress(users).catch(() => {});
+    return newUser;
+  }
+}
+
+/**
+ * Get abandoned leads (users who submitted reading, are not subscribed, and have not received WhatsApp yet)
+ * @param minDelayMinutes - Minimum time elapsed since reading before sending message (default: 5 minutes)
+ */
+export async function getAbandonedLeads(minDelayMinutes: number = 5): Promise<StoredUser[]> {
+  const users = await getLatestUsers();
+  const cutoff = Date.now() - minDelayMinutes * 60 * 1000;
+
+  return users.filter((u) => {
+    // Exclude super admin, admins, or active subscribers
+    if (u.isAdmin || u.isSubscribed || u.phone === SUPER_ADMIN_PHONE) return false;
+    // Exclude if already contacted on WhatsApp
+    if (u.whatsappSent) return false;
+    // Must be at least minDelayMinutes old
+    const createdTime = new Date(u.createdAt).getTime();
+    if (isNaN(createdTime) || createdTime > cutoff) return false;
+    // Must have a valid phone number (at least 10 digits)
+    const cleanPhone = (u.phone || "").replace(/\D/g, "");
+    return cleanPhone.length >= 10;
+  });
+}
+
+/**
+ * Mark a user's lead as contacted on WhatsApp
+ */
+export async function markLeadWhatsappSent(phone: string): Promise<boolean> {
+  const cleanPhone = (phone || "").replace(/\D/g, "");
+  if (!cleanPhone) return false;
+
+  const users = await getLatestUsers();
+  const target = users.find((u) => u.phone === cleanPhone);
+
+  if (target) {
+    target.whatsappSent = true;
+    target.whatsappSentAt = new Date().toISOString();
+    writeUsersToDisk(users);
+    saveUsersRegistryToWordPress(users).catch(() => {});
+    return true;
+  }
+  return false;
+}
+
+
