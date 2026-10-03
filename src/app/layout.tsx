@@ -45,17 +45,17 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://rekhagyan.online",
+    url: "https://ai.rekhagyan.online",
     title: "REKHA — World's First Authentic AI Palmist & Vedic Astrologer",
     description:
-      "Fake babao aur galat horoscopes sunn-sunn ke pareshan hain? Meet REKHA — 50+ authentic classical Palmistry & Vedic texts analyzed minute-by-minute.",
+      "Instant, confidential Vedic palmistry and astrology readings powered by 50+ classical treatises (Brihat Samhita, Hastasanjivani, Cheiro).",
     siteName: "REKHA GYAN",
     images: [
       {
-        url: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80",
+        url: "https://ai.rekhagyan.online/images/og-rekha-banner.jpg",
         width: 1200,
         height: 630,
-        alt: "REKHA AI Palmist & Astrologer",
+        alt: "REKHA — Vedic Palmistry & Astrological Wisdom",
       },
     ],
   },
@@ -63,6 +63,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "REKHA — Authentic AI Palmist & Astrologer",
     description: "50+ authentic classical Palmistry & Vedic texts analyzed for accurate horoscope and palm readings.",
+    images: ["https://ai.rekhagyan.online/images/og-rekha-banner.jpg"],
   },
   icons: {
     icon: "/favicon.ico",

@@ -188,7 +188,7 @@ export async function getWordPressPosts(): Promise<WordPressPost[]> {
       content: p.content,
       featured_media_url:
         p._embedded?.["wp:featuredmedia"]?.[0]?.source_url ||
-        "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80",
+        "https://ai.rekhagyan.online/images/og-rekha-banner.jpg",
       author_name: p._embedded?.author?.[0]?.name || "Rekha Astro Editorial",
     }));
   } catch (err) {
@@ -225,7 +225,7 @@ export async function getWordPressPostBySlug(
         content: p.content,
         featured_media_url:
           p._embedded?.["wp:featuredmedia"]?.[0]?.source_url ||
-          "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80",
+          "https://ai.rekhagyan.online/images/og-rekha-banner.jpg",
         author_name: p._embedded?.author?.[0]?.name || "Rekha Astro Editorial",
       };
     }
@@ -279,7 +279,7 @@ function getCuratedFallbackPosts(): WordPressPost[] {
           "Saturn Mahadasha is the Great Karmic Sculptor. Discover why delays are not denials, and how to identify the precise Antardasha that triggers promotion, business expansion, or foreign relocation.",
       },
       featured_media_url:
-        "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80",
+        "https://ai.rekhagyan.online/images/og-rekha-banner.jpg",
       author_name: "REKHA Master Astrologer",
       content: {
         rendered: `
