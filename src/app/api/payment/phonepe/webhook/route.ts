@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
           planId: plan,
           orderId: merchantOrderId,
           amount: orderStatus.amountInRupees,
+          couponCode: savedOrder?.couponCode || undefined,
         });
         console.log(`PhonePe Webhook: Plan ${plan} successfully activated for seeker ${phone}`);
 

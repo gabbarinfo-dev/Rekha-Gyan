@@ -342,6 +342,7 @@ export interface WordPressStoredUser {
   matchmakingRemaining?: number;
   deepQuestionsRemaining?: number;
   partnerQuestionsRemaining?: number;
+  usedCoupons?: string[];
 }
 
 /**

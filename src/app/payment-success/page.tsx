@@ -100,6 +100,7 @@ function PaymentSuccessContent() {
   const orderId = searchParams.get("orderId") || "RG_LIVE";
   const plan = searchParams.get("plan") || "trial_99";
   const phone = searchParams.get("phone") || "";
+  const coupon = searchParams.get("coupon") || "";
 
   const [hasActivated, setHasActivated] = useState(false);
 
@@ -128,7 +129,7 @@ function PaymentSuccessContent() {
             topup_60: 60,
             topup_99: 99,
           };
-          const planValue = planAmounts[plan] || 99;
+          const planValue = coupon?.toUpperCase() === "VIP99" ? 99 : (planAmounts[plan] || 99);
 
           // 1. Purchase Event
           (window as any).fbq(
@@ -198,6 +199,12 @@ function PaymentSuccessContent() {
               existing.partnerQuestionsRemaining = (existing.partnerQuestionsRemaining || 0) + quotas.partner;
               existing.matchmakingRemaining = (existing.matchmakingRemaining || 0) + quotas.match;
             }
+            if (coupon?.toUpperCase() === "VIP99") {
+              const prevCoupons: string[] = existing.usedCoupons || [];
+              if (!prevCoupons.includes("VIP99")) {
+                existing.usedCoupons = [...prevCoupons, "VIP99"];
+              }
+            }
             usersDb[cleanPhone] = existing;
             localStorage.setItem("rekha_users_db", JSON.stringify(usersDb));
             localStorage.setItem("rekha_active_session", cleanPhone);
@@ -211,7 +218,7 @@ function PaymentSuccessContent() {
         } else if (plan === "topup_99") {
           addMatchmakingCredits(5);
         } else {
-          unlockSubscription(plan as SubscriptionTierType);
+          unlockSubscription(plan as SubscriptionTierType, coupon || undefined);
         }
         setHasActivated(true);
       }
@@ -253,6 +260,12 @@ function PaymentSuccessContent() {
                 <div>
                   <div className="text-base font-bold text-white">{planInfo.name}</div>
                   <div className="text-xs text-gold-400 font-medium">{planInfo.tag}</div>
+                  {coupon?.toUpperCase() === "VIP99" && (
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 mt-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold uppercase tracking-wider">
+                      <Sparkles className="w-3 h-3 text-emerald-400" />
+                      VIP99 Offer Applied (₹99 Charged)
+                    </div>
+                  )}
                   {displayPhone && (
                     <div className="text-[11px] text-emerald-400 font-mono mt-1">
                       Linked Account: +91 {displayPhone}

@@ -15,6 +15,7 @@ import {
   Star,
   X,
   Heart,
+  Tag,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import AuthModal from "@/components/AuthModal";
@@ -32,6 +33,9 @@ export default function SubscriptionPage() {
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [topupNotice, setTopupNotice] = useState<"login_required" | "subscription_required" | null>(null);
   const [highlightedPlan, setHighlightedPlan] = useState<string | null>(null);
+  const [activeCoupon, setActiveCoupon] = useState<string | null>(null);
+  const [couponInputText, setCouponInputText] = useState("");
+  const [couponNotice, setCouponNotice] = useState<string | null>(null);
 
   const handlePay = (plan: SubscriptionTierType) => {
     setPendingPlan(plan);
@@ -79,6 +83,19 @@ export default function SubscriptionPage() {
       const planParam = params.get("plan");
       const tabParam = params.get("tab");
       const autoCheckout = params.get("auto") === "true";
+      const couponParam = params.get("coupon") || params.get("code");
+
+      if (couponParam && couponParam.toUpperCase() === "VIP99") {
+        setActiveCoupon("VIP99");
+        setCouponInputText("VIP99");
+        if (!planParam) {
+          setHighlightedPlan("love_ex_249");
+          setTimeout(() => {
+            const el = document.getElementById("plan-love_ex_249");
+            if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+          }, 300);
+        }
+      }
 
       if (tabParam === "topup") {
         handleTopupClick();
@@ -372,6 +389,78 @@ export default function SubscriptionPage() {
             </p>
           </div>
 
+          {/* VIP Offer Code Banner / Input Box */}
+          <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-amber-500/15 via-rose-500/15 to-purple-500/15 border border-gold-500/40 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5 text-left">
+              <div className="w-11 h-11 rounded-2xl bg-gold-500/20 border border-gold-500/40 flex items-center justify-center text-xl shrink-0">
+                🎟️
+              </div>
+              <div>
+                <div className="text-sm font-extrabold text-white flex items-center gap-2">
+                  <span>Special VIP Offer Code:</span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-gold-500 text-cosmic-950 font-black text-xs font-mono tracking-wider">
+                    VIP99
+                  </span>
+                  {activeCoupon === "VIP99" && (
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30 font-bold uppercase tracking-wider">
+                      ✓ Active
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  Unlock any Special Vedic Pass below for just <strong className="text-emerald-400 font-extrabold text-sm">₹99</strong> (Single-use per account).
+                </p>
+                {couponNotice && (
+                  <p className="text-xs text-rose-300 font-medium mt-1">
+                    {couponNotice}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
+              {activeCoupon === "VIP99" ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveCoupon(null);
+                    setCouponNotice(null);
+                  }}
+                  className="px-3.5 py-2 rounded-xl text-xs text-slate-400 hover:text-rose-300 underline font-medium transition-colors"
+                >
+                  Remove Offer
+                </button>
+              ) : (
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <input
+                    type="text"
+                    placeholder="Enter code (e.g. VIP99)"
+                    value={couponInputText}
+                    onChange={(e) => {
+                      setCouponInputText(e.target.value.toUpperCase());
+                      setCouponNotice(null);
+                    }}
+                    className="px-3 py-2 rounded-xl bg-cosmic-950 border border-white/20 text-white text-xs font-mono font-bold tracking-wider placeholder:font-sans placeholder:font-normal focus:border-gold-400 outline-none uppercase w-full sm:w-44"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (couponInputText.trim().toUpperCase() === "VIP99") {
+                        setActiveCoupon("VIP99");
+                        setCouponNotice(null);
+                      } else {
+                        setCouponNotice("Invalid code. Use code VIP99 for ₹99 special pass offer.");
+                      }
+                    }}
+                    className="px-4 py-2 rounded-xl bg-gold-500 hover:bg-gold-400 text-cosmic-950 font-black text-xs uppercase tracking-wider transition-all shadow-md shrink-0"
+                  >
+                    Apply
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* PASS 1: Khoya Pyar Wapas Paayen & Get Your Ex Back (₹249) */}
             <div
@@ -401,8 +490,20 @@ export default function SubscriptionPage() {
               <div>
                 {/* Price Section with Traditional Comparison */}
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-3xl sm:text-4xl font-black text-rose-200 font-serif">₹249</span>
-                  <span className="text-xs text-slate-400 line-through">₹2,100 Pandit Dakshina</span>
+                  {activeCoupon === "VIP99" ? (
+                    <>
+                      <span className="text-3xl sm:text-4xl font-black text-emerald-400 font-serif">₹99</span>
+                      <span className="text-xs text-rose-300 line-through">₹249</span>
+                      <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30 uppercase tracking-wider">
+                        VIP99 Applied
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-3xl sm:text-4xl font-black text-rose-200 font-serif">₹249</span>
+                      <span className="text-xs text-slate-400 line-through">₹2,100 Pandit Dakshina</span>
+                    </>
+                  )}
                 </div>
                 <h3 className="text-base font-extrabold text-white mb-1">
                   Khoya Pyar Wapas Paayen &amp; Get Your Ex Back
@@ -473,7 +574,7 @@ export default function SubscriptionPage() {
                   className="w-full py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all hover:scale-[1.03] active:scale-[0.97] flex items-center justify-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-lg shadow-rose-500/30"
                 >
                   <Heart className="w-3.5 h-3.5 fill-current" />
-                  Select ₹249 Prem Pass
+                  Select ₹{activeCoupon === "VIP99" ? "99" : "249"} Prem Pass
                 </button>
               </div>
             </div>
@@ -506,8 +607,20 @@ export default function SubscriptionPage() {
               <div>
                 {/* Price Section with Traditional Comparison */}
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-3xl sm:text-4xl font-black text-emerald-200 font-serif">₹299</span>
-                  <span className="text-xs text-slate-400 line-through">₹3,500 Havan Kharch</span>
+                  {activeCoupon === "VIP99" ? (
+                    <>
+                      <span className="text-3xl sm:text-4xl font-black text-emerald-400 font-serif">₹99</span>
+                      <span className="text-xs text-emerald-300 line-through">₹299</span>
+                      <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30 uppercase tracking-wider">
+                        VIP99 Applied
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-3xl sm:text-4xl font-black text-emerald-200 font-serif">₹299</span>
+                      <span className="text-xs text-slate-400 line-through">₹3,500 Havan Kharch</span>
+                    </>
+                  )}
                 </div>
                 <h3 className="text-base font-extrabold text-white mb-1">
                   Ghar Main Kalesh Se Mukti &amp; Saas Se Banti Nahi?
@@ -565,7 +678,7 @@ export default function SubscriptionPage() {
                   className="w-full py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all hover:scale-[1.03] active:scale-[0.97] flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-400 to-teal-400 text-cosmic-950 font-black shadow-lg shadow-emerald-500/30"
                 >
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  Select ₹299 Shanti Pass
+                  Select ₹{activeCoupon === "VIP99" ? "99" : "299"} Shanti Pass
                 </button>
               </div>
             </div>
@@ -598,8 +711,20 @@ export default function SubscriptionPage() {
               <div>
                 {/* Price Section with Traditional Comparison */}
                 <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-3xl sm:text-4xl font-black text-purple-200 font-serif">₹349</span>
-                  <span className="text-xs text-slate-400 line-through">₹5,100 Astrologer Fee</span>
+                  {activeCoupon === "VIP99" ? (
+                    <>
+                      <span className="text-3xl sm:text-4xl font-black text-emerald-400 font-serif">₹99</span>
+                      <span className="text-xs text-purple-300 line-through">₹349</span>
+                      <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30 uppercase tracking-wider">
+                        VIP99 Applied
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-3xl sm:text-4xl font-black text-purple-200 font-serif">₹349</span>
+                      <span className="text-xs text-slate-400 line-through">₹5,100 Astrologer Fee</span>
+                    </>
+                  )}
                 </div>
                 <h3 className="text-base font-extrabold text-white mb-1">
                   Intercaste Marriage &amp; Parivaar Manana
@@ -649,7 +774,7 @@ export default function SubscriptionPage() {
                   className="w-full py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all hover:scale-[1.03] active:scale-[0.97] flex items-center justify-center gap-2 bg-gradient-to-r from-purple-400 to-indigo-400 text-white font-black shadow-lg shadow-purple-500/30"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  Select ₹349 Vivah Pass
+                  Select ₹{activeCoupon === "VIP99" ? "99" : "349"} Vivah Pass
                 </button>
               </div>
             </div>
@@ -847,6 +972,7 @@ export default function SubscriptionPage() {
           defaultPlan={pendingPlan}
           defaultTab={paywallTab}
           defaultOption={pendingOption}
+          initialCoupon={activeCoupon || undefined}
         />
       )}
     </div>

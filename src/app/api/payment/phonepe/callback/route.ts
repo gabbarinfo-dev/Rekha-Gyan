@@ -26,6 +26,7 @@ async function handleCallback(req: NextRequest) {
     let orderId = searchParams.get("orderId");
     let plan = searchParams.get("plan") || "trial_99";
     let phone = searchParams.get("phone") || "";
+    let coupon = searchParams.get("coupon") || "";
 
     // If POST request, check if PhonePe passed body params
     if (req.method === "POST") {
@@ -49,12 +50,13 @@ async function handleCallback(req: NextRequest) {
       return NextResponse.redirect(new URL("/payment-success?status=failed&error=missing_order_id", req.url));
     }
 
-    // Recover phone or plan from saved disk order if query params were trimmed
+    // Recover phone, plan, or coupon from saved disk order if query params were trimmed
+    const saved = findOrderInfo(orderId);
     if (!phone && orderId) {
-      const saved = findOrderInfo(orderId);
       if (saved?.userPhone) phone = saved.userPhone;
       if (saved?.planId) plan = saved.planId;
     }
+    const effectiveCoupon = (coupon || saved?.couponCode || "").trim().toUpperCase();
 
     // Live query to PhonePe API to verify order state
     const orderStatus = await checkPhonePeOrderStatus(orderId);
@@ -76,6 +78,7 @@ async function handleCallback(req: NextRequest) {
           planId: plan,
           orderId,
           amount: orderStatus.amountInRupees,
+          couponCode: effectiveCoupon || undefined,
         });
 
         // Fire Meta Conversions API (CAPI) Lead Event in background (fail-safe)
@@ -96,6 +99,7 @@ async function handleCallback(req: NextRequest) {
       successUrl.searchParams.set("orderId", orderId);
       successUrl.searchParams.set("plan", plan);
       if (phone) successUrl.searchParams.set("phone", phone);
+      if (effectiveCoupon) successUrl.searchParams.set("coupon", effectiveCoupon);
 
       return NextResponse.redirect(successUrl);
     } else if (orderStatus.state === "PENDING") {

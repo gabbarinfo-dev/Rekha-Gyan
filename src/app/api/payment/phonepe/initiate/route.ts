@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createPhonePeOrder } from "@/lib/phonepe";
+import { isCouponUsedByUser } from "@/lib/server-registry";
 import fs from "fs";
 import path from "path";
 import os from "os";
@@ -45,7 +46,7 @@ function saveOrder(order: any) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { planId, userPhone, userName, userDob } = body;
+    const { planId, userPhone, userName, userDob, couponCode } = body;
 
     if (!planId || !PLAN_CATALOG[planId]) {
       return NextResponse.json(
@@ -68,7 +69,45 @@ export async function POST(req: NextRequest) {
     const safeName = (userName || "Seeker").trim();
 
     const plan = PLAN_CATALOG[planId];
-    const amountInRupees = plan.price;
+    let amountInRupees = plan.price;
+    let appliedCoupon: string | undefined = undefined;
+
+    // Validate VIP99 coupon if provided
+    if (couponCode) {
+      const cleanCoupon = String(couponCode).trim().toUpperCase();
+      if (cleanCoupon === "VIP99") {
+        const SPECIAL_PASSES = ["love_ex_249", "kalesh_saas_299", "intercaste_349"];
+        if (!SPECIAL_PASSES.includes(planId)) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: "VIP99 coupon code sirf Khoya Pyar, Ghar Kalesh aur Intercaste Marriage passes ke liye valid hai.",
+            },
+            { status: 400 }
+          );
+        }
+
+        const alreadyUsed = await isCouponUsedByUser(cleanPhone, cleanCoupon);
+        if (alreadyUsed) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: "Aap is VIP99 code ko pehle hi use kar chuke hain. Ek user isse sirf ek hi baar use kar sakta hai.",
+            },
+            { status: 400 }
+          );
+        }
+
+        // Apply discount: Price becomes exactly ₹99
+        amountInRupees = 99;
+        appliedCoupon = "VIP99";
+      } else {
+        return NextResponse.json(
+          { success: false, error: "Invalid coupon code entered." },
+          { status: 400 }
+        );
+      }
+    }
 
     // Generate unique Merchant Order ID: RG_{TIMESTAMP}_{RANDOM}
     const merchantOrderId = `RG_${Date.now()}_${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
@@ -84,7 +123,7 @@ export async function POST(req: NextRequest) {
     // Callback URL where PhonePe returns the user after transaction
     const redirectUrl = `${appUrl}/api/payment/phonepe/callback?orderId=${merchantOrderId}&plan=${planId}&phone=${encodeURIComponent(
       cleanPhone
-    )}`;
+    )}${appliedCoupon ? `&coupon=${appliedCoupon}` : ""}`;
 
     const result = await createPhonePeOrder({
       merchantOrderId,
@@ -107,6 +146,8 @@ export async function POST(req: NextRequest) {
       phonePeOrderId: result.orderId,
       planId,
       amountInRupees,
+      originalPrice: plan.price,
+      couponCode: appliedCoupon,
       userPhone: cleanPhone,
       userName: safeName,
       userDob: userDob || "",

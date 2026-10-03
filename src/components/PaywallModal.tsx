@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Sparkles, Check, Flame, ShieldCheck, MessageCircle, Clock, Users, HeartHandshake, User, PlusCircle, Loader2, Phone, Heart } from "lucide-react";
+import { X, Sparkles, Check, Flame, ShieldCheck, MessageCircle, Clock, Users, HeartHandshake, User, PlusCircle, Loader2, Phone, Heart, Tag, AlertCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import AuthModal from "./AuthModal";
 import { trackMetaSubscribeClick } from "@/lib/meta-pixel";
@@ -10,6 +10,12 @@ export type StandardTierType = "trial_99" | "duo_599" | "unlimited_1009";
 export type SpecialPassType = "love_ex_249" | "kalesh_saas_299" | "intercaste_349";
 export type SubscriptionTierType = StandardTierType | SpecialPassType;
 export type PurchaseOptionType = SubscriptionTierType | "topup_60" | "topup_99";
+
+export const SPECIAL_COUPON_PASSES: PurchaseOptionType[] = [
+  "love_ex_249",
+  "kalesh_saas_299",
+  "intercaste_349",
+];
 
 interface PaywallModalProps {
   isOpen: boolean;
@@ -21,6 +27,7 @@ interface PaywallModalProps {
   userName?: string;
   userDob?: string;
   exhaustedReason?: string;
+  initialCoupon?: string;
 }
 
 export default function PaywallModal({
@@ -33,6 +40,7 @@ export default function PaywallModal({
   userName,
   userDob,
   exhaustedReason,
+  initialCoupon,
 }: PaywallModalProps) {
   const { user, isAdmin, login, signup, unlockSubscription, addMatchmakingCredits } = useAuth();
   const [activeTab, setActiveTab] = useState<"plans" | "special" | "topup">(defaultTab);
@@ -42,10 +50,21 @@ export default function PaywallModal({
   const [isInitiatingPayment, setIsInitiatingPayment] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
+  // VIP99 Single-use Coupon State
+  const [couponInput, setCouponInput] = useState(initialCoupon || "");
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(
+    initialCoupon && initialCoupon.toUpperCase() === "VIP99" ? "VIP99" : null
+  );
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+
   // Unauthenticated user identification fields
   const [guestName, setGuestName] = useState(userName || "");
   const [guestPhone, setGuestPhone] = useState("");
   const [showAuthModal, setShowAuthModal] = useState(false);
+
+  const isSpecialPass = SPECIAL_COUPON_PASSES.includes(selectedOption);
+  const isCouponActive = appliedCoupon === "VIP99" && isSpecialPass;
 
   // Sync state whenever modal is opened or props change
   useEffect(() => {
@@ -70,15 +89,80 @@ export default function PaywallModal({
       }
       setIsInitiatingPayment(false);
       setPaymentError(null);
+      setCouponError(null);
+      if (initialCoupon && initialCoupon.toUpperCase() === "VIP99") {
+        setCouponInput("VIP99");
+        setAppliedCoupon("VIP99");
+      }
       if (user?.name) setGuestName(user.name);
       else if (userName) setGuestName(userName);
       if (user?.phone) setGuestPhone(user.phone);
     }
-  }, [isOpen, defaultTab, defaultPlan, defaultOption, user, userName]);
+  }, [isOpen, defaultTab, defaultPlan, defaultOption, user, userName, initialCoupon]);
 
   if (!isOpen) return null;
 
   const effectiveDob = userDob || user?.dob || "Not specified";
+
+  const handleApplyCoupon = async (codeToApply?: string) => {
+    setCouponError(null);
+    const rawCode = (codeToApply || couponInput).trim();
+    const code = rawCode.toUpperCase();
+
+    if (!code) {
+      setCouponError("Please enter a coupon code.");
+      return;
+    }
+
+    if (code !== "VIP99") {
+      setCouponError("Invalid coupon code. Try VIP99.");
+      return;
+    }
+
+    if (!isSpecialPass) {
+      setCouponError("VIP99 code sirf Khoya Pyar, Ghar Kalesh aur Intercaste Marriage passes ke liye valid hai.");
+      return;
+    }
+
+    const targetPhone = (user?.phone || guestPhone || "").replace(/\D/g, "");
+
+    // Check local user profile if logged in
+    if (user?.usedCoupons?.map((c) => c.toUpperCase()).includes("VIP99")) {
+      setCouponError("Aap is VIP99 code ko pehle hi use kar chuke hain. Ek user isse sirf ek hi baar use kar sakta hai.");
+      return;
+    }
+
+    // Validate with backend API for server-side single use check
+    setIsValidatingCoupon(true);
+    try {
+      const res = await fetch("/api/coupon/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: "VIP99",
+          planId: selectedOption,
+          phone: targetPhone,
+        }),
+      });
+      const data = await res.json();
+      if (!data.valid) {
+        setCouponError(data.error || "Unable to apply coupon.");
+        setAppliedCoupon(null);
+      } else {
+        setAppliedCoupon("VIP99");
+        setCouponError(null);
+      }
+    } catch (err: any) {
+      setCouponError("Network error while validating coupon.");
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponError(null);
+  };
 
   const handlePay = async () => {
     if (isInitiatingPayment) return;
@@ -96,6 +180,12 @@ export default function PaywallModal({
 
       if (!targetName) {
         setPaymentError("Please enter your name.");
+        return;
+      }
+
+      // Check single use coupon on client before initiation
+      if (isCouponActive && user?.usedCoupons?.map((c) => c.toUpperCase()).includes("VIP99")) {
+        setPaymentError("Aap is VIP99 code ko pehle hi use kar chuke hain. Ek user isse sirf ek hi baar use kar sakta hai.");
         return;
       }
 
@@ -120,6 +210,7 @@ export default function PaywallModal({
           userPhone: targetPhone,
           userName: targetName,
           userDob: effectiveDob,
+          couponCode: isCouponActive ? "VIP99" : undefined,
         }),
       });
 
@@ -149,6 +240,9 @@ export default function PaywallModal({
   };
 
   const itemInfo = catalog[selectedOption] || catalog.trial_99;
+  const originalPriceNumber = Number(itemInfo.price);
+  const effectivePrice = isCouponActive ? 99 : originalPriceNumber;
+  const savingsAmount = isCouponActive ? originalPriceNumber - 99 : 0;
 
   const currentName = user?.name || guestName || userName || "Seeker";
   const currentPhone = user?.phone || guestPhone || "Not provided";
@@ -490,8 +584,20 @@ export default function PaywallModal({
                     <div>
                       {/* Price Section with Traditional Comparison */}
                       <div className="flex items-baseline gap-2 mb-1">
-                        <span className="text-3xl sm:text-4xl font-black text-rose-200 font-serif">₹249</span>
-                        <span className="text-[11px] text-slate-400 line-through">₹2,100 Pandit Dakshina</span>
+                        {isCouponActive || appliedCoupon === "VIP99" ? (
+                          <>
+                            <span className="text-3xl sm:text-4xl font-black text-emerald-400 font-serif">₹99</span>
+                            <span className="text-xs text-rose-300 line-through">₹249</span>
+                            <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30 uppercase tracking-wider">
+                              VIP99 Applied
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-3xl sm:text-4xl font-black text-rose-200 font-serif">₹249</span>
+                            <span className="text-[11px] text-slate-400 line-through">₹2,100 Pandit Dakshina</span>
+                          </>
+                        )}
                       </div>
                       <h4 className="text-sm font-extrabold text-white leading-snug">
                         Khoya Pyar Wapas Paayen &amp; Get Your Ex Back
@@ -564,7 +670,7 @@ export default function PaywallModal({
                         }`}
                       >
                         <Heart className="w-3.5 h-3.5 fill-current" />
-                        Select ₹249 Prem Pass
+                        Select ₹{isCouponActive || appliedCoupon === "VIP99" ? "99" : "249"} Prem Pass
                       </div>
                     </div>
                   </div>
@@ -592,8 +698,20 @@ export default function PaywallModal({
                     <div>
                       {/* Price Section with Traditional Comparison */}
                       <div className="flex items-baseline gap-2 mb-1">
-                        <span className="text-3xl sm:text-4xl font-black text-emerald-200 font-serif">₹299</span>
-                        <span className="text-[11px] text-slate-400 line-through">₹3,500 Havan Kharch</span>
+                        {isCouponActive || appliedCoupon === "VIP99" ? (
+                          <>
+                            <span className="text-3xl sm:text-4xl font-black text-emerald-400 font-serif">₹99</span>
+                            <span className="text-xs text-emerald-300 line-through">₹299</span>
+                            <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30 uppercase tracking-wider">
+                              VIP99 Applied
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-3xl sm:text-4xl font-black text-emerald-200 font-serif">₹299</span>
+                            <span className="text-[11px] text-slate-400 line-through">₹3,500 Havan Kharch</span>
+                          </>
+                        )}
                       </div>
                       <h4 className="text-sm font-extrabold text-white leading-snug">
                         Ghar Main Kalesh Se Mukti &amp; Saas Se Banti Nahi?
@@ -653,7 +771,7 @@ export default function PaywallModal({
                         }`}
                       >
                         <ShieldCheck className="w-3.5 h-3.5" />
-                        Select ₹299 Shanti Pass
+                        Select ₹{isCouponActive || appliedCoupon === "VIP99" ? "99" : "299"} Shanti Pass
                       </div>
                     </div>
                   </div>
@@ -681,8 +799,20 @@ export default function PaywallModal({
                     <div>
                       {/* Price Section with Traditional Comparison */}
                       <div className="flex items-baseline gap-2 mb-1">
-                        <span className="text-3xl sm:text-4xl font-black text-purple-200 font-serif">₹349</span>
-                        <span className="text-[11px] text-slate-400 line-through">₹5,100 Astrologer Fee</span>
+                        {isCouponActive || appliedCoupon === "VIP99" ? (
+                          <>
+                            <span className="text-3xl sm:text-4xl font-black text-emerald-400 font-serif">₹99</span>
+                            <span className="text-xs text-purple-300 line-through">₹349</span>
+                            <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30 uppercase tracking-wider">
+                              VIP99 Applied
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-3xl sm:text-4xl font-black text-purple-200 font-serif">₹349</span>
+                            <span className="text-[11px] text-slate-400 line-through">₹5,100 Astrologer Fee</span>
+                          </>
+                        )}
                       </div>
                       <h4 className="text-sm font-extrabold text-white leading-snug">
                         Intercaste Marriage &amp; Parivaar Manana
@@ -734,7 +864,7 @@ export default function PaywallModal({
                         }`}
                       >
                         <Sparkles className="w-3.5 h-3.5" />
-                        Select ₹349 Vivah Pass
+                        Select ₹{isCouponActive || appliedCoupon === "VIP99" ? "99" : "349"} Vivah Pass
                       </div>
                     </div>
                   </div>
@@ -886,6 +1016,99 @@ export default function PaywallModal({
               </div>
             )}
 
+            {/* Exclusive VIP Coupon Code Section */}
+            <div className="mb-3 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-gold-500/10 border border-gold-500/30 text-left transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Tag className="w-3.5 h-3.5 text-gold-400" />
+                  <span className="text-xs font-bold text-gold-300 uppercase tracking-wider">
+                    Have a VIP Offer Code?
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-400">
+                  Single-use per account
+                </span>
+              </div>
+
+              {isCouponActive ? (
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <div className="text-xs font-bold">
+                      <span className="text-emerald-200">VIP99 Applied!</span>{" "}
+                      <span className="text-emerald-300/90 font-normal">
+                        Pass price discounted to ₹99 (Saved ₹{savingsAmount})
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveCoupon}
+                    className="text-[11px] text-slate-400 hover:text-rose-300 underline font-medium transition-colors ml-2 shrink-0"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Enter VIP code (e.g. VIP99)"
+                      value={couponInput}
+                      onChange={(e) => {
+                        setCouponInput(e.target.value.toUpperCase());
+                        setCouponError(null);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleApplyCoupon();
+                        }
+                      }}
+                      className="flex-1 px-3 py-2 rounded-xl bg-cosmic-950 border border-white/20 text-white text-xs font-mono font-bold tracking-wider placeholder:font-sans placeholder:font-normal placeholder:text-slate-400 focus:border-gold-400 outline-none uppercase transition-colors"
+                    />
+                    <button
+                      type="button"
+                      disabled={isValidatingCoupon || !couponInput.trim()}
+                      onClick={() => handleApplyCoupon()}
+                      className="px-4 py-2 rounded-xl bg-gold-500 hover:bg-gold-400 active:scale-95 text-cosmic-950 font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 shrink-0"
+                    >
+                      {isValidatingCoupon ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <span>Apply</span>
+                      )}
+                    </button>
+                  </div>
+
+                  <div className="text-[11px] text-slate-400 flex flex-wrap items-center justify-between gap-1">
+                    <span>Valid exclusively on Khoya Pyar, Ghar Kalesh &amp; Intercaste passes.</span>
+                    {!isSpecialPass && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveTab("special");
+                          setSelectedOption("love_ex_249");
+                          setCouponError(null);
+                        }}
+                        className="text-gold-300 hover:text-white underline font-semibold transition-colors"
+                      >
+                        View Special Passes ➔
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {couponError && (
+                <div className="mt-2 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2 animate-shake">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0 text-rose-400" />
+                  <span>{couponError}</span>
+                </div>
+              )}
+            </div>
+
             {/* Account Identification Section */}
             {user?.phone ? (
               <div className="mb-3 p-3.5 rounded-2xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-between text-xs text-gold-200">
@@ -979,7 +1202,13 @@ export default function PaywallModal({
                 ) : (
                   <>
                     <span>
-                      Pay ₹{itemInfo.price} via PhonePe / UPI
+                      {isCouponActive ? (
+                        <>
+                          Pay ₹99 via PhonePe / UPI <span className="line-through opacity-70 ml-1 text-slate-800">₹{itemInfo.price}</span>
+                        </>
+                      ) : (
+                        `Pay ₹${itemInfo.price} via PhonePe / UPI`
+                      )}
                     </span>
                     <Sparkles className="w-4 h-4 text-cosmic-950" />
                   </>
@@ -997,7 +1226,7 @@ export default function PaywallModal({
                       addMatchmakingCredits(5);
                       alert("👑 Admin Action: +5 Matchmaking Credits added to your account.");
                     } else {
-                      unlockSubscription(selectedOption as SubscriptionTierType);
+                      unlockSubscription(selectedOption as SubscriptionTierType, isCouponActive ? "VIP99" : undefined);
                       if (onSuccess) onSuccess(selectedOption as SubscriptionTierType);
                       alert(`👑 Admin Action: Plan activated successfully!`);
                     }

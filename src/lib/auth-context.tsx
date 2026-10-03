@@ -48,6 +48,7 @@ export interface UserProfile {
   matchmakingRemaining?: number;
   kundliDownloadsUsed?: number;
   kundliDownloadedProfiles?: string[];
+  usedCoupons?: string[];
 }
 
 interface AuthContextType {
@@ -69,7 +70,7 @@ interface AuthContextType {
   hasServiceAccess: (serviceId: string) => boolean;
   logout: () => void;
   updateProfile: (data: Partial<UserProfile>) => void;
-  unlockSubscription: (plan: SubscriptionTierType) => void;
+  unlockSubscription: (plan: SubscriptionTierType, couponCode?: string) => void;
   lockPrimaryProfile: () => void;
   consumeQuota: (type: "deepQuestion" | "partnerQuestion" | "matchmaking") => boolean;
   canAskPartnerQuestion: () => boolean;
@@ -414,7 +415,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const unlockSubscription = (plan: SubscriptionTierType) => {
+  const unlockSubscription = (plan: SubscriptionTierType, couponCode?: string) => {
     if (!user) return;
     const initialQuotas: Record<string, { deep: number; partner: number; match: number }> = {
       trial_99: { deep: 2, partner: 0, match: 1 },
@@ -428,6 +429,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const currentPasses = user.activePasses || [];
     const newPasses = currentPasses.includes(plan) ? currentPasses : [...currentPasses, plan];
 
+    const currentCoupons = user.usedCoupons || [];
+    const updatedCoupons =
+      couponCode && !currentCoupons.includes(couponCode.toUpperCase())
+        ? [...currentCoupons, couponCode.toUpperCase()]
+        : currentCoupons;
+
     updateProfile({
       isSubscribed: true,
       subscriptionPlan: plan,
@@ -436,6 +443,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       deepQuestionsRemaining: (user.deepQuestionsRemaining ?? 0) + quotas.deep,
       partnerQuestionsRemaining: (user.partnerQuestionsRemaining ?? 0) + quotas.partner,
       matchmakingRemaining: (user.matchmakingRemaining ?? 0) + quotas.match,
+      usedCoupons: updatedCoupons,
     });
   };
 

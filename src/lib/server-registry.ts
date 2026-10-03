@@ -223,6 +223,71 @@ export function getServerReading(id: string): CachedReading | undefined {
 }
 
 /**
+ * Check if a seeker has already used a specific coupon code (e.g. VIP99)
+ */
+export async function isCouponUsedByUser(phone: string, couponCode: string): Promise<boolean> {
+  if (!phone || !couponCode) return false;
+  const clean = phone.replace(/\D/g, "");
+  if (!clean || clean.length < 10) return false;
+  const normalizedCode = couponCode.trim().toUpperCase();
+
+  // 1. Check in master users registry
+  try {
+    const users = await getLatestUsers();
+    const user = users.find((u) => u.phone === clean);
+    if (user && Array.isArray((user as any).usedCoupons)) {
+      if ((user as any).usedCoupons.map((c: string) => c.toUpperCase()).includes(normalizedCode)) {
+        return true;
+      }
+    }
+  } catch (err) {
+    console.warn("Notice checking user coupon status:", err);
+  }
+
+  // 2. Check in orders registry for completed orders with this coupon
+  try {
+    const ordersPath = path.join(process.cwd(), "data", "orders-registry.json");
+    if (fs.existsSync(ordersPath)) {
+      const orders = JSON.parse(fs.readFileSync(ordersPath, "utf-8"));
+      if (Array.isArray(orders)) {
+        const found = orders.some(
+          (o: any) =>
+            o.userPhone === clean &&
+            (o.couponCode || "").trim().toUpperCase() === normalizedCode &&
+            (o.status === "COMPLETED" || o.status === "SUCCESS")
+        );
+        if (found) return true;
+      }
+    }
+  } catch {}
+
+  return false;
+}
+
+/**
+ * Mark order status in orders-registry.json (e.g. COMPLETED)
+ */
+export function updateOrderStatus(orderId: string, status: string, couponCode?: string) {
+  try {
+    const ordersPath = path.join(process.cwd(), "data", "orders-registry.json");
+    if (fs.existsSync(ordersPath)) {
+      const orders = JSON.parse(fs.readFileSync(ordersPath, "utf-8"));
+      if (Array.isArray(orders)) {
+        const order = orders.find((o: any) => o.merchantOrderId === orderId || o.phonePeOrderId === orderId);
+        if (order) {
+          order.status = status;
+          if (couponCode) order.couponCode = couponCode;
+          order.updatedAt = new Date().toISOString();
+          fs.writeFileSync(ordersPath, JSON.stringify(orders, null, 2), "utf-8");
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("Failed to update order status in registry:", e);
+  }
+}
+
+/**
  * Server-side subscription and credit unlock upon successful payment
  */
 export async function activateUserPlanServer(params: {
@@ -230,9 +295,10 @@ export async function activateUserPlanServer(params: {
   planId: string;
   orderId: string;
   amount?: number;
+  couponCode?: string;
 }): Promise<{ success: boolean; error?: string }> {
   try {
-    const { phone, planId, orderId } = params;
+    const { phone, planId, orderId, couponCode } = params;
     if (!phone) return { success: false, error: "Missing phone number" };
 
     const clean = phone.replace(/\D/g, "");
@@ -294,11 +360,26 @@ export async function activateUserPlanServer(params: {
       }
     }
 
+    // Record coupon usage on user record if couponCode was used
+    if (couponCode) {
+      const targetUser = userIndex >= 0 ? users[userIndex] : users[users.length - 1];
+      if (targetUser) {
+        const cleanCoupon = couponCode.trim().toUpperCase();
+        const existing = (targetUser as any).usedCoupons || [];
+        if (!existing.includes(cleanCoupon)) {
+          (targetUser as any).usedCoupons = [...existing, cleanCoupon];
+        }
+      }
+    }
+
     // Persist to disk and sync with WordPress
     writeUsersToDisk(users);
     saveUsersRegistryToWordPress(users).catch((err) =>
       console.warn("WP sync notice after payment activation:", err)
     );
+
+    // Update order status in orders registry
+    updateOrderStatus(orderId, "COMPLETED", couponCode);
 
     return { success: true };
   } catch (err: any) {
