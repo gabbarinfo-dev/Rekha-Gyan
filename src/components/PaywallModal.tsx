@@ -91,8 +91,16 @@ export default function PaywallModal({
       setPaymentError(null);
       setCouponError(null);
       if (initialCoupon && initialCoupon.toUpperCase() === "VIP99") {
-        setCouponInput("VIP99");
-        setAppliedCoupon("VIP99");
+        const hasUsed = Boolean(
+          user?.usedCoupons?.map((c) => c.toUpperCase()).includes("VIP99")
+        );
+        if (hasUsed) {
+          setCouponError("Aap is VIP99 code ko pehle hi use kar chuke hain. Ek user isse sirf ek hi baar use kar sakta hai.");
+          setAppliedCoupon(null);
+        } else {
+          setCouponInput("VIP99");
+          setAppliedCoupon("VIP99");
+        }
       }
       if (user?.name) setGuestName(user.name);
       else if (userName) setGuestName(userName);
@@ -1167,8 +1175,24 @@ export default function PaywallModal({
                         placeholder="9876543210"
                         value={guestPhone}
                         onChange={(e) => {
-                          setGuestPhone(e.target.value.replace(/\D/g, ""));
+                          const clean = e.target.value.replace(/\D/g, "");
+                          setGuestPhone(clean);
                           setPaymentError(null);
+                          if (clean.length === 10 && appliedCoupon === "VIP99") {
+                            fetch("/api/coupon/validate", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ code: "VIP99", planId: selectedOption, phone: clean }),
+                            })
+                              .then((r) => r.json())
+                              .then((data) => {
+                                if (!data.valid) {
+                                  setAppliedCoupon(null);
+                                  setCouponError(data.error || "Aap is VIP99 code ko pehle hi use kar chuke hain.");
+                                }
+                              })
+                              .catch(() => {});
+                          }
                         }}
                         className="w-full bg-transparent text-white text-xs font-mono outline-none"
                       />

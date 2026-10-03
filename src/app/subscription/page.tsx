@@ -37,6 +37,10 @@ export default function SubscriptionPage() {
   const [couponInputText, setCouponInputText] = useState("");
   const [couponNotice, setCouponNotice] = useState<string | null>(null);
 
+  const hasUsedVip99 = Boolean(
+    user?.usedCoupons?.map((c) => c.toUpperCase()).includes("VIP99")
+  );
+
   const handlePay = (plan: SubscriptionTierType) => {
     setPendingPlan(plan);
     setPaywallTab("plans");
@@ -86,14 +90,19 @@ export default function SubscriptionPage() {
       const couponParam = params.get("coupon") || params.get("code");
 
       if (couponParam && couponParam.toUpperCase() === "VIP99") {
-        setActiveCoupon("VIP99");
-        setCouponInputText("VIP99");
-        if (!planParam) {
-          setHighlightedPlan("love_ex_249");
-          setTimeout(() => {
-            const el = document.getElementById("plan-love_ex_249");
-            if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-          }, 300);
+        if (hasUsedVip99) {
+          setActiveCoupon(null);
+          setCouponNotice("Aap is VIP99 code ko pehle hi use kar chuke hain. Ek user isse sirf ek hi baar use kar sakta hai.");
+        } else {
+          setActiveCoupon("VIP99");
+          setCouponInputText("VIP99");
+          if (!planParam) {
+            setHighlightedPlan("love_ex_249");
+            setTimeout(() => {
+              const el = document.getElementById("plan-love_ex_249");
+              if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+            }, 300);
+          }
         }
       }
 
@@ -446,8 +455,12 @@ export default function SubscriptionPage() {
                     type="button"
                     onClick={() => {
                       if (couponInputText.trim().toUpperCase() === "VIP99") {
-                        setActiveCoupon("VIP99");
-                        setCouponNotice(null);
+                        if (hasUsedVip99) {
+                          setCouponNotice("Aap is VIP99 code ko pehle hi use kar chuke hain. Ek user isse sirf ek hi baar use kar sakta hai.");
+                        } else {
+                          setActiveCoupon("VIP99");
+                          setCouponNotice(null);
+                        }
                       } else {
                         setCouponNotice("Invalid code. Use code VIP99 for ₹99 special pass offer.");
                       }
